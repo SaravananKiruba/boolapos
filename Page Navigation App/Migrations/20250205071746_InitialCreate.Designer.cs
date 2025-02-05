@@ -10,7 +10,7 @@ using Page_Navigation_App.Data;
 namespace Page_Navigation_App.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250204114030_InitialCreate")]
+    [Migration("20250205071746_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

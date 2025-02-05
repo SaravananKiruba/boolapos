@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+
 using Page_Navigation_App.Model; // Ensure this namespace is correct
 
 namespace Page_Navigation_App.Data
