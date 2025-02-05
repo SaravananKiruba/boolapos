@@ -1,0 +1,62 @@
+﻿<UserControl x:Class="Page_Navigation_App.View.Customers"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="600"
+             d:DesignWidth="622"
+             Style="{StaticResource Page_Style}">
+
+  
+    <Grid Margin="15" Background="#212529">
+        <Border CornerRadius="20" BorderBrush="#6C757D" BorderThickness="2" Padding="20" Background="#343A40">
+            <StackPanel>
+                <TextBlock Text="Customer Registration Form" FontSize="22" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center" Foreground="#F8F9FA"/>
+
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <Label Content="Customer ID:" Width="150" VerticalAlignment="Center" Foreground="#F8F9FA"/>
+                    <TextBox Width="300" Height="30" Text="{Binding CustomerID}" IsReadOnly="True" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <Label Content="Customer Name:" Width="150" VerticalAlignment="Center" Foreground="#F8F9FA"/>
+                    <TextBox Width="300" Height="30" Text="{Binding CustomerName, UpdateSourceTrigger=PropertyChanged}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <Label Content="Phone Number:" Width="150" VerticalAlignment="Center" Foreground="#F8F9FA"/>
+                    <TextBox Width="300" Height="30" Text="{Binding PhoneNumber, UpdateSourceTrigger=PropertyChanged}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <Label Content="Contact Person:" Width="150" VerticalAlignment="Center" Foreground="#F8F9FA"/>
+                    <TextBox Width="300" Height="30" Text="{Binding ContactPerson, UpdateSourceTrigger=PropertyChanged}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <Label Content="Address:" Width="150" VerticalAlignment="Top" Foreground="#F8F9FA"/>
+                    <TextBox Width="300" Height="60" Text="{Binding Address, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" AcceptsReturn="True" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <Label Content="Email:" Width="150" VerticalAlignment="Center" Foreground="#F8F9FA"/>
+                    <TextBox Width="300" Height="30" Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <Label Content="WhatsApp Number:" Width="150" VerticalAlignment="Center" Foreground="#F8F9FA"/>
+                    <TextBox Width="300" Height="30" Text="{Binding WhatsAppNumber, UpdateSourceTrigger=PropertyChanged}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0" >
+                    <Button Content="Submit" Width="150" Height="35" Background="#198754" Foreground="#F8F9FA" FontWeight="Bold" BorderBrush="#157347" Command="{Binding AddCommand}"/>
+                    <Button Content="Update" Width="150" Height="35" Background="#0D6EFD" Foreground="#F8F9FA" FontWeight="Bold" BorderBrush="#0A58CA" Command="{Binding UpdateCommand}"/>
+                    <Button Content="Filter" Width="150" Height="35" Background="#FFC107" Foreground="#212529" FontWeight="Bold" BorderBrush="#FFCA2C" Command="{Binding FilterCommand}"/>
+                </StackPanel>
+
+            </StackPanel>
+        </Border>
+    </Grid>
+
+</UserControl>
