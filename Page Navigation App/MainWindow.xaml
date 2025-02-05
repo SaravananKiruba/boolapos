@@ -20,9 +20,7 @@
         WindowStyle="None"
         Background="Transparent">
 
-    <Window.DataContext>
-        <vm:NavigationVM />
-    </Window.DataContext>
+    
 
     <Grid>
 

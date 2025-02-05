@@ -1,11 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Page_Navigation_App.Data;
-using Page_Navigation_App.Services; // ✅ Added Services namespace
+using Page_Navigation_App.Services;
 using Page_Navigation_App.View;
 using Page_Navigation_App.ViewModel;
-using System;
 using System.Windows;
+using System;
+using Microsoft.EntityFrameworkCore;
 
 namespace Page_Navigation_App
 {
@@ -30,12 +30,12 @@ namespace Page_Navigation_App
                 options.UseSqlite("Data Source=StockInventory.db"));
 
             // Register Services
-            services.AddTransient<CustomerService>(); // ✅ Registering CustomerService
+            services.AddTransient<CustomerService>();
 
             // Register ViewModels
             services.AddSingleton<NavigationVM>();
             services.AddTransient<HomeVM>();
-            services.AddTransient<CustomerVM>(); // ✅ Registering CustomerVM without DbContext dependency
+            services.AddTransient<CustomerVM>();
             services.AddTransient<ProductVM>();
             services.AddTransient<OrderVM>();
             services.AddTransient<TransactionVM>();
