@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace Page_Navigation_App.ViewModel
 {
-    class HomeVM 
+    public class HomeVM : Utilities.ViewModelBase
     {
+
     }
 }

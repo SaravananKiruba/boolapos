@@ -7,7 +7,7 @@ using Page_Navigation_App.Model;
 
 namespace Page_Navigation_App.ViewModel
 {
-    class ProductVM : Utilities.ViewModelBase
+    public class ProductVM : Utilities.ViewModelBase
     {
         private readonly PageModel _pageModel;
         public string ProductAvailability
