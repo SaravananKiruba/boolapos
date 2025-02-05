@@ -1,25 +1,24 @@
-﻿using System.Collections.ObjectModel;
-using System.Linq;
+﻿// CustomerVM.cs
+using System.Collections.ObjectModel;
 using System.Windows.Input;
-using Microsoft.EntityFrameworkCore;
-using Page_Navigation_App.Data;
 using Page_Navigation_App.Model;
 using Page_Navigation_App.Utilities;
+using Page_Navigation_App.Services;
 
 namespace Page_Navigation_App.ViewModel
 {
     public class CustomerVM : ViewModelBase
     {
-        private readonly AppDbContext _dbContext;
+        private readonly CustomerService _customerService;
 
         public ICommand AddCommand { get; }
         public ICommand UpdateCommand { get; }
         public ICommand DeleteCommand { get; }
         public ICommand FilterCommand { get; }
 
-        public CustomerVM(AppDbContext dbContext)
+        public CustomerVM(CustomerService customerService)
         {
-            _dbContext = dbContext;
+            _customerService = customerService;
             LoadCustomers();
 
             AddCommand = new RelayCommand<object>(_ => AddCustomer(), _ => SelectedCustomer != null);
@@ -28,7 +27,7 @@ namespace Page_Navigation_App.ViewModel
             FilterCommand = new RelayCommand<object>(_ => FilterCustomer(), _ => true);
         }
 
-        public ObservableCollection<Customer> Customers { get; set; }
+        public ObservableCollection<Customer> Customers { get; set; } = new ObservableCollection<Customer>();
 
         private Customer _selectedCustomer;
         public Customer SelectedCustomer
@@ -43,7 +42,11 @@ namespace Page_Navigation_App.ViewModel
 
         private void LoadCustomers()
         {
-            Customers = new ObservableCollection<Customer>(_dbContext.Customers.ToList());
+            Customers.Clear();
+            foreach (var customer in _customerService.GetAllCustomers())
+            {
+                Customers.Add(customer);
+            }
         }
 
         private void AddCustomer()
@@ -60,8 +63,7 @@ namespace Page_Navigation_App.ViewModel
                     WhatsAppNumber = SelectedCustomer.WhatsAppNumber
                 };
 
-                _dbContext.Customers.Add(newCustomer);
-                _dbContext.SaveChanges();
+                _customerService.AddCustomer(newCustomer);
                 Customers.Add(newCustomer);
             }
         }
@@ -70,19 +72,8 @@ namespace Page_Navigation_App.ViewModel
         {
             if (SelectedCustomer != null)
             {
-                var customerInDb = _dbContext.Customers.FirstOrDefault(c => c.CustomerID == SelectedCustomer.CustomerID);
-                if (customerInDb != null)
-                {
-                    customerInDb.CustomerName = SelectedCustomer.CustomerName;
-                    customerInDb.PhoneNumber = SelectedCustomer.PhoneNumber;
-                    customerInDb.ContactPerson = SelectedCustomer.ContactPerson;
-                    customerInDb.Address = SelectedCustomer.Address;
-                    customerInDb.Email = SelectedCustomer.Email;
-                    customerInDb.WhatsAppNumber = SelectedCustomer.WhatsAppNumber;
-
-                    _dbContext.SaveChanges();
-                    LoadCustomers();
-                }
+                _customerService.UpdateCustomer(SelectedCustomer);
+                LoadCustomers();
             }
         }
 
@@ -90,8 +81,7 @@ namespace Page_Navigation_App.ViewModel
         {
             if (SelectedCustomer != null)
             {
-                _dbContext.Customers.Remove(SelectedCustomer);
-                _dbContext.SaveChanges();
+                _customerService.DeleteCustomer(SelectedCustomer);
                 Customers.Remove(SelectedCustomer);
             }
         }
@@ -100,13 +90,12 @@ namespace Page_Navigation_App.ViewModel
         {
             if (SelectedCustomer != null && !string.IsNullOrWhiteSpace(SelectedCustomer.CustomerName))
             {
-                var filteredList = _dbContext.Customers
-                    .Where(c => EF.Functions.Like(c.CustomerName, $"%{SelectedCustomer.CustomerName}%"))
-                    .ToList();
-
+                var filteredCustomers = _customerService.FilterCustomers(SelectedCustomer.CustomerName);
                 Customers.Clear();
-                foreach (var customer in filteredList)
+                foreach (var customer in filteredCustomers)
+                {
                     Customers.Add(customer);
+                }
             }
             else
             {

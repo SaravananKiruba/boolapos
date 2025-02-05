@@ -1,4 +1,4 @@
-﻿using Page_Navigation_App.Data; // For AppDbContext
+﻿using Page_Navigation_App.Services; // For CustomerService and other services
 using Page_Navigation_App.Utilities; // For RelayCommand
 using Page_Navigation_App.View; // For other view models like HomeVM, ProductVM
 using System.Windows.Input;
@@ -24,14 +24,15 @@ namespace Page_Navigation_App.ViewModel
         public ICommand OrdersCommand { get; }
         public ICommand TransactionsCommand { get; }
 
-        private readonly AppDbContext _dbContext;
+        private readonly CustomerService _customerService;
 
-        public NavigationVM(AppDbContext dbContext, HomeVM homeVM, Customers customers, ProductVM productVM, OrderVM orderVM, TransactionVM transactionVM)
+        public NavigationVM(HomeVM homeVM, CustomerVM customerVM, ProductVM productVM, OrderVM orderVM, TransactionVM transactionVM,
+                             CustomerService customerService)
         {
-            _dbContext = dbContext;
+            _customerService = customerService;
 
             HomeCommand = new RelayCommand<object>(_ => NavigateTo(homeVM));
-            CustomersCommand = new RelayCommand<object>(_ => NavigateTo(customers));
+            CustomersCommand = new RelayCommand<object>(_ => NavigateTo(customerVM));
             ProductsCommand = new RelayCommand<object>(_ => NavigateTo(productVM));
             OrdersCommand = new RelayCommand<object>(_ => NavigateTo(orderVM));
             TransactionsCommand = new RelayCommand<object>(_ => NavigateTo(transactionVM));
@@ -39,6 +40,7 @@ namespace Page_Navigation_App.ViewModel
             // Startup Page
             CurrentView = homeVM;
         }
+
         private void NavigateTo(object viewModel)
         {
             CurrentView = viewModel;
