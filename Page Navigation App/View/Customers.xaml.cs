@@ -6,6 +6,11 @@ namespace Page_Navigation_App.View
 {
     public partial class Customers : UserControl
     {
+        public Customers() // Default constructor for XAML
+        {
+            InitializeComponent();
+        }
+
         public Customers(CustomerService customerService)
         {
             InitializeComponent();

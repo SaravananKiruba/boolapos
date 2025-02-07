@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Page_Navigation_App.Data;
 using Page_Navigation_App.Model;
+using Page_Navigation_App.View;
 
 namespace Page_Navigation_App.Services
 {
@@ -14,6 +15,7 @@ namespace Page_Navigation_App.Services
         {
             _dbContext = dbContext;
         }
+
 
         public List<Customer> GetAllCustomers()
         {
