@@ -21,7 +21,7 @@ namespace Page_Navigation_App.ViewModel
             _customerService = customerService;
             LoadCustomers();
 
-            AddCommand = new RelayCommand<object>(_ => AddCustomer(), _ => SelectedCustomer != null);
+            AddCommand = new RelayCommand<object>(_ => AddCustomer(), _ => true);
             UpdateCommand = new RelayCommand<object>(_ => UpdateCustomer(), _ => SelectedCustomer != null);
             DeleteCommand = new RelayCommand<object>(_ => DeleteCustomer(), _ => SelectedCustomer != null);
             FilterCommand = new RelayCommand<object>(_ => FilterCustomer(), _ => true);
@@ -29,7 +29,11 @@ namespace Page_Navigation_App.ViewModel
 
         public ObservableCollection<Customer> Customers { get; set; } = new ObservableCollection<Customer>();
 
-        private Customer _selectedCustomer;
+        private Customer _selectedCustomer = new()
+        {
+             CustomerName = "John Doe",
+        };
+
         public Customer SelectedCustomer
         {
             get => _selectedCustomer;
@@ -51,7 +55,7 @@ namespace Page_Navigation_App.ViewModel
 
         private void AddCustomer()
         {
-            if (SelectedCustomer != null)
+            if (SelectedCustomer == null)
             {
                 var newCustomer = new Customer
                 {
@@ -62,6 +66,8 @@ namespace Page_Navigation_App.ViewModel
                     Email = SelectedCustomer.Email,
                     WhatsAppNumber = SelectedCustomer.WhatsAppNumber
                 };
+
+                
 
                 _customerService.AddCustomer(newCustomer);
                 Customers.Add(newCustomer);

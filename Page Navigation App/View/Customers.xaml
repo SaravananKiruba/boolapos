@@ -16,37 +16,37 @@
 
                 <StackPanel Orientation="Horizontal" Margin="0,5">
                     <Label Content="Customer ID:" Width="150" VerticalAlignment="Center" Foreground="#F8F9FA"/>
-                    <TextBox Width="300" Height="30" Text="{Binding CustomerID}" IsReadOnly="True" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
+                    <TextBox Width="300" Height="30" Text="{Binding SelectedCustomer.CustomerID}" IsReadOnly="True" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,5">
                     <Label Content="Customer Name:" Width="150" VerticalAlignment="Center" Foreground="#F8F9FA"/>
-                    <TextBox Width="300" Height="30" Text="{Binding CustomerName, UpdateSourceTrigger=PropertyChanged}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
+                    <TextBox Width="300" Height="30" Text="{Binding SelectedCustomer.CustomerName, UpdateSourceTrigger=PropertyChanged}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,5">
                     <Label Content="Phone Number:" Width="150" VerticalAlignment="Center" Foreground="#F8F9FA"/>
-                    <TextBox Width="300" Height="30" Text="{Binding PhoneNumber, UpdateSourceTrigger=PropertyChanged}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
+                    <TextBox Width="300" Height="30" Text="{Binding SelectedCustomer.PhoneNumber, UpdateSourceTrigger=PropertyChanged}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,5">
                     <Label Content="Contact Person:" Width="150" VerticalAlignment="Center" Foreground="#F8F9FA"/>
-                    <TextBox Width="300" Height="30" Text="{Binding ContactPerson, UpdateSourceTrigger=PropertyChanged}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
+                    <TextBox Width="300" Height="30" Text="{Binding SelectedCustomer.ContactPerson, UpdateSourceTrigger=PropertyChanged}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,5">
                     <Label Content="Address:" Width="150" VerticalAlignment="Top" Foreground="#F8F9FA"/>
-                    <TextBox Width="300" Height="60" Text="{Binding Address, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" AcceptsReturn="True" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
+                    <TextBox Width="300" Height="60" Text="{Binding SelectedCustomer.Address, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" AcceptsReturn="True" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,5">
                     <Label Content="Email:" Width="150" VerticalAlignment="Center" Foreground="#F8F9FA"/>
-                    <TextBox Width="300" Height="30" Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
+                    <TextBox Width="300" Height="30" Text="{Binding SelectedCustomer.Email, UpdateSourceTrigger=PropertyChanged}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,5">
                     <Label Content="WhatsApp Number:" Width="150" VerticalAlignment="Center" Foreground="#F8F9FA"/>
-                    <TextBox Width="300" Height="30" Text="{Binding WhatsAppNumber, UpdateSourceTrigger=PropertyChanged}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
+                    <TextBox Width="300" Height="30" Text="{Binding SelectedCustomer.WhatsAppNumber, UpdateSourceTrigger=PropertyChanged}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0" >
