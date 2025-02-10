@@ -1,9 +1,11 @@
 ﻿using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Windows.Input;
 using Page_Navigation_App.Model;
 using Page_Navigation_App.Utilities;
 using Page_Navigation_App.Services;
+using System.Collections.Generic;
 
 namespace Page_Navigation_App.ViewModel
 {
@@ -12,13 +14,15 @@ namespace Page_Navigation_App.ViewModel
         private readonly CustomerService _customerService;
 
         public ICommand AddOrUpdateCommand { get; }
+        public ICommand ClearCommand { get; }
 
         public CustomerVM(CustomerService customerService)
         {
             _customerService = customerService;
             LoadCustomers();
 
-            AddOrUpdateCommand = new RelayCommand<object>(_ => AddOrUpdateCustomer(), _ => true);
+            AddOrUpdateCommand = new RelayCommand<object>(_ => AddOrUpdateCustomer(), _ => CanAddOrUpdateCustomer());
+            ClearCommand = new RelayCommand<object>(_ => ClearForm(), _ => true);
         }
 
         public ObservableCollection<Customer> Customers { get; set; } = new ObservableCollection<Customer>();
@@ -70,19 +74,40 @@ namespace Page_Navigation_App.ViewModel
 
         private void AutoSelectCustomer()
         {
-            var matchedCustomer = Customers.FirstOrDefault(c => c.CustomerName == SearchName || c.PhoneNumber == SearchPhone);
+            var matchedCustomer = Customers.FirstOrDefault(c =>
+                (!string.IsNullOrEmpty(SearchName) && c.CustomerName.Contains(SearchName)) ||
+                (!string.IsNullOrEmpty(SearchPhone) && c.PhoneNumber.Contains(SearchPhone))
+            );
+
             if (matchedCustomer != null)
             {
                 SelectedCustomer = matchedCustomer;
             }
             else
             {
-                SelectedCustomer = new Customer { CustomerName = SearchName, PhoneNumber = SearchPhone };
+                SelectedCustomer = new Customer
+                {
+                    CustomerName = SearchName,
+                    PhoneNumber = SearchPhone
+                };
             }
         }
 
         private void AddOrUpdateCustomer()
         {
+            // Validate the customer before saving
+            var validationContext = new ValidationContext(SelectedCustomer, null, null);
+            var validationResults = new List<ValidationResult>();
+            bool isValid = Validator.TryValidateObject(SelectedCustomer, validationContext, validationResults, true);
+
+            if (!isValid)
+            {
+                // Show validation errors (you can use a MessageBox or a validation summary)
+                string errorMessage = string.Join("\n", validationResults.Select(v => v.ErrorMessage));
+                System.Windows.MessageBox.Show($"Validation Errors:\n{errorMessage}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                return;
+            }
+
             if (SelectedCustomer.CustomerID > 0)
             {
                 _customerService.UpdateCustomer(SelectedCustomer);
@@ -91,7 +116,23 @@ namespace Page_Navigation_App.ViewModel
             {
                 _customerService.AddCustomer(SelectedCustomer);
             }
+
             LoadCustomers();
+            ClearForm();
+        }
+
+        private void ClearForm()
+        {
+            SelectedCustomer = new Customer();
+            SearchName = string.Empty;
+            SearchPhone = string.Empty;
+        }
+
+        private bool CanAddOrUpdateCustomer()
+        {
+            // Ensure required fields are filled before allowing save
+            return !string.IsNullOrEmpty(SelectedCustomer.CustomerName) &&
+                   !string.IsNullOrEmpty(SelectedCustomer.PhoneNumber);
         }
     }
 }

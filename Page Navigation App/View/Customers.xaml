@@ -15,7 +15,7 @@
 
                 <StackPanel Orientation="Horizontal" Margin="0,5">
                     <Label Content="Customer ID:" Width="150" VerticalAlignment="Center" Foreground="#F8F9FA"/>
-                    <TextBox Width="300" Height="30" Text="{Binding SelectedCustomer.CustomerID}" IsReadOnly="True" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
+                    <TextBlock Text="{Binding SelectedCustomer.CustomerID}" Width="300" Height="30" Background="#495057" Foreground="#F8F9FA" />
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,5">
