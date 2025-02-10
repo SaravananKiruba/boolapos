@@ -1,5 +1,5 @@
-﻿// CustomerVM.cs
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows.Input;
 using Page_Navigation_App.Model;
 using Page_Navigation_App.Utilities;
@@ -11,28 +11,19 @@ namespace Page_Navigation_App.ViewModel
     {
         private readonly CustomerService _customerService;
 
-        public ICommand AddCommand { get; }
-        public ICommand UpdateCommand { get; }
-        public ICommand DeleteCommand { get; }
-        public ICommand FilterCommand { get; }
+        public ICommand AddOrUpdateCommand { get; }
 
         public CustomerVM(CustomerService customerService)
         {
             _customerService = customerService;
             LoadCustomers();
 
-            AddCommand = new RelayCommand<object>(_ => AddCustomer(), _ => true);
-            UpdateCommand = new RelayCommand<object>(_ => UpdateCustomer(), _ => SelectedCustomer != null);
-            DeleteCommand = new RelayCommand<object>(_ => DeleteCustomer(), _ => SelectedCustomer != null);
-            FilterCommand = new RelayCommand<object>(_ => FilterCustomer(), _ => true);
+            AddOrUpdateCommand = new RelayCommand<object>(_ => AddOrUpdateCustomer(), _ => true);
         }
 
         public ObservableCollection<Customer> Customers { get; set; } = new ObservableCollection<Customer>();
 
-        private Customer _selectedCustomer = new()
-        {
-             CustomerName = "John Doe",
-        };
+        private Customer _selectedCustomer = new Customer();
 
         public Customer SelectedCustomer
         {
@@ -41,6 +32,30 @@ namespace Page_Navigation_App.ViewModel
             {
                 _selectedCustomer = value;
                 OnPropertyChanged();
+            }
+        }
+
+        private string _searchName;
+        public string SearchName
+        {
+            get => _searchName;
+            set
+            {
+                _searchName = value;
+                OnPropertyChanged();
+                AutoSelectCustomer();
+            }
+        }
+
+        private string _searchPhone;
+        public string SearchPhone
+        {
+            get => _searchPhone;
+            set
+            {
+                _searchPhone = value;
+                OnPropertyChanged();
+                AutoSelectCustomer();
             }
         }
 
@@ -53,60 +68,30 @@ namespace Page_Navigation_App.ViewModel
             }
         }
 
-        private void AddCustomer()
+        private void AutoSelectCustomer()
         {
-            if (SelectedCustomer == null)
+            var matchedCustomer = Customers.FirstOrDefault(c => c.CustomerName == SearchName || c.PhoneNumber == SearchPhone);
+            if (matchedCustomer != null)
             {
-                var newCustomer = new Customer
-                {
-                    CustomerName = SelectedCustomer.CustomerName,
-                    PhoneNumber = SelectedCustomer.PhoneNumber,
-                    ContactPerson = SelectedCustomer.ContactPerson,
-                    Address = SelectedCustomer.Address,
-                    Email = SelectedCustomer.Email,
-                    WhatsAppNumber = SelectedCustomer.WhatsAppNumber
-                };
-
-                
-
-                _customerService.AddCustomer(newCustomer);
-                Customers.Add(newCustomer);
-            }
-        }
-
-        private void UpdateCustomer()
-        {
-            if (SelectedCustomer != null)
-            {
-                _customerService.UpdateCustomer(SelectedCustomer);
-                LoadCustomers();
-            }
-        }
-
-        private void DeleteCustomer()
-        {
-            if (SelectedCustomer != null)
-            {
-                _customerService.DeleteCustomer(SelectedCustomer);
-                Customers.Remove(SelectedCustomer);
-            }
-        }
-
-        private void FilterCustomer()
-        {
-            if (SelectedCustomer != null && !string.IsNullOrWhiteSpace(SelectedCustomer.CustomerName))
-            {
-                var filteredCustomers = _customerService.FilterCustomers(SelectedCustomer.CustomerName);
-                Customers.Clear();
-                foreach (var customer in filteredCustomers)
-                {
-                    Customers.Add(customer);
-                }
+                SelectedCustomer = matchedCustomer;
             }
             else
             {
-                LoadCustomers();
+                SelectedCustomer = new Customer { CustomerName = SearchName, PhoneNumber = SearchPhone };
             }
+        }
+
+        private void AddOrUpdateCustomer()
+        {
+            if (SelectedCustomer.CustomerID > 0)
+            {
+                _customerService.UpdateCustomer(SelectedCustomer);
+            }
+            else
+            {
+                _customerService.AddCustomer(SelectedCustomer);
+            }
+            LoadCustomers();
         }
     }
 }
