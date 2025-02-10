@@ -4,15 +4,15 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Page_Navigation_App.Model
 {
-    public class Customer
+    public class Supplier
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int CustomerID { get; set; }
+        public int SupplierID { get; set; }
 
         [Required]
         [StringLength(100)]
-        public string CustomerName { get; set; }
+        public string SupplierName { get; set; }
 
         [StringLength(15)]
         public string PhoneNumber { get; set; }
@@ -27,10 +27,7 @@ namespace Page_Navigation_App.Model
         [StringLength(100)]
         public string Email { get; set; }
 
-        [StringLength(15)]
-        public string WhatsAppNumber { get; set; }
-
-        // Navigation property for Orders (One-to-Many relationship)
-        public ICollection<Order> Orders { get; set; }
+        // Navigation property for Products (One-to-Many relationship)
+        public ICollection<Product> Products { get; set; }
     }
 }
