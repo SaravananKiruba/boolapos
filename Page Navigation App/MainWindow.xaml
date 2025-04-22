@@ -40,104 +40,46 @@
 
             <!--// Navigation Panel //-->
 
-            <Grid HorizontalAlignment="Left"
-                  Width="228">
+            <Grid HorizontalAlignment="Left" Width="228" Background="#1E1E2F">
+                <Border Background="#2A2A3D" CornerRadius="20,0,0,20">
+                    <StackPanel>
+                        <!-- Redesigned Sidebar with Modern UI -->
+                        <Button Style="{StaticResource BtnStyle}" Command="{Binding HomeCommand}" Margin="10,10,10,0">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Image Source="Images/img_home.png" Width="24" Height="24" Margin="0,0,10,0"/>
+                                <TextBlock Text="Home" Foreground="#FFFFFF" FontSize="16" FontWeight="Bold"/>
+                            </StackPanel>
+                        </Button>
 
-                <Border Background="#272B2F"
-                        CornerRadius="20,0,0,20" />
+                        <Button Style="{StaticResource BtnStyle}" Command="{Binding CustomersCommand}" Margin="10,10,10,0">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Image Source="Images/img_customer.png" Width="24" Height="24" Margin="0,0,10,0"/>
+                                <TextBlock Text="Customers" Foreground="#FFFFFF" FontSize="16" FontWeight="Bold"/>
+                            </StackPanel>
+                        </Button>
 
-                <StackPanel Height="400"
-                            Width="228">
+                        <Button Style="{StaticResource BtnStyle}" Command="{Binding ProductsCommand}" Margin="10,10,10,0">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Image Source="Images/img_product.png" Width="24" Height="24" Margin="0,0,10,0"/>
+                                <TextBlock Text="Products" Foreground="#FFFFFF" FontSize="16" FontWeight="Bold"/>
+                            </StackPanel>
+                        </Button>
 
-                    <!--// Home //-->
+                        <Button Style="{StaticResource BtnStyle}" Command="{Binding OrdersCommand}" Margin="10,10,10,0">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Image Source="Images/img_order.png" Width="24" Height="24" Margin="0,0,10,0"/>
+                                <TextBlock Text="Orders" Foreground="#FFFFFF" FontSize="16" FontWeight="Bold"/>
+                            </StackPanel>
+                        </Button>
 
-                    <Menu:Btn Style="{StaticResource BtnStyle}"
-                              Command="{Binding HomeCommand}"
-                              IsChecked="True">
-
-                        <Grid>
-
-                            <Image Source="Images/img_home.png"
-                                   Style="{StaticResource Image_Style}" />
-
-                            <TextBlock Text="Home"
-                                       Style="{StaticResource Text_Style}" />
-
-                        </Grid>
-
-                    </Menu:Btn>
-
-                    <!--// Customer //-->
-
-                    <Menu:Btn Style="{StaticResource BtnStyle}"
-                              Command="{Binding CustomersCommand}">
-
-                        <Grid>
-
-                            <Image Source="Images/img_customer.png"
-                                   Style="{StaticResource Image_Style}" />
-
-                            <TextBlock Text="Customer"
-                                       Style="{StaticResource Text_Style}" />
-
-                        </Grid>
-
-                    </Menu:Btn>
-
-                    <!--// Products //-->
-
-                    <Menu:Btn Style="{StaticResource BtnStyle}"
-                              Command="{Binding ProductsCommand}">
-
-                        <Grid>
-
-                            <Image Source="Images/img_product.png"
-                                   Style="{StaticResource Image_Style}" />
-
-                            <TextBlock Text="Products"
-                                       Style="{StaticResource Text_Style}" />
-
-                        </Grid>
-
-                    </Menu:Btn>
-
-                    <!--// Orders //-->
-
-                    <Menu:Btn Style="{StaticResource BtnStyle}"
-                              Command="{Binding OrdersCommand}">
-
-                        <Grid>
-
-                            <Image Source="Images/img_order.png"
-                                   Style="{StaticResource Image_Style}" />
-
-                            <TextBlock Text="Orders"
-                                       Style="{StaticResource Text_Style}" />
-
-                        </Grid>
-
-                    </Menu:Btn>
-
-                    <!--// Transactions //-->
-
-                    <Menu:Btn Style="{StaticResource BtnStyle}"
-                              Command="{Binding TransactionsCommand}">
-
-                        <Grid>
-
-                            <Image Source="Images/img_transaction.png"
-                                   Style="{StaticResource Image_Style}" />
-
-                            <TextBlock Text="Transactions"
-                                       Style="{StaticResource Text_Style}" />
-
-                        </Grid>
-
-                    </Menu:Btn>
-
-                  
-                </StackPanel>
-
+                        <Button Style="{StaticResource BtnStyle}" Command="{Binding TransactionsCommand}" Margin="10,10,10,0">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Image Source="Images/img_transaction.png" Width="24" Height="24" Margin="0,0,10,0"/>
+                                <TextBlock Text="Transactions" Foreground="#FFFFFF" FontSize="16" FontWeight="Bold"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Border>
             </Grid>
 
             <Grid Grid.Column="1">
