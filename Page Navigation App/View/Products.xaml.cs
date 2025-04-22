@@ -12,6 +12,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Microsoft.Extensions.DependencyInjection;
+using Page_Navigation_App.ViewModel;
 
 namespace Page_Navigation_App.View
 {
@@ -23,6 +25,9 @@ namespace Page_Navigation_App.View
         public Products()
         {
             InitializeComponent();
+
+            // Resolve ProductVM from the DI container
+            DataContext = App.ServiceProvider.GetService<ProductVM>();
         }
     }
 }

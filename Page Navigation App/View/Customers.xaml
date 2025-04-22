@@ -11,35 +11,17 @@
     <Grid Margin="15" Background="#212529">
         <Border CornerRadius="20" BorderBrush="#6C757D" BorderThickness="2" Padding="20" Background="#343A40">
             <StackPanel>
-                <TextBlock Text="Customer Registration Form" FontSize="22" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center" Foreground="#F8F9FA"/>
+                <TextBlock Text="Customer Management" FontSize="22" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center" Foreground="#F8F9FA"/>
 
-                <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <Label Content="Customer ID:" Width="150" VerticalAlignment="Center" Foreground="#F8F9FA"/>
-                    <TextBlock Text="{Binding SelectedCustomer.CustomerID}" Width="300" Height="30" Background="#495057" Foreground="#F8F9FA" />
-                </StackPanel>
-
+                <!-- Customer Details Section -->
                 <StackPanel Orientation="Horizontal" Margin="0,5">
                     <Label Content="Customer Name:" Width="150" VerticalAlignment="Center" Foreground="#F8F9FA"/>
-                    <TextBox Width="300" Height="30" Text="{Binding SearchName, UpdateSourceTrigger=PropertyChanged}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
+                    <TextBox Width="300" Height="30" Text="{Binding SelectedCustomer.CustomerName, UpdateSourceTrigger=PropertyChanged}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,5">
                     <Label Content="Phone Number:" Width="150" VerticalAlignment="Center" Foreground="#F8F9FA"/>
-                    <TextBox Width="300" Height="30" Text="{Binding SearchPhone, UpdateSourceTrigger=PropertyChanged}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,10">
-                    <Button Content="Search" Width="150" Height="35" Background="#FFC107" Foreground="#212529" FontWeight="Bold" BorderBrush="#FFCA2C" Command="{Binding SearchCommand}"/>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <Label Content="Contact Person:" Width="150" VerticalAlignment="Center" Foreground="#F8F9FA"/>
-                    <TextBox Width="300" Height="30" Text="{Binding SelectedCustomer.ContactPerson, UpdateSourceTrigger=PropertyChanged}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <Label Content="Address:" Width="150" VerticalAlignment="Top" Foreground="#F8F9FA"/>
-                    <TextBox Width="300" Height="60" Text="{Binding SelectedCustomer.Address, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" AcceptsReturn="True" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
+                    <TextBox Width="300" Height="30" Text="{Binding SelectedCustomer.PhoneNumber, UpdateSourceTrigger=PropertyChanged}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,5">
@@ -48,13 +30,27 @@
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <Label Content="WhatsApp Number:" Width="150" VerticalAlignment="Center" Foreground="#F8F9FA"/>
-                    <TextBox Width="300" Height="30" Text="{Binding SelectedCustomer.WhatsAppNumber, UpdateSourceTrigger=PropertyChanged}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
+                    <Label Content="Address:" Width="150" VerticalAlignment="Top" Foreground="#F8F9FA"/>
+                    <TextBox Width="300" Height="60" Text="{Binding SelectedCustomer.Address, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" AcceptsReturn="True" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
                 </StackPanel>
 
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0" >
-                    <Button Content="Submit" Width="150" Height="35" Background="#198754" Foreground="#F8F9FA" FontWeight="Bold" BorderBrush="#157347" Command="{Binding AddOrUpdateCommand}"/>
+                <!-- Action Buttons -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+                    <Button Content="Add/Update" Width="150" Height="35" Background="#198754" Foreground="#F8F9FA" FontWeight="Bold" BorderBrush="#157347" Command="{Binding AddOrUpdateCommand}"/>
+                    <Button Content="Clear" Width="150" Height="35" Background="#DC3545" Foreground="#F8F9FA" FontWeight="Bold" BorderBrush="#C82333" Command="{Binding ClearCommand}" Margin="10,0,0,0"/>
                 </StackPanel>
+
+                <!-- Customer List Section -->
+                <ListView ItemsSource="{Binding Customers}" Margin="0,20,0,0" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Name" DisplayMemberBinding="{Binding CustomerName}" Width="150"/>
+                            <GridViewColumn Header="Phone" DisplayMemberBinding="{Binding PhoneNumber}" Width="100"/>
+                            <GridViewColumn Header="Email" DisplayMemberBinding="{Binding Email}" Width="150"/>
+                            <GridViewColumn Header="Address" DisplayMemberBinding="{Binding Address}" Width="200"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
             </StackPanel>
         </Border>
     </Grid>

@@ -30,7 +30,16 @@
                         <StackPanel>
                             <TextBlock Text="Customer Count" FontSize="18" FontWeight="Bold" Foreground="#F8F9FA" HorizontalAlignment="Center"/>
                             <TextBlock Name="CustomerCountText" Text="0" FontSize="28" FontWeight="Bold" Foreground="#198754" HorizontalAlignment="Center" Margin="5"/>
-                            <Button Content="View Per Product" Background="#198754" Foreground="#F8F9FA" BorderBrush="#157347" Margin="5"/>
+                            <Button Content="View Per Product" Background="#198754" Foreground="#F8F9FA" BorderBrush="#157347" Margin="5">
+                                <Button.Template>
+                                    <ControlTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Image Source="/Images/img_customer.png" Width="16" Height="16" Margin="0,0,5,0"/>
+                                            <ContentPresenter/>
+                                        </StackPanel>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
                         </StackPanel>
                     </Border>
 
@@ -44,7 +53,16 @@
                                 <TextBlock Text="Out: " Foreground="#DC3545" FontWeight="Bold" Margin="15,0,0,0"/>
                                 <TextBlock Name="ProductOutCountText" Text="0" FontSize="22" FontWeight="Bold" Foreground="#DC3545" Margin="5,0"/>
                             </StackPanel>
-                            <Button Content="View Per Product" Background="#0DCAF0" Foreground="#212529" BorderBrush="#0AA2C0" Margin="5"/>
+                            <Button Content="View Per Product" Background="#0DCAF0" Foreground="#212529" BorderBrush="#0AA2C0" Margin="5">
+                                <Button.Template>
+                                    <ControlTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Image Source="/Images/img_product.png" Width="16" Height="16" Margin="0,0,5,0"/>
+                                            <ContentPresenter/>
+                                        </StackPanel>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
                         </StackPanel>
                     </Border>
 
@@ -53,7 +71,16 @@
                         <StackPanel>
                             <TextBlock Text="Sales / Order Count" FontSize="18" FontWeight="Bold" Foreground="#F8F9FA" HorizontalAlignment="Center"/>
                             <TextBlock Name="SalesOrderCountText" Text="0" FontSize="28" FontWeight="Bold" Foreground="#FFC107" HorizontalAlignment="Center" Margin="5"/>
-                            <Button Content="View Per Product and Customer" Background="#FFC107" Foreground="#212529" BorderBrush="#E0A800" Margin="5"/>
+                            <Button Content="View Per Product and Customer" Background="#FFC107" Foreground="#212529" BorderBrush="#E0A800" Margin="5">
+                                <Button.Template>
+                                    <ControlTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Image Source="/Images/img_order.png" Width="16" Height="16" Margin="0,0,5,0"/>
+                                            <ContentPresenter/>
+                                        </StackPanel>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
                         </StackPanel>
                     </Border>
 

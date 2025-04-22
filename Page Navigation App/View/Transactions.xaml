@@ -3,44 +3,55 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:vm="clr-namespace:Page_Navigation_App.ViewModel"
              mc:Ignorable="d"
              d:DesignHeight="600"
-             d:DesignWidth="622"
-             Style="{StaticResource Page_Style}">
+             d:DesignWidth="622">
 
-    <UserControl.DataContext>
-        <vm:TransactionVM />
-    </UserControl.DataContext>
-    
-    <Grid Margin="15">
+    <Grid Margin="15" Background="#212529">
+        <Border CornerRadius="20" BorderBrush="#6C757D" BorderThickness="2" Padding="20" Background="#343A40">
+            <StackPanel>
+                <TextBlock Text="Transaction Management" FontSize="22" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center" Foreground="#F8F9FA"/>
 
-        <Border CornerRadius="0,20,20,0">
-            <!--<Border.Background>
-                <ImageBrush ImageSource="/Images/transaction_page.png"
-                            Stretch="None" />
-            </Border.Background>-->
+                <!-- Transaction Details Section -->
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <Label Content="Transaction Type:" Width="150" VerticalAlignment="Center" Foreground="#F8F9FA"/>
+                    <ComboBox Width="300" Height="30" ItemsSource="{Binding TransactionTypes}" SelectedItem="{Binding SelectedTransaction.TransactionType}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <Label Content="Amount:" Width="150" VerticalAlignment="Center" Foreground="#F8F9FA"/>
+                    <TextBox Width="300" Height="30" Text="{Binding SelectedTransaction.Amount, UpdateSourceTrigger=PropertyChanged}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <Label Content="Date:" Width="150" VerticalAlignment="Center" Foreground="#F8F9FA"/>
+                    <DatePicker Width="300" SelectedDate="{Binding SelectedTransaction.TransactionDate, UpdateSourceTrigger=PropertyChanged}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <Label Content="Description:" Width="150" VerticalAlignment="Top" Foreground="#F8F9FA"/>
+                    <TextBox Width="300" Height="60" Text="{Binding SelectedTransaction.Description, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" AcceptsReturn="True" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
+                </StackPanel>
+
+                <!-- Action Buttons -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+                    <Button Content="Add/Update" Width="150" Height="35" Background="#198754" Foreground="#F8F9FA" FontWeight="Bold" BorderBrush="#157347" Command="{Binding AddOrUpdateCommand}"/>
+                    <Button Content="Clear" Width="150" Height="35" Background="#DC3545" Foreground="#F8F9FA" FontWeight="Bold" BorderBrush="#C82333" Command="{Binding ClearCommand}" Margin="10,0,0,0"/>
+                </StackPanel>
+
+                <!-- Transaction List Section -->
+                <ListView ItemsSource="{Binding Transactions}" Margin="0,20,0,0" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Type" DisplayMemberBinding="{Binding TransactionType}" Width="150"/>
+                            <GridViewColumn Header="Amount" DisplayMemberBinding="{Binding Amount}" Width="100"/>
+                            <GridViewColumn Header="Date" DisplayMemberBinding="{Binding TransactionDate}" Width="150"/>
+                            <GridViewColumn Header="Description" DisplayMemberBinding="{Binding Description}" Width="200"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </StackPanel>
         </Border>
-
-        <Grid>
-
-            <!--<TextBlock Text="Payment Amount  :"
-                       Foreground="#DBDBDB"
-                       FontSize="12"
-                       HorizontalAlignment="Right"
-                       VerticalAlignment="Top"
-                       FontFamily="/Fonts/#Rubik Medium"
-                       Margin="0,300,150,0" />
-
-            <TextBlock Text="{Binding TransactionAmount, StringFormat='{}{0:C}'}"
-                       Foreground="#CED565"
-                       FontSize="12"
-                       HorizontalAlignment="Right"
-                       VerticalAlignment="Top"
-                       FontFamily="/Fonts/#Rubik Medium"
-                       Margin="0,300,82,0" />-->
-
-        </Grid>
-
     </Grid>
+
 </UserControl>

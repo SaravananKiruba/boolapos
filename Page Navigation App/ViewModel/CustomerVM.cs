@@ -15,6 +15,7 @@ namespace Page_Navigation_App.ViewModel
 
         public ICommand AddOrUpdateCommand { get; }
         public ICommand ClearCommand { get; }
+        public ICommand SearchCommand { get; }
 
         public CustomerVM(CustomerService customerService)
         {
@@ -23,6 +24,7 @@ namespace Page_Navigation_App.ViewModel
 
             AddOrUpdateCommand = new RelayCommand<object>(_ => AddOrUpdateCustomer(), _ => CanAddOrUpdateCustomer());
             ClearCommand = new RelayCommand<object>(_ => ClearForm(), _ => true);
+            SearchCommand = new RelayCommand<object>(_ => SearchCustomers(), _ => true);
         }
 
         public ObservableCollection<Customer> Customers { get; set; } = new ObservableCollection<Customer>();
@@ -133,6 +135,16 @@ namespace Page_Navigation_App.ViewModel
             // Ensure required fields are filled before allowing save
             return !string.IsNullOrEmpty(SelectedCustomer.CustomerName) &&
                    !string.IsNullOrEmpty(SelectedCustomer.PhoneNumber);
+        }
+
+        private void SearchCustomers()
+        {
+            Customers.Clear();
+            var filteredCustomers = _customerService.FilterCustomers(SearchName);
+            foreach (var customer in filteredCustomers)
+            {
+                Customers.Add(customer);
+            }
         }
     }
 }

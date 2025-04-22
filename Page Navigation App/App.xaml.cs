@@ -31,6 +31,10 @@ namespace Page_Navigation_App
 
             // Register Services
             services.AddTransient<CustomerService>();
+            services.AddTransient<ProductService>();
+            services.AddTransient<OrderService>();
+            services.AddTransient<FinanceService>();
+            services.AddTransient<SupplierService>();
 
             // Register ViewModels
             services.AddSingleton<NavigationVM>();

@@ -14,64 +14,34 @@
     </UserControl.DataContext>
 
     <Grid Margin="15" Background="#212529">
-        <!-- Main Border for Product Page -->
         <Border CornerRadius="20" BorderBrush="#6C757D" BorderThickness="2" Padding="20" Background="#343A40">
             <StackPanel>
-                <TextBlock Text="Product Orders" FontSize="22" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center" Foreground="#F8F9FA"/>
+                <TextBlock Text="Order Management" FontSize="22" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center" Foreground="#F8F9FA"/>
 
                 <!-- Search Order Section -->
                 <StackPanel Orientation="Horizontal" Margin="0,5" HorizontalAlignment="Center">
                     <Label Content="Search Order ID:" Foreground="#F8F9FA" VerticalAlignment="Center"/>
-                    <TextBox Width="200" Height="30" Name="SearchOrderTextBox" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D" Margin="5,0"/>
-                    <Button Content="Search" Width="100" Height="30" Background="#198754" Foreground="#F8F9FA" BorderBrush="#157347" Margin="5,0" />
+                    <TextBox Width="200" Height="30" Text="{Binding SearchOrderID}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D" Margin="5,0"/>
+                    <Button Content="Search" Width="100" Height="30" Background="#198754" Foreground="#F8F9FA" BorderBrush="#157347" Margin="5,0" Command="{Binding SearchCommand}"/>
                 </StackPanel>
 
-                <!-- Order Details Section -->
-                <ItemsControl Name="OrdersList" Margin="0,10">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Border CornerRadius="10" BorderBrush="#6C757D" BorderThickness="1" Background="#495057" Margin="0,5">
-                                <StackPanel Margin="10">
-                                    <!-- Order Unique ID -->
-                                    <TextBlock Text="Order ID: {Binding OrderID}" FontWeight="Bold" Foreground="#F8F9FA"/>
+                <!-- Order List Section -->
+                <ListView ItemsSource="{Binding Orders}" Margin="0,20,0,0" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Order ID" DisplayMemberBinding="{Binding OrderID}" Width="100"/>
+                            <GridViewColumn Header="Customer" DisplayMemberBinding="{Binding Customer.CustomerName}" Width="150"/>
+                            <GridViewColumn Header="Order Date" DisplayMemberBinding="{Binding OrderDate}" Width="150"/>
+                            <GridViewColumn Header="Total Amount" DisplayMemberBinding="{Binding TotalAmount}" Width="100"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
 
-                                    <!-- Product Details Section (Multiple Products) -->
-                                    <TextBlock Text="Products:" FontWeight="Bold" Foreground="#F8F9FA" Margin="0,5,0,0"/>
-                                    <ListBox ItemsSource="{Binding Products}" Margin="0,5">
-                                        <ListBox.ItemTemplate>
-                                            <DataTemplate>
-                                                <StackPanel Orientation="Horizontal" Margin="0,5">
-                                                    <!-- Product Information -->
-                                                    <TextBlock Text="{Binding ProductName}" Foreground="#F8F9FA" Width="200"/>
-                                                    <TextBlock Text="{Binding ProductQuantity}" Foreground="#F8F9FA" Width="100"/>
-                                                    <TextBlock Text="{Binding ProductPrice}" Foreground="#F8F9FA" Width="100"/>
-
-                                                    <!-- Edit Button for Product -->
-                                                    <Button Content="Edit" Width="60" Height="25" Background="#0D6EFD" Foreground="#F8F9FA" Margin="5,0" Command="{Binding EditCommand}" CommandParameter="{Binding}"/>
-                                                </StackPanel>
-                                            </DataTemplate>
-                                        </ListBox.ItemTemplate>
-                                    </ListBox>
-
-                                    <!-- Payment Details -->
-                                    <TextBlock Text="Payment Details:" FontWeight="Bold" Foreground="#F8F9FA" Margin="0,5,0,0"/>
-                                    <TextBlock Text="{Binding PaymentDetails}" Foreground="#F8F9FA"/>
-
-                                    <!-- Text Details -->
-                                    <TextBlock Text="Text Details:" FontWeight="Bold" Foreground="#F8F9FA" Margin="0,5,0,0"/>
-                                    <TextBlock Text="{Binding TextDetails}" Foreground="#F8F9FA"/>
-
-                                    <!-- Customer Details -->
-                                    <TextBlock Text="Customer Details:" FontWeight="Bold" Foreground="#F8F9FA" Margin="0,5,0,0"/>
-                                    <TextBlock Text="{Binding CustomerDetails}" Foreground="#F8F9FA"/>
-                                </StackPanel>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-
-                <!-- Add New Order Button -->
-                <Button Content="Add New Order" Width="150" Height="35" HorizontalAlignment="Center" Background="#0D6EFD" Foreground="#F8F9FA" FontWeight="Bold" BorderBrush="#0A58CA" Margin="10,0,0,0"/>
+                <!-- Action Buttons -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+                    <Button Content="Add Order" Width="150" Height="35" Background="#0D6EFD" Foreground="#F8F9FA" FontWeight="Bold" BorderBrush="#0A58CA" Command="{Binding AddOrderCommand}"/>
+                    <Button Content="Delete Order" Width="150" Height="35" Background="#DC3545" Foreground="#F8F9FA" FontWeight="Bold" BorderBrush="#C82333" Command="{Binding DeleteOrderCommand}" Margin="10,0,0,0"/>
+                </StackPanel>
             </StackPanel>
         </Border>
     </Grid>
