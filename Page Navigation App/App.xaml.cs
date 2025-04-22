@@ -41,7 +41,7 @@ namespace Page_Navigation_App
             services.AddTransient<HomeVM>();
             services.AddTransient<CustomerVM>();
             services.AddTransient<ProductVM>();
-            services.AddTransient<OrderVM>();
+            services.AddTransient<OrderVM>(provider => new OrderVM(provider.GetRequiredService<OrderService>()));
             services.AddTransient<TransactionVM>();
 
             // Register Views

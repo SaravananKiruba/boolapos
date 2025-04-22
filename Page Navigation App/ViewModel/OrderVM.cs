@@ -18,6 +18,9 @@ namespace Page_Navigation_App.ViewModel
         public ICommand SearchByDateCommand { get; }
         public ICommand SearchByCustomerCommand { get; }
 
+        // Add a parameterless constructor to allow XAML instantiation
+        public OrderVM() { }
+
         public OrderVM(OrderService orderService)
         {
             _orderService = orderService;
