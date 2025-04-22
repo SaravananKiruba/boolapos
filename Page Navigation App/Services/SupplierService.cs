@@ -6,42 +6,46 @@ using Page_Navigation_App.Model;
 
 namespace Page_Navigation_App.Services
 {
-    public class SupplierService
+    public class VendorService
     {
-        private readonly AppDbContext _dbContext;
+        private readonly AppDbContext _context;
 
-        public SupplierService(AppDbContext dbContext)
+        public VendorService(AppDbContext context)
         {
-            _dbContext = dbContext;
+            _context = context;
         }
 
-        public List<Supplier> GetAllSuppliers()
+        public IEnumerable<Vendor> GetAllVendors()
         {
-            return _dbContext.Suppliers.Include(s => s.Products).ToList();
+            return _context.Vendors.ToList();
         }
 
-        public void AddSupplier(Supplier supplier)
+        public void AddVendor(Vendor vendor)
         {
-            _dbContext.Suppliers.Add(supplier);
-            _dbContext.SaveChanges();
+            _context.Vendors.Add(vendor);
+            _context.SaveChanges();
         }
 
-        public void UpdateSupplier(Supplier supplier)
+        public void UpdateVendor(Vendor vendor)
         {
-            _dbContext.Suppliers.Update(supplier);
-            _dbContext.SaveChanges();
+            _context.Vendors.Update(vendor);
+            _context.SaveChanges();
         }
 
-        public void DeleteSupplier(Supplier supplier)
+        public void DeleteVendor(int vendorId)
         {
-            _dbContext.Suppliers.Remove(supplier);
-            _dbContext.SaveChanges();
+            var vendor = _context.Vendors.Find(vendorId);
+            if (vendor != null)
+            {
+                _context.Vendors.Remove(vendor);
+                _context.SaveChanges();
+            }
         }
 
-        public List<Supplier> FilterSuppliers(string name)
+        public IEnumerable<Vendor> SearchVendors(string searchTerm)
         {
-            return _dbContext.Suppliers
-                .Where(s => EF.Functions.Like(s.SupplierName, $"%{name}%"))
+            return _context.Vendors
+                .Where(v => v.VendorName.Contains(searchTerm) || v.PhoneNumber.Contains(searchTerm))
                 .ToList();
         }
     }

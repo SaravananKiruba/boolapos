@@ -17,7 +17,7 @@ namespace Page_Navigation_App.Services
 
         public List<Product> GetAllProducts()
         {
-            return _dbContext.Products.Include(p => p.Category).Include(p => p.Supplier).ToList();
+            return _dbContext.Products.Include(p => p.Category).Include(p => p.ProductName).ToList();
         }
 
         public void AddProduct(Product product)

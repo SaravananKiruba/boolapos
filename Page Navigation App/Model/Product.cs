@@ -33,7 +33,6 @@ namespace Page_Navigation_App.Model
         // Navigation properties
         public Category Category { get; set; }
         public Subcategory Subcategory { get; set; }
-        public Supplier Supplier { get; set; }
         public ICollection<Stock> Stocks { get; set; }
         public ICollection<OrderDetail> OrderDetails { get; set; }
     }

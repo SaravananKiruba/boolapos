@@ -8,34 +8,34 @@ using System.Collections.Generic;
 
 namespace Page_Navigation_App.ViewModel
 {
-    public class SupplierVM : ViewModelBase
+    public class VendorVM : ViewModelBase
     {
-        private readonly SupplierService _supplierService;
+        private readonly VendorService _vendorService;
 
         public ICommand AddOrUpdateCommand { get; }
         public ICommand ClearCommand { get; }
         public ICommand SearchCommand { get; }
 
-        public SupplierVM(SupplierService supplierService)
+        public VendorVM(VendorService vendorService)
         {
-            _supplierService = supplierService;
-            LoadSuppliers();
+            _vendorService = vendorService;
+            LoadVendors();
 
-            AddOrUpdateCommand = new RelayCommand<object>(_ => AddOrUpdateSupplier(), _ => CanAddOrUpdateSupplier());
+            AddOrUpdateCommand = new RelayCommand<object>(_ => AddOrUpdateVendor(), _ => CanAddOrUpdateVendor());
             ClearCommand = new RelayCommand<object>(_ => ClearForm(), _ => true);
-            SearchCommand = new RelayCommand<object>(_ => SearchSuppliers(), _ => true);
+            SearchCommand = new RelayCommand<object>(_ => SearchVendors(), _ => true);
         }
 
-        public ObservableCollection<Supplier> Suppliers { get; set; } = new ObservableCollection<Supplier>();
+        public ObservableCollection<Vendor> Vendors { get; set; } = new ObservableCollection<Vendor>();
 
-        private Supplier _selectedSupplier = new Supplier();
+        private Vendor _selectedVendor = new Vendor();
 
-        public Supplier SelectedSupplier
+        public Vendor SelectedVendor
         {
-            get => _selectedSupplier;
+            get => _selectedVendor;
             set
             {
-                _selectedSupplier = value;
+                _selectedVendor = value;
                 OnPropertyChanged();
             }
         }
@@ -48,70 +48,70 @@ namespace Page_Navigation_App.ViewModel
             {
                 _searchName = value;
                 OnPropertyChanged();
-                AutoSelectSupplier();
+                AutoSelectVendor();
             }
         }
 
-        private void LoadSuppliers()
+        private void LoadVendors()
         {
-            Suppliers.Clear();
-            foreach (var supplier in _supplierService.GetAllSuppliers())
+            Vendors.Clear();
+            foreach (var vendor in _vendorService.GetAllVendors())
             {
-                Suppliers.Add(supplier);
+                Vendors.Add(vendor);
             }
         }
 
-        private void AutoSelectSupplier()
+        private void AutoSelectVendor()
         {
-            var matchedSupplier = Suppliers.FirstOrDefault(s =>
-                !string.IsNullOrEmpty(SearchName) && s.SupplierName.Contains(SearchName));
+            var matchedVendor = Vendors.FirstOrDefault(v =>
+                !string.IsNullOrEmpty(SearchName) && v.VendorName.Contains(SearchName));
 
-            if (matchedSupplier != null)
+            if (matchedVendor != null)
             {
-                SelectedSupplier = matchedSupplier;
+                SelectedVendor = matchedVendor;
             }
             else
             {
-                SelectedSupplier = new Supplier
+                SelectedVendor = new Vendor
                 {
-                    SupplierName = SearchName
+                    VendorName = SearchName
                 };
             }
         }
 
-        private void AddOrUpdateSupplier()
+        private void AddOrUpdateVendor()
         {
-            if (SelectedSupplier.SupplierID > 0)
+            if (SelectedVendor.VendorID > 0)
             {
-                _supplierService.UpdateSupplier(SelectedSupplier);
+                _vendorService.UpdateVendor(SelectedVendor);
             }
             else
             {
-                _supplierService.AddSupplier(SelectedSupplier);
+                _vendorService.AddVendor(SelectedVendor);
             }
 
-            LoadSuppliers();
+            LoadVendors();
             ClearForm();
         }
 
         private void ClearForm()
         {
-            SelectedSupplier = new Supplier();
+            SelectedVendor = new Vendor();
             SearchName = string.Empty;
         }
 
-        private bool CanAddOrUpdateSupplier()
+        private bool CanAddOrUpdateVendor()
         {
-            return !string.IsNullOrEmpty(SelectedSupplier.SupplierName);
+            return !string.IsNullOrEmpty(SelectedVendor.VendorName);
         }
 
-        private void SearchSuppliers()
+        private void SearchVendors()
         {
-            Suppliers.Clear();
-            var filteredSuppliers = _supplierService.FilterSuppliers(SearchName);
-            foreach (var supplier in filteredSuppliers)
+            Vendors.Clear();
+            var filteredVendors = _vendorService.FilterVendors(SearchName);
+            foreach (var vendor in filteredVendors)
             {
-                Suppliers.Add(supplier);
+                Vendors.Add(vendor);
             }
         }
     }

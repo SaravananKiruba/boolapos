@@ -23,10 +23,11 @@ namespace Page_Navigation_App.ViewModel
         public ICommand ProductsCommand { get; }
         public ICommand OrdersCommand { get; }
         public ICommand TransactionsCommand { get; }
+        public ICommand VendorsCommand { get; }
 
         private readonly CustomerService _customerService;
 
-        public NavigationVM(HomeVM homeVM, CustomerVM customerVM, ProductVM productVM, OrderVM orderVM, TransactionVM transactionVM,
+        public NavigationVM(HomeVM homeVM, CustomerVM customerVM, ProductVM productVM, OrderVM orderVM, TransactionVM transactionVM, VendorVM vendorVM,
                              CustomerService customerService)
         {
             _customerService = customerService;
@@ -36,6 +37,7 @@ namespace Page_Navigation_App.ViewModel
             ProductsCommand = new RelayCommand<object>(_ => NavigateTo(productVM));
             OrdersCommand = new RelayCommand<object>(_ => NavigateTo(orderVM));
             TransactionsCommand = new RelayCommand<object>(_ => NavigateTo(transactionVM));
+            VendorsCommand = new RelayCommand<object>(_ => NavigateTo(vendorVM));
 
             // Startup Page
             CurrentView = homeVM;

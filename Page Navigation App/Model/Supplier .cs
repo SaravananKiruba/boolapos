@@ -4,15 +4,16 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Page_Navigation_App.Model
 {
-    public class Supplier
+    // Rename Supplier to Vendor and update fields for consistency
+    public class Vendor
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int SupplierID { get; set; }
+        public int VendorID { get; set; }
 
         [Required]
         [StringLength(100)]
-        public string SupplierName { get; set; }
+        public string VendorName { get; set; }
 
         [StringLength(15)]
         public string PhoneNumber { get; set; }

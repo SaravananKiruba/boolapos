@@ -12,9 +12,13 @@ namespace Page_Navigation_App.Data
         public DbSet<Product> Products { get; set; }
         public DbSet<Stock> Stocks { get; set; }
         public DbSet<Subcategory> Subcategories { get; set; }
-        public DbSet<Supplier> Suppliers { get; set; }
         public DbSet<Finance> Finances { get; set; }
         public DbSet<Category> Categories { get; set; }
+
+        // Add DbSet properties for Phase 1 and Phase 2 modules
+        public DbSet<RepairJob> RepairJobs { get; set; }
+        public DbSet<Vendor> Vendors { get; set; }
+
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }        
         protected override void OnModelCreating(ModelBuilder modelBuilder)
