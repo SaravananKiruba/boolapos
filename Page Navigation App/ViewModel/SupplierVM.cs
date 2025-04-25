@@ -108,7 +108,7 @@ namespace Page_Navigation_App.ViewModel
         private void SearchVendors()
         {
             Vendors.Clear();
-            var filteredVendors = _vendorService.FilterVendors(SearchName);
+            var filteredVendors = _vendorService.SearchVendors(SearchName);
             foreach (var vendor in filteredVendors)
             {
                 Vendors.Add(vendor);
