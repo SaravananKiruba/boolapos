@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Page_Navigation_App.Migrations
 {
-    public partial class Init : Migration
+    public partial class INIIT : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -41,12 +41,32 @@ namespace Page_Navigation_App.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Suppliers",
+                name: "RepairJobs",
                 columns: table => new
                 {
-                    SupplierID = table.Column<int>(type: "INTEGER", nullable: false)
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    SupplierName = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    ItemDetails = table.Column<string>(type: "TEXT", nullable: true),
+                    StartDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    WorkType = table.Column<string>(type: "TEXT", nullable: true),
+                    EstimatedAmount = table.Column<decimal>(type: "TEXT", nullable: false),
+                    FinalAmount = table.Column<decimal>(type: "TEXT", nullable: false),
+                    Status = table.Column<string>(type: "TEXT", nullable: true),
+                    CustomerId = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RepairJobs", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Vendors",
+                columns: table => new
+                {
+                    VendorID = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    VendorName = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     PhoneNumber = table.Column<string>(type: "TEXT", maxLength: 15, nullable: true),
                     ContactPerson = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
                     Address = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
@@ -54,7 +74,7 @@ namespace Page_Navigation_App.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Suppliers", x => x.SupplierID);
+                    table.PrimaryKey("PK_Vendors", x => x.VendorID);
                 });
 
             migrationBuilder.CreateTable(
@@ -109,7 +129,8 @@ namespace Page_Navigation_App.Migrations
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     CategoryID = table.Column<int>(type: "INTEGER", nullable: false),
                     SubcategoryID = table.Column<int>(type: "INTEGER", nullable: true),
-                    SupplierID = table.Column<int>(type: "INTEGER", nullable: false)
+                    SupplierID = table.Column<int>(type: "INTEGER", nullable: false),
+                    VendorID = table.Column<int>(type: "INTEGER", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -126,11 +147,10 @@ namespace Page_Navigation_App.Migrations
                         principalTable: "Subcategories",
                         principalColumn: "SubcategoryID");
                     table.ForeignKey(
-                        name: "FK_Products_Suppliers_SupplierID",
-                        column: x => x.SupplierID,
-                        principalTable: "Suppliers",
-                        principalColumn: "SupplierID",
-                        onDelete: ReferentialAction.Cascade);
+                        name: "FK_Products_Vendors_VendorID",
+                        column: x => x.VendorID,
+                        principalTable: "Vendors",
+                        principalColumn: "VendorID");
                 });
 
             migrationBuilder.CreateTable(
@@ -234,9 +254,9 @@ namespace Page_Navigation_App.Migrations
                 column: "SubcategoryID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Products_SupplierID",
+                name: "IX_Products_VendorID",
                 table: "Products",
-                column: "SupplierID");
+                column: "VendorID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Stocks_ProductID",
@@ -258,6 +278,9 @@ namespace Page_Navigation_App.Migrations
                 name: "OrderDetails");
 
             migrationBuilder.DropTable(
+                name: "RepairJobs");
+
+            migrationBuilder.DropTable(
                 name: "Stocks");
 
             migrationBuilder.DropTable(
@@ -273,7 +296,7 @@ namespace Page_Navigation_App.Migrations
                 name: "Subcategories");
 
             migrationBuilder.DropTable(
-                name: "Suppliers");
+                name: "Vendors");
 
             migrationBuilder.DropTable(
                 name: "Categories");

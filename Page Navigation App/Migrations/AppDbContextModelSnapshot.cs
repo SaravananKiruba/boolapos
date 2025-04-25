@@ -176,15 +176,53 @@ namespace Page_Navigation_App.Migrations
                     b.Property<int>("SupplierID")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("VendorID")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("ProductID");
 
                     b.HasIndex("CategoryID");
 
                     b.HasIndex("SubcategoryID");
 
-                    b.HasIndex("SupplierID");
+                    b.HasIndex("VendorID");
 
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("Page_Navigation_App.Model.RepairJob", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("CustomerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("EstimatedAmount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("FinalAmount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ItemDetails")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Status")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("WorkType")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RepairJobs");
                 });
 
             modelBuilder.Entity("Page_Navigation_App.Model.Stock", b =>
@@ -227,9 +265,9 @@ namespace Page_Navigation_App.Migrations
                     b.ToTable("Subcategories");
                 });
 
-            modelBuilder.Entity("Page_Navigation_App.Model.Supplier", b =>
+            modelBuilder.Entity("Page_Navigation_App.Model.Vendor", b =>
                 {
-                    b.Property<int>("SupplierID")
+                    b.Property<int>("VendorID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
@@ -249,14 +287,14 @@ namespace Page_Navigation_App.Migrations
                         .HasMaxLength(15)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("SupplierName")
+                    b.Property<string>("VendorName")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
-                    b.HasKey("SupplierID");
+                    b.HasKey("VendorID");
 
-                    b.ToTable("Suppliers");
+                    b.ToTable("Vendors");
                 });
 
             modelBuilder.Entity("Page_Navigation_App.Model.Finance", b =>
@@ -310,17 +348,13 @@ namespace Page_Navigation_App.Migrations
                         .WithMany("Products")
                         .HasForeignKey("SubcategoryID");
 
-                    b.HasOne("Page_Navigation_App.Model.Supplier", "Supplier")
+                    b.HasOne("Page_Navigation_App.Model.Vendor", null)
                         .WithMany("Products")
-                        .HasForeignKey("SupplierID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("VendorID");
 
                     b.Navigation("Category");
 
                     b.Navigation("Subcategory");
-
-                    b.Navigation("Supplier");
                 });
 
             modelBuilder.Entity("Page_Navigation_App.Model.Stock", b =>
@@ -374,7 +408,7 @@ namespace Page_Navigation_App.Migrations
                     b.Navigation("Products");
                 });
 
-            modelBuilder.Entity("Page_Navigation_App.Model.Supplier", b =>
+            modelBuilder.Entity("Page_Navigation_App.Model.Vendor", b =>
                 {
                     b.Navigation("Products");
                 });
