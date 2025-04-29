@@ -1,23 +1,34 @@
 ﻿<Application x:Class="Page_Navigation_App.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
     <Application.Resources>
-
         <ResourceDictionary>
-
             <ResourceDictionary.MergedDictionaries>
-
+                <materialDesign:BundledTheme BaseTheme="Dark" PrimaryColor="Amber" SecondaryColor="Blue" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
                 <ResourceDictionary Source="Styles/Page.xaml" />
                 <ResourceDictionary Source="Styles/Image.xaml" />
                 <ResourceDictionary Source="Styles/Text.xaml" />
                 <ResourceDictionary Source="Styles/Button.xaml" />
                 <ResourceDictionary Source="Utilities/DataTemplate.xaml" />
-
             </ResourceDictionary.MergedDictionaries>
-            
-        </ResourceDictionary>
 
+            <!-- Custom Colors -->
+            <Color x:Key="PrimaryColor">#FFD700</Color>
+            <Color x:Key="PrimaryLightColor">#FFEB3B</Color>
+            <Color x:Key="BackgroundColor">#2D2F33</Color>
+            <Color x:Key="SurfaceColor">#3A3D42</Color>
+            <Color x:Key="TextPrimaryColor">#FFFFFF</Color>
+            <Color x:Key="TextSecondaryColor">#DBDBDB</Color>
+            
+            <!-- Brushes -->
+            <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
+            <SolidColorBrush x:Key="PrimaryLightBrush" Color="{StaticResource PrimaryLightColor}"/>
+            <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
+            <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}"/>
+            <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}"/>
+            <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
+        </ResourceDictionary>
     </Application.Resources>
-    
 </Application>

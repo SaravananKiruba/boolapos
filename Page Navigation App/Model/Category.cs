@@ -11,13 +11,22 @@ namespace Page_Navigation_App.Model
         public int CategoryID { get; set; }
 
         [Required]
-        [StringLength(100)]
+        [StringLength(50)]
         public string CategoryName { get; set; }
 
-        // Navigation property for Products (One-to-Many relationship)
-        public ICollection<Product> Products { get; set; }
+        [StringLength(200)]
+        public string Description { get; set; }
 
-        // Navigation property for Subcategories (One-to-Many relationship)
+        [Column(TypeName = "decimal(5,2)")]
+        public decimal DefaultMakingCharges { get; set; }
+
+        [Column(TypeName = "decimal(5,2)")]
+        public decimal DefaultWastage { get; set; }
+
+        public bool IsActive { get; set; }
+
+        // Navigation Properties
+        public ICollection<Product> Products { get; set; }
         public ICollection<Subcategory> Subcategories { get; set; }
     }
 }

@@ -11,13 +11,25 @@ namespace Page_Navigation_App.Model
         public int SubcategoryID { get; set; }
 
         [Required]
-        [StringLength(100)]
+        [StringLength(50)]
         public string SubcategoryName { get; set; }
 
+        [StringLength(200)]
+        public string Description { get; set; }
+
+        [Required]
         [ForeignKey("Category")]
         public int CategoryID { get; set; }
 
-        // Navigation properties
+        [Column(TypeName = "decimal(5,2)")]
+        public decimal? SpecialMakingCharges { get; set; }
+
+        [Column(TypeName = "decimal(5,2)")]
+        public decimal? SpecialWastage { get; set; }
+
+        public bool IsActive { get; set; }
+
+        // Navigation Properties
         public Category Category { get; set; }
         public ICollection<Product> Products { get; set; }
     }

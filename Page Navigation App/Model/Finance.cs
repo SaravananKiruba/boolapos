@@ -6,27 +6,18 @@ namespace Page_Navigation_App.Model
 {
     public class Finance
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int FinanceID { get; set; }
-
-        [Required]
-        public DateTime TransactionDate { get; set; }
-
-        [Required]
-        [StringLength(50)]
-        public string TransactionType { get; set; } // e.g., Income, Expense
-
-        [Column(TypeName = "decimal(18,2)")]
-        public decimal Amount { get; set; }
-
-        [StringLength(500)]
-        public string Description { get; set; }
-
-        [ForeignKey("Order")]
-        public int? OrderID { get; set; } // Optional, if related to an order
-
-        // Navigation property
-        public Order Order { get; set; }
+        public int Id { get; set; }
+        public int CustomerId { get; set; }
+        public string OrderReference { get; set; }
+        public decimal TotalAmount { get; set; }
+        public decimal RemainingAmount { get; set; }
+        public decimal InterestRate { get; set; }
+        public int NumberOfInstallments { get; set; }
+        public decimal InstallmentAmount { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime NextInstallmentDate { get; set; }
+        public DateTime? LastPaymentDate { get; set; }
+        public string Status { get; set; }
+        public virtual Customer Customer { get; set; }
     }
 }

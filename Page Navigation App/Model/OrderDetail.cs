@@ -9,19 +9,65 @@ namespace Page_Navigation_App.Model
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int OrderDetailID { get; set; }
 
+        [Required]
         [ForeignKey("Order")]
         public int OrderID { get; set; }
 
+        [Required]
         [ForeignKey("Product")]
         public int ProductID { get; set; }
 
         [Required]
-        public int Quantity { get; set; }
+        [Column(TypeName = "decimal(10,3)")]
+        public decimal GrossWeight { get; set; }
+
+        [Required]
+        [Column(TypeName = "decimal(10,3)")]
+        public decimal NetWeight { get; set; }
+
+        [Required]
+        [Column(TypeName = "decimal(5,2)")]
+        public decimal WastagePercentage { get; set; }
+
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal MakingCharges { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
-        public decimal UnitPrice { get; set; }
+        public decimal StoneValue { get; set; }
 
-        // Navigation properties
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal MetalRate { get; set; }
+
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal BaseAmount { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal DiscountAmount { get; set; }
+
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal TaxableAmount { get; set; }
+
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal CGSTAmount { get; set; }
+
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal SGSTAmount { get; set; }
+
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal IGSTAmount { get; set; }
+
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal FinalAmount { get; set; }
+
+        // Navigation Properties
         public Order Order { get; set; }
         public Product Product { get; set; }
     }
