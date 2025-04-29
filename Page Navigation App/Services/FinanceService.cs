@@ -19,6 +19,72 @@ namespace Page_Navigation_App.Services
             _logService = logService;
         }
 
+        public async Task<decimal> GetCustomerDues(int customerId)
+        {
+            return await _context.Finances
+                .Where(f => f.CustomerId == customerId && f.Status == "Active")
+                .SumAsync(f => f.RemainingAmount);
+        }
+
+        public IEnumerable<Finance> GetAllTransactions()
+        {
+            return _context.Finances
+                .OrderByDescending(f => f.TransactionDate)
+                .ToList();
+        }
+
+        public bool UpdateTransaction(Finance transaction)
+        {
+            try
+            {
+                _context.Finances.Update(transaction);
+                _context.SaveChanges();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public bool AddTransaction(Finance transaction)
+        {
+            try
+            {
+                transaction.TransactionDate = DateTime.Now;
+                _context.Finances.Add(transaction);
+                _context.SaveChanges();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public IEnumerable<Finance> FilterTransactionsByType(string type)
+        {
+            return _context.Finances
+                .Where(f => f.TransactionType == type)
+                .OrderByDescending(f => f.TransactionDate)
+                .ToList();
+        }
+
+        public IEnumerable<Finance> FilterTransactionsByDate(DateTime startDate, DateTime endDate)
+        {
+            return _context.Finances
+                .Where(f => f.TransactionDate >= startDate && f.TransactionDate <= endDate)
+                .OrderByDescending(f => f.TransactionDate)
+                .ToList();
+        }
+
+        public async Task<Finance> AddFinanceRecord(Finance finance)
+        {
+            await _context.Finances.AddAsync(finance);
+            await _context.SaveChangesAsync();
+            return finance;
+        }
+
         public async Task<Finance> CreateEMIPlan(
             decimal totalAmount,
             int numberOfInstallments,
