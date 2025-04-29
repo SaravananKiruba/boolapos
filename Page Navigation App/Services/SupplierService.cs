@@ -29,12 +29,16 @@ namespace Page_Navigation_App.Services
 
         public async Task<bool> UpdateSupplier(Supplier supplier)
         {
-            var existingSupplier = await _context.Suppliers.FindAsync(supplier.SupplierID);
-            if (existingSupplier == null) return false;
-
-            _context.Entry(existingSupplier).CurrentValues.SetValues(supplier);
-            await _context.SaveChangesAsync();
-            return true;
+            try
+            {
+                _context.Suppliers.Update(supplier);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public async Task<Supplier> GetSupplierWithHistory(int supplierId)
@@ -45,18 +49,27 @@ namespace Page_Navigation_App.Services
                 .FirstOrDefaultAsync(s => s.SupplierID == supplierId);
         }
 
+        public async Task<IEnumerable<Supplier>> GetAllSuppliers()
+        {
+            return await _context.Suppliers
+                .Include(s => s.Products)
+                .Include(s => s.Payments)
+                .ToListAsync();
+        }
+
         public async Task<IEnumerable<Supplier>> SearchSuppliers(
             string searchTerm = null,
             bool? isActive = null)
         {
             var query = _context.Suppliers.AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(searchTerm))
+            if (!string.IsNullOrEmpty(searchTerm))
             {
                 query = query.Where(s =>
                     s.SupplierName.Contains(searchTerm) ||
                     s.ContactNumber.Contains(searchTerm) ||
-                    s.GSTNumber.Contains(searchTerm));
+                    s.ContactPerson.Contains(searchTerm) ||
+                    s.Email.Contains(searchTerm));
             }
 
             if (isActive.HasValue)
@@ -64,7 +77,10 @@ namespace Page_Navigation_App.Services
                 query = query.Where(s => s.IsActive == isActive.Value);
             }
 
-            return await query.ToListAsync();
+            return await query
+                .Include(s => s.Products)
+                .Include(s => s.Payments)
+                .ToListAsync();
         }
 
         public async Task<bool> RecordPurchase(
@@ -77,24 +93,19 @@ namespace Page_Navigation_App.Services
             var supplier = await _context.Suppliers.FindAsync(supplierId);
             if (supplier == null) return false;
 
-            // Update supplier balance
             supplier.CurrentBalance += amount;
-
-            // Record transaction
-            var transaction = new Finance
+            
+            var finance = new Finance
             {
-                TransactionDate = DateTime.Now,
-                Amount = amount,
-                TransactionType = "Expense",
-                PaymentMode = paymentMode,
-                Description = description,
-                Category = "Purchase",
-                ReferenceNumber = referenceNumber,
-                // Link to supplier instead of customer
-                CustomerID = null
+                CustomerId = supplierId,
+                TotalAmount = amount,
+                RemainingAmount = amount,
+                Status = "Purchase",
+                OrderReference = referenceNumber,
+                StartDate = DateTime.Now
             };
 
-            await _financeService.AddTransaction(transaction);
+            await _financeService.AddFinanceRecord(finance);
             await _context.SaveChangesAsync();
             return true;
         }
@@ -108,60 +119,20 @@ namespace Page_Navigation_App.Services
             var supplier = await _context.Suppliers.FindAsync(supplierId);
             if (supplier == null) return false;
 
-            // Update supplier balance
             supplier.CurrentBalance -= amount;
 
-            // Record transaction
-            var transaction = new Finance
+            var finance = new Finance
             {
-                TransactionDate = DateTime.Now,
-                Amount = amount,
-                TransactionType = "Expense",
-                PaymentMode = paymentMode,
-                Description = $"Payment to supplier: {supplier.SupplierName}",
-                Category = "Supplier Payment",
-                ReferenceNumber = referenceNumber,
-                // Link to supplier instead of customer
-                CustomerID = null
+                CustomerId = supplierId,
+                TotalAmount = amount,
+                RemainingAmount = 0,
+                Status = "Payment",
+                OrderReference = referenceNumber,
+                StartDate = DateTime.Now,
+                LastPaymentDate = DateTime.Now
             };
 
-            await _financeService.AddTransaction(transaction);
-            await _context.SaveChangesAsync();
-            return true;
-        }
-
-        public async Task<IEnumerable<Supplier>> GetSuppliersByDueAmount(decimal minAmount)
-        {
-            return await _context.Suppliers
-                .Where(s => s.CurrentBalance >= minAmount)
-                .OrderByDescending(s => s.CurrentBalance)
-                .ToListAsync();
-        }
-
-        public async Task<Dictionary<string, decimal>> GetSupplierPaymentSummary(
-            DateTime startDate,
-            DateTime endDate)
-        {
-            var transactions = await _context.Finances
-                .Where(f => f.TransactionDate >= startDate &&
-                           f.TransactionDate <= endDate &&
-                           (f.Category == "Purchase" || f.Category == "Supplier Payment"))
-                .ToListAsync();
-
-            return new Dictionary<string, decimal>
-            {
-                { "TotalPurchases", transactions.Where(t => t.Category == "Purchase").Sum(t => t.Amount) },
-                { "TotalPayments", transactions.Where(t => t.Category == "Supplier Payment").Sum(t => t.Amount) },
-                { "OutstandingBalance", await _context.Suppliers.SumAsync(s => s.CurrentBalance) }
-            };
-        }
-
-        public async Task<bool> DeactivateSupplier(int supplierId)
-        {
-            var supplier = await _context.Suppliers.FindAsync(supplierId);
-            if (supplier == null) return false;
-
-            supplier.IsActive = false;
+            await _financeService.AddFinanceRecord(finance);
             await _context.SaveChangesAsync();
             return true;
         }

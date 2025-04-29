@@ -25,42 +25,55 @@ namespace Page_Navigation_App
 
         private void ConfigureServices(IServiceCollection services)
         {
-            // Register DbContext with connection string for SQLite
+            // Register DbContext with SQLite
             services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlite("Data Source=StockInventory.db"));
+                options.UseSqlite("Data Source=StockInventory.db"),
+                ServiceLifetime.Scoped); // Use Scoped for DbContext
 
-            // Register Services
-            services.AddTransient<CustomerService>();
-            services.AddTransient<ProductService>();
-            services.AddTransient<OrderService>();
-            services.AddTransient<FinanceService>();
-            services.AddTransient<VendorService>();
+            // Core Services - Scoped lifetime
+            services.AddScoped<LogService>();
+            services.AddScoped<SecurityService>();
+            services.AddScoped<ConfigurationService>();
+            services.AddScoped<NotificationService>();
+            services.AddScoped<ReportService>();
 
-            services.AddTransient<VendorVM>();
+            // Business Services - Scoped lifetime
+            services.AddScoped<CustomerService>();
+            services.AddScoped<ProductService>();
+            services.AddScoped<OrderService>();
+            services.AddScoped<FinanceService>();
+            services.AddScoped<SupplierService>();
+            services.AddScoped<RateMasterService>();
+            services.AddScoped<RepairJobService>();
+            services.AddScoped<StockService>();
+            services.AddScoped<CategoryService>();
+            services.AddScoped<UserService>();
 
-
-            // Register ViewModels
+            // ViewModels - Transient lifetime except for NavigationVM
             services.AddSingleton<NavigationVM>();
             services.AddTransient<HomeVM>();
             services.AddTransient<CustomerVM>();
             services.AddTransient<ProductVM>();
-            services.AddTransient<OrderVM>(provider => new OrderVM(provider.GetRequiredService<OrderService>()));
+            services.AddTransient<OrderVM>();
             services.AddTransient<TransactionVM>();
+            services.AddTransient<SupplierVM>();
+            services.AddTransient<RateMasterVM>();
+            services.AddTransient<RepairJobVM>();
+            services.AddTransient<StockVM>();
+            services.AddTransient<CategoryVM>();
+            services.AddTransient<UserVM>();
+            services.AddTransient<ReportVM>();
 
-            // Register Views
-            services.AddTransient<Customers>();
-
-            // Register MainWindow
-            services.AddTransient<MainWindow>();
+            // Register MainWindow as Singleton
+            services.AddSingleton<MainWindow>();
         }
 
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
 
-            // Resolve MainWindow from the ServiceProvider and show it
-            var mainWindow = ServiceProvider.GetService<MainWindow>();
-            mainWindow?.Show();
+            var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
+            mainWindow.Show();
         }
     }
 }

@@ -75,6 +75,22 @@
                             </RadioButton>
 
                             <RadioButton Style="{DynamicResource NavButton}" 
+                                       Command="{Binding RateMasterCommand}">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="ChartLineVariant" Width="22" Height="22" Margin="10 0"/>
+                                    <TextBlock Text="Rate Master" Margin="10 0"/>
+                                </StackPanel>
+                            </RadioButton>
+
+                            <RadioButton Style="{DynamicResource NavButton}" 
+                                       Command="{Binding RepairJobsCommand}">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Tools" Width="22" Height="22" Margin="10 0"/>
+                                    <TextBlock Text="Repair Jobs" Margin="10 0"/>
+                                </StackPanel>
+                            </RadioButton>
+
+                            <RadioButton Style="{DynamicResource NavButton}" 
                                        Command="{Binding TransactionsCommand}">
                                 <StackPanel Orientation="Horizontal">
                                     <materialDesign:PackIcon Kind="CashRegister" Width="22" Height="22" Margin="10 0"/>

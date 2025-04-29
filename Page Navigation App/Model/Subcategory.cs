@@ -22,12 +22,18 @@ namespace Page_Navigation_App.Model
         public int CategoryID { get; set; }
 
         [Column(TypeName = "decimal(5,2)")]
+        [Range(0, 100)]
         public decimal? SpecialMakingCharges { get; set; }
 
         [Column(TypeName = "decimal(5,2)")]
+        [Range(0, 100)]
         public decimal? SpecialWastage { get; set; }
 
+        [Required]
         public bool IsActive { get; set; }
+
+        [StringLength(50)]
+        public string DisplayOrder { get; set; }
 
         // Navigation Properties
         public Category Category { get; set; }

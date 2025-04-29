@@ -1,13 +1,15 @@
-﻿using Page_Navigation_App.Services; // For CustomerService and other services
-using Page_Navigation_App.Utilities; // For RelayCommand
-using Page_Navigation_App.View; // For other view models like HomeVM, ProductVM
-using System.Windows.Input;
+﻿using System.Windows.Input;
+using Page_Navigation_App.Utilities;
+using Page_Navigation_App.Model;
+using Page_Navigation_App.Services;
 
 namespace Page_Navigation_App.ViewModel
 {
     public class NavigationVM : ViewModelBase
     {
+        private readonly UserService _userService;
         private object _currentView;
+        
         public object CurrentView
         {
             get => _currentView;
@@ -18,34 +20,64 @@ namespace Page_Navigation_App.ViewModel
             }
         }
 
-        public ICommand HomeCommand { get; }
-        public ICommand CustomersCommand { get; }
-        public ICommand ProductsCommand { get; }
-        public ICommand OrdersCommand { get; }
-        public ICommand TransactionsCommand { get; }
-        public ICommand VendorsCommand { get; }
+        // Commands
+        public ICommand HomeCommand { get; set; }
+        public ICommand CustomersCommand { get; set; }
+        public ICommand ProductsCommand { get; set; }
+        public ICommand OrdersCommand { get; set; }
+        public ICommand TransactionsCommand { get; set; }
+        public ICommand SuppliersCommand { get; set; }
+        public ICommand RateMasterCommand { get; set; }
+        public ICommand RepairJobsCommand { get; set; }
+        public ICommand StockCommand { get; set; }
+        public ICommand CategoryCommand { get; set; }
+        public ICommand UserCommand { get; set; }
+        public ICommand ReportCommand { get; set; }
 
-        private readonly CustomerService _customerService;
-
-        public NavigationVM(HomeVM homeVM, CustomerVM customerVM, ProductVM productVM, OrderVM orderVM, TransactionVM transactionVM, VendorVM vendorVM,
-                             CustomerService customerService)
+        public NavigationVM(
+            HomeVM homeVM,
+            CustomerVM customerVM,
+            ProductVM productVM,
+            OrderVM orderVM,
+            TransactionVM transactionVM,
+            SupplierVM supplierVM,
+            RateMasterVM rateMasterVM,
+            RepairJobVM repairJobVM,
+            StockVM stockVM,
+            CategoryVM categoryVM,
+            UserVM userVM,
+            ReportVM reportVM,
+            UserService userService)
         {
-            _customerService = customerService;
+            _userService = userService;
 
+            // Initialize commands
             HomeCommand = new RelayCommand<object>(_ => NavigateTo(homeVM));
             CustomersCommand = new RelayCommand<object>(_ => NavigateTo(customerVM));
             ProductsCommand = new RelayCommand<object>(_ => NavigateTo(productVM));
             OrdersCommand = new RelayCommand<object>(_ => NavigateTo(orderVM));
             TransactionsCommand = new RelayCommand<object>(_ => NavigateTo(transactionVM));
-            VendorsCommand = new RelayCommand<object>(_ => NavigateTo(vendorVM));
+            SuppliersCommand = new RelayCommand<object>(_ => NavigateTo(supplierVM));
+            RateMasterCommand = new RelayCommand<object>(_ => NavigateTo(rateMasterVM));
+            RepairJobsCommand = new RelayCommand<object>(_ => NavigateTo(repairJobVM));
+            StockCommand = new RelayCommand<object>(_ => NavigateTo(stockVM));
+            CategoryCommand = new RelayCommand<object>(_ => NavigateTo(categoryVM));
+            UserCommand = new RelayCommand<object>(_ => NavigateTo(userVM), _ => CanAccessUserManagement());
+            ReportCommand = new RelayCommand<object>(_ => NavigateTo(reportVM));
 
-            // Startup Page
+            // Set default view
             CurrentView = homeVM;
         }
 
-        private void NavigateTo(object viewModel)
+        private void NavigateTo(object view)
         {
-            CurrentView = viewModel;
+            CurrentView = view;
+        }
+
+        private bool CanAccessUserManagement()
+        {
+            // TODO: Implement role-based access control
+            return true;
         }
     }
 }

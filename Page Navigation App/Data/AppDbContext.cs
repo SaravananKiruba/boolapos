@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Page_Navigation_App.Model;
+using Page_Navigation_App.Services;
+using Setting = Page_Navigation_App.Model.Setting;
 
 namespace Page_Navigation_App.Data
 {
@@ -21,6 +23,10 @@ namespace Page_Navigation_App.Data
         public DbSet<Finance> Finances { get; set; }
         public DbSet<RateMaster> RateMaster { get; set; }
         public DbSet<Setting> Settings { get; set; }
+        public DbSet<NotificationLog> NotificationLog { get; set; }
+        public DbSet<LogEntry> LogEntries { get; set; }
+        public DbSet<AuditLog> AuditLogs { get; set; }
+        public DbSet<SecurityLog> SecurityLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -89,13 +95,13 @@ namespace Page_Navigation_App.Data
             modelBuilder.Entity<Finance>()
                 .HasOne(f => f.Customer)
                 .WithMany(c => c.Payments)
-                .HasForeignKey(f => f.CustomerID)
+                .HasForeignKey(f => f.CustomerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Finance>()
                 .HasOne(f => f.Order)
                 .WithMany(o => o.Payments)
-                .HasForeignKey(f => f.OrderID)
+                .HasForeignKey(f => f.OrderReference)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Set decimal precision defaults
@@ -103,13 +109,38 @@ namespace Page_Navigation_App.Data
                 .Property(p => p.BasePrice)
                 .HasPrecision(18, 2);
 
+            modelBuilder.Entity<Product>()
+                .Property(p => p.FinalPrice)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Product>()
+                .Property(p => p.MakingCharges)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Product>()
+                .Property(p => p.StoneValue)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Product>()
+                .Property(p => p.GrossWeight)
+                .HasPrecision(10, 3);
+
+            modelBuilder.Entity<Product>()
+                .Property(p => p.NetWeight)
+                .HasPrecision(10, 3);
+
             modelBuilder.Entity<RateMaster>()
                 .Property(r => r.Rate)
                 .HasPrecision(18, 2);
 
+            modelBuilder.Entity<Finance>()
+                .Property(f => f.Amount)
+                .HasPrecision(18, 2);
+
             // Add indexes for better performance
             modelBuilder.Entity<Product>()
-                .HasIndex(p => p.Barcode);
+                .HasIndex(p => p.Barcode)
+                .IsUnique();
 
             modelBuilder.Entity<Customer>()
                 .HasIndex(c => c.PhoneNumber);
@@ -125,6 +156,18 @@ namespace Page_Navigation_App.Data
 
             modelBuilder.Entity<RateMaster>()
                 .HasIndex(r => r.EffectiveDate);
+
+            modelBuilder.Entity<LogEntry>()
+                .HasIndex(l => l.Timestamp);
+
+            modelBuilder.Entity<AuditLog>()
+                .HasIndex(l => l.Timestamp);
+
+            modelBuilder.Entity<SecurityLog>()
+                .HasIndex(l => l.Timestamp);
+
+            modelBuilder.Entity<NotificationLog>()
+                .HasIndex(n => n.Timestamp);
 
             // Settings configuration
             modelBuilder.Entity<Setting>()

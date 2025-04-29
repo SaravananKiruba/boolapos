@@ -18,51 +18,65 @@ namespace Page_Navigation_App.Model
         public string Description { get; set; }
 
         [Required]
+        [StringLength(20)]
         public string MetalType { get; set; } // Gold, Silver, Platinum
 
         [Required]
+        [StringLength(10)]
         public string Purity { get; set; } // 18k, 22k, 24k
 
         [Required]
         [Column(TypeName = "decimal(10,3)")]
+        [Range(0.001, 9999.999)]
         public decimal GrossWeight { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(10,3)")]
+        [Range(0.001, 9999.999)]
         public decimal NetWeight { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(5,2)")]
+        [Range(0, 100)]
         public decimal WastagePercentage { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
+        [Range(0.01, 999999999.99)]
         public decimal MakingCharges { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
+        [Range(0, 999999999.99)]
         public decimal StoneValue { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
+        [Range(0.01, 999999999.99)]
         public decimal BasePrice { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
+        [Range(0.01, 999999999.99)]
         public decimal FinalPrice { get; set; }
 
+        [StringLength(50)]
+        [RegularExpression(@"^[A-Za-z0-9\-]+$")]
         public string Barcode { get; set; }
 
         [Required]
+        [StringLength(100)]
         public string Location { get; set; }
 
         public bool IsDeadStock { get; set; }
 
+        [Required]
         [ForeignKey("Category")]
         public int CategoryID { get; set; }
 
         [ForeignKey("Subcategory")]
         public int? SubcategoryID { get; set; }
 
+        [Required]
         [ForeignKey("Supplier")]
         public int SupplierID { get; set; }
 

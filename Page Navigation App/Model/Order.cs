@@ -19,58 +19,46 @@ namespace Page_Navigation_App.Model
         public int CustomerID { get; set; }
 
         [Required]
+        [StringLength(20)]
         public string OrderType { get; set; } // Retail/Wholesale
 
         [Required]
+        [StringLength(20)]
         public string PaymentType { get; set; } // Cash/Credit/EMI
 
+        [Required]
         [Column(TypeName = "decimal(18,2)")]
+        [Range(0.01, 999999999.99)]
         public decimal SubTotal { get; set; }
 
+        [Required]
         [Column(TypeName = "decimal(18,2)")]
+        [Range(0, 999999999.99)]
         public decimal DiscountAmount { get; set; }
 
+        [Required]
         [Column(TypeName = "decimal(18,2)")]
+        [Range(0, 999999999.99)]
         public decimal TaxAmount { get; set; }
 
+        [Required]
         [Column(TypeName = "decimal(18,2)")]
+        [Range(0.01, 999999999.99)]
         public decimal GrandTotal { get; set; }
 
-        // Metal Exchange Details
-        public bool HasMetalExchange { get; set; }
-
-        [Column(TypeName = "decimal(10,3)")]
-        public decimal? ExchangeMetalWeight { get; set; }
-
-        public string ExchangeMetalType { get; set; }
-        
-        public string ExchangeMetalPurity { get; set; }
-
-        [Column(TypeName = "decimal(18,2)")]
-        public decimal? ExchangeValue { get; set; }
-
-        // EMI Details
-        public int? EMIMonths { get; set; }
-
-        [Column(TypeName = "decimal(18,2)")]
-        public decimal? EMIAmount { get; set; }
-
-        // GST Details
+        [Required]
         [StringLength(20)]
-        public string GSTNumber { get; set; }
+        public string OrderStatus { get; set; } // Pending/Processing/Completed/Cancelled
 
-        [Column(TypeName = "decimal(18,2)")]
-        public decimal CGSTAmount { get; set; }
+        [StringLength(500)]
+        public string Notes { get; set; }
 
-        [Column(TypeName = "decimal(18,2)")]
-        public decimal SGSTAmount { get; set; }
+        public DateTime? DeliveryDate { get; set; }
 
-        [Column(TypeName = "decimal(18,2)")]
-        public decimal IGSTAmount { get; set; }
-
+        [StringLength(50)]
         public string InvoiceNumber { get; set; }
 
-        // Navigation Properties
+        // Navigation properties
         public Customer Customer { get; set; }
         public ICollection<OrderDetail> OrderDetails { get; set; }
         public ICollection<Finance> Payments { get; set; }

@@ -11,47 +11,54 @@ namespace Page_Navigation_App.Model
         public int Id { get; set; }
 
         [Required]
+        [ForeignKey("Customer")]
+        public string CustomerId { get; set; }
+
+        [Required]
+        [StringLength(20)]
+        public string JobNumber { get; set; }
+
+        [Required]
+        [StringLength(500)]
         public string ItemDetails { get; set; }
 
         [Required]
-        public string MetalType { get; set; }
+        [StringLength(50)]
+        public string WorkType { get; set; }  // Repair/Resize/Polish/etc
 
         [Required]
-        [Column(TypeName = "decimal(10,3)")]
-        public decimal Weight { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(0.01, 999999999.99)]
+        public decimal EstimatedAmount { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(0.01, 999999999.99)]
+        public decimal FinalAmount { get; set; }
 
         [Required]
-        public string WorkType { get; set; }
-
-        public string Description { get; set; }
+        public DateTime StartDate { get; set; }
 
         [Required]
-        public DateTime ReceiptDate { get; set; }
-
-        public DateTime? PromisedDate { get; set; }
+        public DateTime EstimatedEndDate { get; set; }
 
         public DateTime? CompletionDate { get; set; }
 
         [Required]
-        [Column(TypeName = "decimal(18,2)")]
-        public decimal EstimatedAmount { get; set; }
+        [StringLength(20)]
+        public string Status { get; set; }  // Pending/InProgress/Completed/Delivered
 
-        [Column(TypeName = "decimal(18,2)")]
-        public decimal FinalAmount { get; set; }
+        [Column(TypeName = "decimal(10,3)")]
+        [Range(0, 9999.999)]
+        public decimal? ItemWeight { get; set; }
+
+        [StringLength(500)]
+        public string Notes { get; set; }
 
         [Required]
-        public string Status { get; set; } // Pending, In Process, Delivered
-
-        public string ImagePath { get; set; }
-
-        [Required]
-        [ForeignKey("Customer")]
-        public int CustomerId { get; set; }
+        [StringLength(20)]
+        public string Priority { get; set; }  // Normal/High/Urgent
 
         // Navigation property
-        public Customer Customer { get; set; }
-
-        public bool SMSNotificationSent { get; set; }
-        public bool WhatsAppNotificationSent { get; set; }
+        public virtual Customer Customer { get; set; }
     }
 }

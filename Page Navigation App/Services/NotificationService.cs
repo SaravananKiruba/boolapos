@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Page_Navigation_App.Data;
+using Page_Navigation_App.Model;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -263,7 +264,7 @@ namespace Page_Navigation_App.Services
             if (!settings.SendRepairUpdates)
                 return;
 
-            var customer = await _context.Customers.FindAsync(repair.CustomerID);
+            var customer = await _context.Customers.FindAsync(repair.CustomerId);
             if (customer == null)
                 return;
 
@@ -283,7 +284,7 @@ namespace Page_Navigation_App.Services
             {
                 await SendEmail(
                     customer.Email,
-                    $"Repair Status Update - #{repair.RepairJobID}",
+                    $"Repair Status Update - #",
                     message,
                     true);
             }
@@ -364,9 +365,9 @@ namespace Page_Navigation_App.Services
         private async Task<string> GenerateRepairStatusUpdate(RepairJob repair)
         {
             var businessInfo = await _configService.GetBusinessInfo();
-            return $"Repair Job #{repair.RepairJobID} Status Update\n\n" +
+            return $"Repair Job #{repair.Id} Status Update\n\n" +
                    $"Current Status: {repair.Status}\n" +
-                   $"Expected Completion: {repair.ExpectedCompletionDate:d}\n\n" +
+                   $"Expected Completion: {repair.CompletionDate:d}\n\n" +
                    $"For any queries, contact us at {businessInfo.Phone}";
         }
 
@@ -387,7 +388,7 @@ namespace Page_Navigation_App.Services
                 Details = details
             };
 
-            await _context.NotificationLogs.AddAsync(notification);
+            await _context.NotificationLog.AddAsync(notification);
             await _context.SaveChangesAsync();
 
             if (!success)

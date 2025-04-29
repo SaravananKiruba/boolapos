@@ -3,8 +3,8 @@ using Page_Navigation_App.Data;
 using Page_Navigation_App.Model;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Page_Navigation_App.Services
 {
@@ -19,119 +19,106 @@ namespace Page_Navigation_App.Services
 
         public async Task<RateMaster> AddRate(RateMaster rate)
         {
-            // Deactivate previous active rate for the same metal and purity
-            var previousRate = await _context.RateMaster
-                .Where(r => r.MetalType == rate.MetalType && 
-                           r.Purity == rate.Purity && 
+            // Deactivate current active rate for this metal type and purity
+            var currentRate = await _context.RateMaster
+                .Where(r => r.MetalType == rate.MetalType &&
+                           r.Purity == rate.Purity &&
                            r.IsActive)
                 .FirstOrDefaultAsync();
 
-            if (previousRate != null)
+            if (currentRate != null)
             {
-                previousRate.IsActive = false;
-                _context.RateMaster.Update(previousRate);
+                currentRate.IsActive = false;
             }
 
-            rate.IsActive = true;
-            rate.EffectiveDate = DateTime.Now;
             await _context.RateMaster.AddAsync(rate);
             await _context.SaveChangesAsync();
+
+            // Notify subscribers about rate change
+            await NotifyRateChange(rate);
+
             return rate;
+        }
+
+        public async Task<bool> UpdateRate(RateMaster rate)
+        {
+            var existingRate = await _context.RateMaster.FindAsync(rate.RateID);
+            if (existingRate == null) return false;
+
+            _context.Entry(existingRate).CurrentValues.SetValues(rate);
+            await _context.SaveChangesAsync();
+
+            // Notify subscribers about rate change
+            await NotifyRateChange(rate);
+
+            return true;
+        }
+
+        public async Task<IEnumerable<RateMaster>> GetCurrentRates()
+        {
+            return await _context.RateMaster
+                .Where(r => r.IsActive)
+                .OrderBy(r => r.MetalType)
+                .ThenBy(r => r.Purity)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<RateMaster>> GetRateHistory(
+            string metalType,
+            string purity,
+            DateTime fromDate)
+        {
+            return await _context.RateMaster
+                .Where(r => r.MetalType == metalType &&
+                           r.Purity == purity &&
+                           r.EffectiveDate >= fromDate)
+                .OrderByDescending(r => r.EffectiveDate)
+                .ToListAsync();
         }
 
         public async Task<RateMaster> GetCurrentRate(string metalType, string purity)
         {
             return await _context.RateMaster
-                .Where(r => r.MetalType == metalType && 
-                           r.Purity == purity && 
+                .Where(r => r.MetalType == metalType &&
+                           r.Purity == purity &&
                            r.IsActive)
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<IEnumerable<RateMaster>> GetRateHistory(
-            string metalType, 
-            string purity, 
-            DateTime startDate, 
-            DateTime endDate)
+        private async Task NotifyRateChange(RateMaster newRate)
         {
-            return await _context.RateMaster
-                .Where(r => r.MetalType == metalType &&
-                           r.Purity == purity &&
-                           r.EffectiveDate >= startDate &&
-                           r.EffectiveDate <= endDate)
-                .OrderByDescending(r => r.EffectiveDate)
-                .ToListAsync();
-        }
+            // Get NotificationSettings
+            var settings = await _context.Settings
+                .Where(s => s.Key.StartsWith("Notification"))
+                .ToDictionaryAsync(s => s.Key, s => s.Value);
 
-        public async Task<Dictionary<string, decimal>> GetAllCurrentRates()
-        {
-            var rates = await _context.RateMaster
-                .Where(r => r.IsActive)
-                .ToListAsync();
+            bool sendSMS = settings.GetValueOrDefault("NotificationSMSEnabled") == "true";
+            bool sendWhatsApp = settings.GetValueOrDefault("NotificationWhatsAppEnabled") == "true";
 
-            return rates.ToDictionary(
-                r => $"{r.MetalType}-{r.Purity}",
-                r => r.Rate
-            );
-        }
-
-        public async Task<decimal> CalculatePurchaseAmount(
-            string metalType, 
-            string purity, 
-            decimal weight)
-        {
-            var rate = await GetCurrentRate(metalType, purity);
-            if (rate == null)
-                throw new InvalidOperationException($"No active rate found for {metalType} {purity}");
-
-            return weight * rate.PurchaseRate;
-        }
-
-        public async Task<decimal> CalculateSaleAmount(
-            string metalType, 
-            string purity, 
-            decimal weight)
-        {
-            var rate = await GetCurrentRate(metalType, purity);
-            if (rate == null)
-                throw new InvalidOperationException($"No active rate found for {metalType} {purity}");
-
-            return weight * rate.SaleRate;
-        }
-
-        public async Task<bool> UpdateCurrentRate(
-            string metalType, 
-            string purity, 
-            decimal newRate, 
-            string updatedBy,
-            string notes = null)
-        {
-            var currentRate = await GetCurrentRate(metalType, purity);
-            if (currentRate == null)
-                return false;
-
-            // Create new rate entry
-            var newRateEntry = new RateMaster
+            if (sendSMS || sendWhatsApp)
             {
-                MetalType = metalType,
-                Purity = purity,
-                Rate = newRate,
-                PurchaseRate = newRate * 0.98m, // 2% margin for purchase
-                SaleRate = newRate * 1.02m, // 2% margin for sale
-                EffectiveDate = DateTime.Now,
-                UpdatedBy = updatedBy,
-                IsActive = true,
-                Notes = notes
-            };
+                var message = $"Rate Update: {newRate.MetalType} {newRate.Purity} - ₹{newRate.Rate:N2}/g";
+                
+                // Get customers who opted for rate notifications
+                var customers = await _context.Customers
+                    .Where(c => c.NotifyRateChanges)
+                    .ToListAsync();
 
-            // Deactivate current rate
-            currentRate.IsActive = false;
-            _context.RateMaster.Update(currentRate);
+                foreach (var customer in customers)
+                {
+                    if (sendSMS && !string.IsNullOrEmpty(customer.PhoneNumber))
+                    {
+                        // TODO: Implement SMS notification
+                        // await _smsService.SendSMS(customer.PhoneNumber, message);
+                    }
 
-            // Add new rate
-            await _context.RateMaster.AddAsync(newRateEntry);
-            await _context.SaveChangesAsync();
-            return true;
+                    if (sendWhatsApp && !string.IsNullOrEmpty(customer.WhatsAppNumber))
+                    {
+                        // TODO: Implement WhatsApp notification
+                        // await _whatsAppService.SendMessage(customer.WhatsAppNumber, message);
+                    }
+                }
+            }
         }
     }
 }

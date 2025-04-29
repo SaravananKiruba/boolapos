@@ -17,13 +17,21 @@ namespace Page_Navigation_App.Model
         [StringLength(200)]
         public string Description { get; set; }
 
+        [Required]
         [Column(TypeName = "decimal(5,2)")]
+        [Range(0, 100)]
         public decimal DefaultMakingCharges { get; set; }
 
+        [Required]
         [Column(TypeName = "decimal(5,2)")]
+        [Range(0, 100)]
         public decimal DefaultWastage { get; set; }
 
+        [Required]
         public bool IsActive { get; set; }
+
+        [StringLength(50)]
+        public string DisplayOrder { get; set; }
 
         // Navigation Properties
         public ICollection<Product> Products { get; set; }

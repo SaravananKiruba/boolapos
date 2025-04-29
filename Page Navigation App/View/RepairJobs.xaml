@@ -1,0 +1,245 @@
+<![CDATA[<UserControl x:Class="Page_Navigation_App.View.RepairJobs"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             mc:Ignorable="d" 
+             d:DesignHeight="650" d:DesignWidth="1000">
+
+    <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="350"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Left Panel - Job Entry Form -->
+        <materialDesign:Card Grid.Column="0"
+                            Margin="0 0 10 0"
+                            Padding="16">
+            <ScrollViewer>
+                <StackPanel>
+                    <TextBlock Text="New Repair Job"
+                             Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                             Margin="0 0 0 16"/>
+
+                    <ComboBox materialDesign:HintAssist.Hint="Customer"
+                             ItemsSource="{Binding Customers}"
+                             SelectedItem="{Binding SelectedJob.Customer}"
+                             DisplayMemberPath="CustomerName"
+                             Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                             Margin="0 8"/>
+
+                    <TextBox Text="{Binding SelectedJob.ItemDetails}"
+                            materialDesign:HintAssist.Hint="Item Details"
+                            Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                            Margin="0 8"/>
+
+                    <Grid Margin="0 8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <ComboBox Grid.Column="0"
+                                 materialDesign:HintAssist.Hint="Metal Type"
+                                 ItemsSource="{Binding MetalTypes}"
+                                 SelectedItem="{Binding SelectedJob.MetalType}"
+                                 Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                                 Margin="0 0 4 0"/>
+
+                        <TextBox Grid.Column="1"
+                                Text="{Binding SelectedJob.Weight}"
+                                materialDesign:HintAssist.Hint="Weight (g)"
+                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                Margin="4 0 0 0"/>
+                    </Grid>
+
+                    <ComboBox materialDesign:HintAssist.Hint="Work Type"
+                             ItemsSource="{Binding CommonWorkTypes}"
+                             SelectedItem="{Binding SelectedJob.WorkType}"
+                             Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                             IsEditable="True"
+                             Margin="0 8"/>
+
+                    <TextBox Text="{Binding SelectedJob.Description}"
+                            materialDesign:HintAssist.Hint="Work Description"
+                            Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                            TextWrapping="Wrap"
+                            AcceptsReturn="True"
+                            Height="60"
+                            Margin="0 8"/>
+
+                    <DatePicker SelectedDate="{Binding SelectedJob.PromisedDate}"
+                               materialDesign:HintAssist.Hint="Promised Date"
+                               Style="{StaticResource MaterialDesignOutlinedDatePicker}"
+                               Margin="0 8"/>
+
+                    <Grid Margin="0 8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox Grid.Column="0"
+                                Text="{Binding SelectedJob.EstimatedAmount}"
+                                materialDesign:HintAssist.Hint="Est. Amount"
+                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                Margin="0 0 4 0"/>
+
+                        <TextBox Grid.Column="1"
+                                Text="{Binding SelectedJob.FinalAmount}"
+                                materialDesign:HintAssist.Hint="Final Amount"
+                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                Margin="4 0 0 0"/>
+                    </Grid>
+
+                    <Grid Margin="0 16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Image Source="{Binding SelectedJob.ImagePath}"
+                               Width="80" Height="80"
+                               Stretch="Uniform"
+                               Margin="0 0 8 0"/>
+
+                        <Button Grid.Column="1"
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                Command="{Binding UploadImageCommand}"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="ImagePlus" 
+                                                       Width="24" Height="24"/>
+                                <TextBlock Text="Add Photo" 
+                                         Margin="8 0 0 0"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+
+                    <StackPanel Orientation="Horizontal" 
+                              HorizontalAlignment="Right"
+                              Margin="0 16 0 0">
+                        <Button Style="{StaticResource MaterialDesignOutlinedButton}"
+                                Command="{Binding ClearCommand}"
+                                Content="Clear"
+                                Margin="0 0 8 0"/>
+                        <Button Style="{StaticResource MaterialDesignRaisedButton}"
+                                Command="{Binding AddOrUpdateCommand}"
+                                Content="Save Job"/>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </materialDesign:Card>
+
+        <!-- Right Panel - Jobs List and Search -->
+        <Grid Grid.Column="1" Margin="10 0 0 0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Search Panel -->
+            <materialDesign:Card Grid.Row="0"
+                                Padding="16"
+                                Margin="0 0 0 10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox Grid.Column="0"
+                            Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}"
+                            materialDesign:HintAssist.Hint="Search repairs..."
+                            Style="{StaticResource MaterialDesignOutlinedTextBox}"/>
+
+                    <ComboBox Grid.Column="1"
+                             Margin="8 0"
+                             Width="120"
+                             materialDesign:HintAssist.Hint="Status"
+                             ItemsSource="{Binding Statuses}"
+                             SelectedItem="{Binding SelectedStatus}"
+                             Style="{StaticResource MaterialDesignOutlinedComboBox}"/>
+
+                    <DatePicker Grid.Column="2"
+                               Width="120"
+                               Margin="0 0 8 0"
+                               SelectedDate="{Binding StartDate}"
+                               materialDesign:HintAssist.Hint="From Date"
+                               Style="{StaticResource MaterialDesignOutlinedDatePicker}"/>
+
+                    <DatePicker Grid.Column="3"
+                               Width="120"
+                               SelectedDate="{Binding EndDate}"
+                               materialDesign:HintAssist.Hint="To Date"
+                               Style="{StaticResource MaterialDesignOutlinedDatePicker}"/>
+                </Grid>
+            </materialDesign:Card>
+
+            <!-- Jobs List -->
+            <materialDesign:Card Grid.Row="1" Padding="0">
+                <DataGrid ItemsSource="{Binding RepairJobs}"
+                          SelectedItem="{Binding SelectedJob}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          Style="{StaticResource MaterialDesignDataGrid}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Receipt Date"
+                                          Binding="{Binding ReceiptDate, StringFormat=d}"/>
+                        <DataGridTextColumn Header="Customer"
+                                          Binding="{Binding Customer.CustomerName}"/>
+                        <DataGridTextColumn Header="Item"
+                                          Binding="{Binding ItemDetails}"/>
+                        <DataGridTextColumn Header="Work Type"
+                                          Binding="{Binding WorkType}"/>
+                        <DataGridTextColumn Header="Est. Amount"
+                                          Binding="{Binding EstimatedAmount, StringFormat=C}"/>
+                        <DataGridTemplateColumn Header="Status">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ComboBox ItemsSource="{Binding DataContext.Statuses, 
+                                              RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                              SelectedItem="{Binding Status, UpdateSourceTrigger=PropertyChanged}"
+                                              Width="100">
+                                        <ComboBox.Style>
+                                            <Style TargetType="ComboBox" BasedOn="{StaticResource MaterialDesignComboBox}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Pending">
+                                                        <Setter Property="Foreground" Value="#FFA000"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="In Process">
+                                                        <Setter Property="Foreground" Value="#1976D2"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Delivered">
+                                                        <Setter Property="Foreground" Value="#43A047"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ComboBox.Style>
+                                    </ComboBox>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Style="{StaticResource MaterialDesignIconButton}"
+                                            Command="{Binding DataContext.SendNotificationCommand, 
+                                                     RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            ToolTip="Send Status Update">
+                                        <materialDesign:PackIcon Kind="Bell" />
+                                    </Button>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </materialDesign:Card>
+        </Grid>
+    </Grid>
+</UserControl>]]>
