@@ -56,6 +56,10 @@ namespace Page_Navigation_App.Model
 
         [StringLength(500)]
         public string Notes { get; set; }
+        public DateTime TransactionDate { get; set; }
+        public decimal Amount { get; set; }
+        public string TransactionType { get; set; }
+        public string FinanceID { get; set; }
 
         // Navigation properties
         public virtual Customer Customer { get; set; }

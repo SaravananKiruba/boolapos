@@ -53,6 +53,13 @@ namespace Page_Navigation_App.Model
 
         [StringLength(500)]
         public string Notes { get; set; }
+        public decimal MetalRate { get; set; }
+        public decimal BaseAmount { get; set; }
+        public decimal TaxableAmount { get; set; }
+        public decimal CGSTAmount { get; set; }
+        public decimal SGSTAmount { get; set; }
+        public decimal IGSTAmount { get; set; }
+        public decimal FinalAmount { get; set; }
 
         // Navigation properties
         public Order Order { get; set; }

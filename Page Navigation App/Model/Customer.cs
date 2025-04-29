@@ -32,7 +32,11 @@ namespace Page_Navigation_App.Model
 
         public DateTime? DateOfBirth { get; set; }
 
-        public DateTime? Anniversary { get; set; }
+        public DateTime RegistrationDate { get; set; }
+        public int LoyaltyPoints { get; set; }
+        public bool IsActive { get; set; }
+        public DateTime? DateOfAnniversary { get; set; }
+        public bool NotifyRateChanges { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
         [Range(0, 9999999999.99)]

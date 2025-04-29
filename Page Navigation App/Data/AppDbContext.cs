@@ -2,6 +2,10 @@
 using Page_Navigation_App.Model;
 using Page_Navigation_App.Services;
 using Setting = Page_Navigation_App.Model.Setting;
+using NotificationLog = Page_Navigation_App.Model.NotificationLog;
+using LogEntry = Page_Navigation_App.Model.LogEntry;
+using AuditLog = Page_Navigation_App.Model.AuditLog;
+using SecurityLog = Page_Navigation_App.Model.SecurityLog;
 
 namespace Page_Navigation_App.Data
 {
@@ -134,7 +138,7 @@ namespace Page_Navigation_App.Data
                 .HasPrecision(18, 2);
 
             modelBuilder.Entity<Finance>()
-                .Property(f => f.Amount)
+                .Property(f => f.TotalAmount)
                 .HasPrecision(18, 2);
 
             // Add indexes for better performance

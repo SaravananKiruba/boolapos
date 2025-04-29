@@ -1,4 +1,4 @@
-<![CDATA[<UserControl x:Class="Page_Navigation_App.View.RateMaster"
+<UserControl x:Class="Page_Navigation_App.View.RateMaster"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -174,4 +174,4 @@
             </Grid>
         </materialDesign:Card>
     </Grid>
-</UserControl>]]>
+</UserControl>

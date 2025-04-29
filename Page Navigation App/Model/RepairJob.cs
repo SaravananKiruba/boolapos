@@ -57,6 +57,13 @@ namespace Page_Navigation_App.Model
         [Required]
         [StringLength(20)]
         public string Priority { get; set; }  // Normal/High/Urgent
+        public DateTime ReceiptDate { get; set; }
+        public bool SMSNotificationSent { get; set; }
+        public bool WhatsAppNotificationSent { get; set; }
+        public string ImagePath { get; set; }
+        public DateTime PromisedDate { get; set; }
+        public string MetalType { get; set; }
+        public decimal Weight { get; set; }
 
         // Navigation property
         public virtual Customer Customer { get; set; }

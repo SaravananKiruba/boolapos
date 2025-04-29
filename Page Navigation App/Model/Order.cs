@@ -57,6 +57,15 @@ namespace Page_Navigation_App.Model
 
         [StringLength(50)]
         public string InvoiceNumber { get; set; }
+        public string GSTNumber { get; set; }
+        public bool HasMetalExchange { get; set; }
+        public decimal ExchangeMetalWeight { get; set; }
+        public string ExchangeMetalType { get; set; }
+        public decimal ExchangeMetalPurity { get; set; }
+        public decimal ExchangeValue { get; set; }
+        public int EMIMonths { get; set; }
+        public decimal EMIAmount { get; set; }
+        public decimal TotalAmount { get; set; }
 
         // Navigation properties
         public Customer Customer { get; set; }
