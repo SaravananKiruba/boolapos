@@ -20,6 +20,7 @@ namespace Page_Navigation_App.Data
         public DbSet<RepairJob> RepairJobs { get; set; }
         public DbSet<Finance> Finances { get; set; }
         public DbSet<RateMaster> RateMaster { get; set; }
+        public DbSet<Setting> Settings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -124,6 +125,14 @@ namespace Page_Navigation_App.Data
 
             modelBuilder.Entity<RateMaster>()
                 .HasIndex(r => r.EffectiveDate);
+
+            // Settings configuration
+            modelBuilder.Entity<Setting>()
+                .HasKey(s => s.Key);
+
+            modelBuilder.Entity<Setting>()
+                .Property(s => s.Value)
+                .IsRequired();
         }
     }
 }
