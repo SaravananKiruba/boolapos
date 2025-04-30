@@ -13,12 +13,15 @@
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Dark.Amber.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.Buttons.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.DataGrid.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.TextBlock.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.DateTimePicker.xaml" />
 
                 <!-- Your existing resource dictionaries -->
                 <ResourceDictionary Source="/Styles/Page.xaml" />
                 <ResourceDictionary Source="/Styles/Image.xaml" />
                 <ResourceDictionary Source="/Styles/Text.xaml" />
                 <ResourceDictionary Source="/Styles/Button.xaml" />
+                <ResourceDictionary Source="/Styles/Controls.DateTimePicker.xaml" />
                 <ResourceDictionary Source="/Utilities/DataTemplate.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
