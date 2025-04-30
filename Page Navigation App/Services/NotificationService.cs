@@ -14,401 +14,106 @@ namespace Page_Navigation_App.Services
     {
         private readonly AppDbContext _context;
         private readonly ConfigurationService _configService;
-        private readonly LogService _logService;
 
-        public NotificationService(
-            AppDbContext context,
-            ConfigurationService configService,
-            LogService logService)
+        public NotificationService(AppDbContext context, ConfigurationService configService)
         {
             _context = context;
             _configService = configService;
-            _logService = logService;
         }
 
-        public async Task<bool> SendSMS(string phoneNumber, string message)
+        public async Task SendEmail(string recipient, string subject, string body)
         {
             try
             {
-                // Implementation would integrate with an SMS gateway service
-                // This is a placeholder for the actual SMS sending logic
-                await LogNotification(
-                    phoneNumber,
-                    "SMS",
-                    message,
-                    true,
-                    "Simulated SMS sent successfully");
+                var emailSettings = await _configService.GetEmailSettings();
+                using (var client = new SmtpClient(emailSettings.SmtpServer, emailSettings.SmtpPort))
+                {
+                    client.EnableSsl = true;
+                    client.Credentials = new NetworkCredential(emailSettings.Username, emailSettings.Password);
 
-                return true;
-            }
-            catch (Exception ex)
-            {
-                await LogNotification(
-                    phoneNumber,
-                    "SMS",
-                    message,
-                    false,
-                    ex.Message);
-                return false;
-            }
-        }
-
-        public async Task<bool> SendEmail(
-            string email,
-            string subject,
-            string body,
-            bool isHtml = false)
-        {
-            try
-            {
-                var emailSettings = await _configService.GetTypedValue<EmailSettings>(
-                    "EmailSettings",
-                    new EmailSettings
+                    var mailMessage = new MailMessage
                     {
-                        SmtpServer = "smtp.gmail.com",
-                        SmtpPort = 587,
-                        Username = "your-email@gmail.com",
-                        Password = "your-app-specific-password",
-                        SenderName = "Jewelry Shop"
-                    });
+                        From = new MailAddress(emailSettings.Username, emailSettings.SenderName),
+                        Subject = subject,
+                        Body = body,
+                        IsBodyHtml = true
+                    };
+                    mailMessage.To.Add(recipient);
 
-                using var smtp = new SmtpClient(emailSettings.SmtpServer, emailSettings.SmtpPort)
-                {
-                    EnableSsl = true,
-                    Credentials = new NetworkCredential(
-                        emailSettings.Username,
-                        emailSettings.Password)
-                };
+                    await client.SendMailAsync(mailMessage);
 
-                using var mail = new MailMessage
-                {
-                    From = new MailAddress(
-                        emailSettings.Username,
-                        emailSettings.SenderName),
-                    Subject = subject,
-                    Body = body,
-                    IsBodyHtml = isHtml
-                };
-
-                mail.To.Add(email);
-                await smtp.SendMailAsync(mail);
-
-                await LogNotification(
-                    email,
-                    "Email",
-                    subject,
-                    true,
-                    "Email sent successfully");
-
-                return true;
+                    // Log successful notification
+                    await LogNotification(recipient, "Email", body, true);
+                }
             }
             catch (Exception ex)
             {
-                await LogNotification(
-                    email,
-                    "Email",
-                    subject,
-                    false,
-                    ex.Message);
-                return false;
+                // Log failed notification
+                await LogNotification(recipient, "Email", ex.Message, false);
+                throw;
             }
         }
 
-        public async Task<bool> SendWhatsApp(string phoneNumber, string message)
+        public async Task SendSMS(string phoneNumber, string message)
         {
-            try
-            {
-                // Implementation would integrate with WhatsApp Business API
-                // This is a placeholder for the actual WhatsApp sending logic
-                await LogNotification(
-                    phoneNumber,
-                    "WhatsApp",
-                    message,
-                    true,
-                    "Simulated WhatsApp message sent successfully");
+            // SMS implementation will go here
+            // For now, just log it
+            await LogNotification(phoneNumber, "SMS", message, true);
+        }
 
-                return true;
-            }
-            catch (Exception ex)
-            {
-                await LogNotification(
-                    phoneNumber,
-                    "WhatsApp",
-                    message,
-                    false,
-                    ex.Message);
-                return false;
-            }
+        public async Task SendWhatsApp(string phoneNumber, string message)
+        {
+            // WhatsApp implementation will go here
+            // For now, just log it
+            await LogNotification(phoneNumber, "WhatsApp", message, true);
         }
 
         public async Task SendBirthdayWishes(Customer customer)
         {
-            var settings = await _configService.GetNotificationSettings();
-            if (!settings.SendBirthdayWishes)
-                return;
-
-            var message = await GenerateBirthdayMessage(customer);
-
-            if (settings.EnableSMS && !string.IsNullOrEmpty(customer.PhoneNumber))
+            var subject = "Happy Birthday!";
+            var body = $"Dear {customer.CustomerName},\n\nHappy Birthday! We wish you a wonderful day filled with joy and happiness. As a valued customer, we appreciate your continued support.\n\nBest wishes,\nYour Jewelry Store Team";
+            
+            if (!string.IsNullOrEmpty(customer.Email))
             {
-                await SendSMS(customer.PhoneNumber, message);
+                await SendEmail(customer.Email, subject, body);
             }
-
-            if (settings.EnableWhatsApp && !string.IsNullOrEmpty(customer.PhoneNumber))
+            
+            if (!string.IsNullOrEmpty(customer.PhoneNumber))
             {
-                await SendWhatsApp(customer.PhoneNumber, message);
-            }
-
-            if (settings.EnableEmailNotifications && !string.IsNullOrEmpty(customer.Email))
-            {
-                await SendEmail(
-                    customer.Email,
-                    "Happy Birthday from Jewelry Shop!",
-                    message,
-                    true);
+                await SendSMS(customer.PhoneNumber, $"Happy Birthday, {customer.CustomerName}! We wish you a wonderful day filled with joy. - Your Jewelry Store Team");
             }
         }
 
         public async Task SendAnniversaryWishes(Customer customer)
         {
-            var settings = await _configService.GetNotificationSettings();
-            if (!settings.SendAnniversaryWishes)
-                return;
-
-            var message = await GenerateAnniversaryMessage(customer);
-
-            if (settings.EnableSMS && !string.IsNullOrEmpty(customer.PhoneNumber))
+            var subject = "Happy Wedding Anniversary!";
+            var body = $"Dear {customer.CustomerName},\n\nWishing you a very happy wedding anniversary! May your love continue to grow stronger with each passing year. Thank you for being our valued customer.\n\nBest wishes,\nYour Jewelry Store Team";
+            
+            if (!string.IsNullOrEmpty(customer.Email))
             {
-                await SendSMS(customer.PhoneNumber, message);
+                await SendEmail(customer.Email, subject, body);
             }
-
-            if (settings.EnableWhatsApp && !string.IsNullOrEmpty(customer.PhoneNumber))
+            
+            if (!string.IsNullOrEmpty(customer.PhoneNumber))
             {
-                await SendWhatsApp(customer.PhoneNumber, message);
-            }
-
-            if (settings.EnableEmailNotifications && !string.IsNullOrEmpty(customer.Email))
-            {
-                await SendEmail(
-                    customer.Email,
-                    "Happy Anniversary from Jewelry Shop!",
-                    message,
-                    true);
+                await SendSMS(customer.PhoneNumber, $"Happy Wedding Anniversary, {customer.CustomerName}! Wishing you both continued love and happiness. - Your Jewelry Store Team");
             }
         }
 
-        public async Task SendOrderConfirmation(Order order)
+        private async Task LogNotification(string recipient, string channel, string content, bool isSuccessful)
         {
-            var settings = await _configService.GetNotificationSettings();
-            if (!settings.SendOrderConfirmations)
-                return;
-
-            var customer = await _context.Customers.FindAsync(order.CustomerID);
-            if (customer == null)
-                return;
-
-            var message = await GenerateOrderConfirmation(order);
-
-            if (settings.EnableSMS && !string.IsNullOrEmpty(customer.PhoneNumber))
-            {
-                await SendSMS(customer.PhoneNumber, message);
-            }
-
-            if (settings.EnableWhatsApp && !string.IsNullOrEmpty(customer.PhoneNumber))
-            {
-                await SendWhatsApp(customer.PhoneNumber, message);
-            }
-
-            if (settings.EnableEmailNotifications && !string.IsNullOrEmpty(customer.Email))
-            {
-                var htmlMessage = await GenerateOrderConfirmationHtml(order);
-                await SendEmail(
-                    customer.Email,
-                    $"Order Confirmation #{order.OrderID}",
-                    htmlMessage,
-                    true);
-            }
-        }
-
-        public async Task SendPaymentReminder(Customer customer, decimal amount)
-        {
-            var settings = await _configService.GetNotificationSettings();
-            if (!settings.SendPaymentReminders)
-                return;
-
-            var message = await GeneratePaymentReminder(customer, amount);
-
-            if (settings.EnableSMS && !string.IsNullOrEmpty(customer.PhoneNumber))
-            {
-                await SendSMS(customer.PhoneNumber, message);
-            }
-
-            if (settings.EnableWhatsApp && !string.IsNullOrEmpty(customer.PhoneNumber))
-            {
-                await SendWhatsApp(customer.PhoneNumber, message);
-            }
-
-            if (settings.EnableEmailNotifications && !string.IsNullOrEmpty(customer.Email))
-            {
-                await SendEmail(
-                    customer.Email,
-                    "Payment Reminder",
-                    message,
-                    true);
-            }
-        }
-
-        public async Task SendRepairStatusUpdate(RepairJob repair)
-        {
-            var settings = await _configService.GetNotificationSettings();
-            if (!settings.SendRepairUpdates)
-                return;
-
-            string message = $"Update on your repair job #{repair.RepairJobID}: {repair.Status}";
-            if (repair.Status == "Completed")
-            {
-                message += $"\nTotal Amount: {repair.FinalAmount:C}";
-            }
-
-            // Send notifications based on settings
-            if (settings.EnableSMS && !string.IsNullOrEmpty(repair.Customer?.PhoneNumber))
-            {
-                await SendSMS(repair.Customer.PhoneNumber, message);
-                await LogNotification(repair.Customer.PhoneNumber, "SMS", message, true, null);
-            }
-
-            if (settings.EnableWhatsApp && !string.IsNullOrEmpty(repair.Customer?.PhoneNumber))
-            {
-                await SendWhatsApp(repair.Customer.PhoneNumber, message);
-                await LogNotification(repair.Customer.PhoneNumber, "WhatsApp", message, true, null);
-            }
-
-            if (settings.EnableEmailNotifications && !string.IsNullOrEmpty(repair.Customer?.Email))
-            {
-                await SendEmail(
-                    repair.Customer.Email,
-                    $"Repair Status Update - Job #{repair.RepairJobID}",
-                    message);
-                await LogNotification(repair.Customer.Email, "Email", message, true, null);
-            }
-        }
-
-        private async Task<string> GenerateBirthdayMessage(Customer customer)
-        {
-            var businessInfo = await _configService.GetBusinessInfo();
-            return $"Dear {customer.CustomerName},\n\n" +
-                   $"Happy Birthday! 🎉\n\n" +
-                   $"As a valued customer of {businessInfo.BusinessName}, " +
-                   $"we wish you a wonderful day filled with joy and happiness.\n\n" +
-                   $"Visit us today to receive a special birthday discount!\n\n" +
-                   $"Best wishes,\n{businessInfo.BusinessName}";
-        }
-
-        private async Task<string> GenerateAnniversaryMessage(Customer customer)
-        {
-            var businessInfo = await _configService.GetBusinessInfo();
-            return $"Dear {customer.CustomerName},\n\n" +
-                   $"Happy Anniversary! 💑\n\n" +
-                   $"Thank you for choosing {businessInfo.BusinessName} for your special moments. " +
-                   $"May your love continue to shine bright like our finest diamonds.\n\n" +
-                   $"Visit us to celebrate with special anniversary offers!\n\n" +
-                   $"Best wishes,\n{businessInfo.BusinessName}";
-        }
-
-        private async Task<string> GenerateOrderConfirmation(Order order)
-        {
-            var businessInfo = await _configService.GetBusinessInfo();
-            return $"Order #{order.OrderID} Confirmation\n\n" +
-                   $"Thank you for your purchase at {businessInfo.BusinessName}!\n" +
-                   $"Order Total: ₹{order.GrandTotal:N2}\n" +
-                   $"Date: {order.OrderDate:d}\n\n" +
-                   $"Your order will be ready for collection as per the discussed timeline.\n\n" +
-                   $"For any queries, contact us at {businessInfo.Phone}";
-        }
-
-        private async Task<string> GenerateOrderConfirmationHtml(Order order)
-        {
-            var businessInfo = await _configService.GetBusinessInfo();
-            return $@"
-                <html>
-                <body>
-                    <h2>Order Confirmation</h2>
-                    <p>Thank you for your purchase at {businessInfo.BusinessName}!</p>
-                    <div style='margin: 20px 0; padding: 20px; background-color: #f8f9fa;'>
-                        <p><strong>Order Number:</strong> {order.OrderID}</p>
-                        <p><strong>Date:</strong> {order.OrderDate:d}</p>
-                        <p><strong>Total Amount:</strong> ₹{order.GrandTotal:N2}</p>
-                    </div>
-                    <p>Your order will be ready for collection as per the discussed timeline.</p>
-                    <p>For any queries, please contact us:</p>
-                    <ul>
-                        <li>Phone: {businessInfo.Phone}</li>
-                        <li>Email: {businessInfo.Email}</li>
-                    </ul>
-                    <hr>
-                    <p style='font-size: small; color: #666;'>
-                        {businessInfo.BusinessName}<br>
-                        {businessInfo.Address}
-                    </p>
-                </body>
-                </html>";
-        }
-
-        private async Task<string> GeneratePaymentReminder(Customer customer, decimal amount)
-        {
-            var businessInfo = await _configService.GetBusinessInfo();
-            return $"Dear {customer.CustomerName},\n\n" +
-                   $"This is a friendly reminder that you have a pending payment " +
-                   $"of ₹{amount:N2} at {businessInfo.BusinessName}.\n\n" +
-                   $"Please clear your dues at your earliest convenience.\n\n" +
-                   $"For any queries, contact us at {businessInfo.Phone}\n\n" +
-                   $"Thank you for your business,\n{businessInfo.BusinessName}";
-        }
-
-        private async Task<string> GenerateRepairStatusUpdate(RepairJob repair)
-        {
-            var businessInfo = await _configService.GetBusinessInfo();
-            return $"Repair Job #{repair.RepairJobID} Status Update\n\n" +
-                   $"Current Status: {repair.Status}\n" +
-                   $"Expected Completion: {repair.CompletionDate:d}\n\n" +
-                   $"For any queries, contact us at {businessInfo.Phone}";
-        }
-
-        private async Task LogNotification(
-            string recipient,
-            string channel,
-            string content,
-            bool success,
-            string details)
-        {
-            var notification = new Model.NotificationLog
+            var log = new NotificationLog
             {
                 Timestamp = DateTime.Now,
                 Recipient = recipient,
                 Channel = channel,
                 Content = content,
-                IsSuccessful = success,
-                Details = details
+                IsSuccessful = isSuccessful,
+                Details = isSuccessful ? "Notification sent successfully" : "Failed to send notification"
             };
 
-            await _context.NotificationLog.AddAsync(notification);
+            await _context.NotificationLog.AddAsync(log);
             await _context.SaveChangesAsync();
-
-            if (!success)
-            {
-                await _logService.LogInfo(
-                    $"Notification failed: {channel} to {recipient} - {details}",
-                    "NotificationService");
-            }
         }
-    }
-
-    public class EmailSettings
-    {
-        public string SmtpServer { get; set; }
-        public int SmtpPort { get; set; }
-        public string Username { get; set; }
-        public string Password { get; set; }
-        public string SenderName { get; set; }
     }
 }

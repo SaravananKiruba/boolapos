@@ -75,35 +75,133 @@
                             Header="Notification Settings"
                             Margin="0,0,0,20">
                 <mah:MetroContentControl>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Notification Channels -->
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Notification Channels"
+                                     Style="{StaticResource MahApps.Styles.TextBlock}"
+                                     FontWeight="Bold"
+                                     Margin="0,0,0,10"/>
+
+                            <mah:ToggleSwitch Header="SMS Notifications"
+                                             IsOn="{Binding EnableSMS}"
+                                             OnContent="Enabled"
+                                             OffContent="Disabled"
+                                             Margin="0,5"/>
+
+                            <mah:ToggleSwitch Header="WhatsApp Notifications"
+                                             IsOn="{Binding EnableWhatsApp}"
+                                             OnContent="Enabled"
+                                             OffContent="Disabled"
+                                             Margin="0,5"/>
+
+                            <mah:ToggleSwitch Header="Email Notifications"
+                                             IsOn="{Binding EnableEmailNotifications}"
+                                             OnContent="Enabled"
+                                             OffContent="Disabled"
+                                             Margin="0,5"/>
+                        </StackPanel>
+
+                        <!-- Notification Types -->
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="Notification Types"
+                                     Style="{StaticResource MahApps.Styles.TextBlock}"
+                                     FontWeight="Bold"
+                                     Margin="0,0,0,10"/>
+
+                            <mah:ToggleSwitch Header="Order Notifications"
+                                             IsOn="{Binding OrderNotifications}"
+                                             OnContent="Enabled"
+                                             OffContent="Disabled"
+                                             Margin="0,5"/>
+
+                            <mah:ToggleSwitch Header="Low Stock Alerts"
+                                             IsOn="{Binding LowStockAlerts}"
+                                             OnContent="Enabled"
+                                             OffContent="Disabled"
+                                             Margin="0,5"/>
+
+                            <mah:ToggleSwitch Header="Payment Reminders"
+                                             IsOn="{Binding PaymentReminders}"
+                                             OnContent="Enabled"
+                                             OffContent="Disabled"
+                                             Margin="0,5"/>
+
+                            <mah:ToggleSwitch Header="Birthday Wishes"
+                                             IsOn="{Binding SendBirthdayWishes}"
+                                             OnContent="Enabled"
+                                             OffContent="Disabled"
+                                             Margin="0,5"/>
+
+                            <mah:ToggleSwitch Header="Anniversary Wishes"
+                                             IsOn="{Binding SendAnniversaryWishes}"
+                                             OnContent="Enabled"
+                                             OffContent="Disabled"
+                                             Margin="0,5"/>
+
+                            <mah:ToggleSwitch Header="Order Confirmations"
+                                             IsOn="{Binding SendOrderConfirmations}"
+                                             OnContent="Enabled"
+                                             OffContent="Disabled"
+                                             Margin="0,5"/>
+
+                            <mah:ToggleSwitch Header="Repair Status Updates"
+                                             IsOn="{Binding SendRepairUpdates}"
+                                             OnContent="Enabled"
+                                             OffContent="Disabled"
+                                             Margin="0,5"/>
+
+                            <mah:NumericUpDown Value="{Binding LowStockThreshold}"
+                                              Margin="0,5"
+                                              mah:TextBoxHelper.Watermark="Low Stock Threshold"
+                                              Minimum="0"/>
+                        </StackPanel>
+                    </Grid>
+                </mah:MetroContentControl>
+            </mah:MetroHeader>
+
+            <!-- Email Settings -->
+            <mah:MetroHeader Grid.Row="2"
+                            Header="Email Configuration"
+                            Margin="0,0,0,20">
+                <mah:MetroContentControl>
                     <StackPanel>
-                        <mah:ToggleSwitch Header="Order Notifications"
-                                         IsOn="{Binding OrderNotifications}"
-                                         OnContent="Enabled"
-                                         OffContent="Disabled"
-                                         Margin="0,5"/>
+                        <TextBox Text="{Binding SmtpServer}"
+                                 Margin="0,5"
+                                 mah:TextBoxHelper.Watermark="SMTP Server"
+                                 Style="{StaticResource MahApps.Styles.TextBox}"/>
 
-                        <mah:ToggleSwitch Header="Low Stock Alerts"
-                                         IsOn="{Binding LowStockAlerts}"
-                                         OnContent="Enabled"
-                                         OffContent="Disabled"
-                                         Margin="0,5"/>
-
-                        <mah:ToggleSwitch Header="Payment Reminders"
-                                         IsOn="{Binding PaymentReminders}"
-                                         OnContent="Enabled"
-                                         OffContent="Disabled"
-                                         Margin="0,5"/>
-
-                        <mah:NumericUpDown Value="{Binding LowStockThreshold}"
+                        <mah:NumericUpDown Value="{Binding SmtpPort}"
                                           Margin="0,5"
-                                          mah:TextBoxHelper.Watermark="Low Stock Threshold"
-                                          Minimum="0"/>
+                                          mah:TextBoxHelper.Watermark="SMTP Port"
+                                          Minimum="1"
+                                          Maximum="65535"/>
+
+                        <TextBox Text="{Binding SmtpUsername}"
+                                 Margin="0,5"
+                                 mah:TextBoxHelper.Watermark="SMTP Username"
+                                 Style="{StaticResource MahApps.Styles.TextBox}"/>
+
+                        <PasswordBox mah:TextBoxHelper.Watermark="SMTP Password"
+                                   Style="{StaticResource MahApps.Styles.PasswordBox}"
+                                   Margin="0,5"/>
+
+                        <TextBox Text="{Binding SenderName}"
+                                 Margin="0,5"
+                                 mah:TextBoxHelper.Watermark="Sender Name"
+                                 Style="{StaticResource MahApps.Styles.TextBox}"/>
                     </StackPanel>
                 </mah:MetroContentControl>
             </mah:MetroHeader>
 
             <!-- Backup Settings -->
-            <mah:MetroHeader Grid.Row="2"
+            <mah:MetroHeader Grid.Row="3"
                             Header="Backup Settings"
                             Margin="0,0,0,20">
                 <mah:MetroContentControl>
@@ -132,8 +230,8 @@
             </mah:MetroHeader>
 
             <!-- Action Buttons -->
-            <StackPanel Grid.Row="3" 
-                      Orientation="Horizontal" 
+            <StackPanel Grid.Row="4"
+                      Orientation="Horizontal"
                       HorizontalAlignment="Right"
                       Margin="0,20,0,0">
                 <Button Style="{StaticResource MahApps.Styles.Button}"
@@ -147,10 +245,13 @@
                 </Button>
 
                 <Button Style="{StaticResource MahApps.Styles.Button.Square.Accent}"
-                        Content="Save Changes"
-                        Command="{Binding SaveCommand}"
-                        HorizontalAlignment="Right"
-                        Margin="0,20,0,0"/>
+                        Command="{Binding SaveSettingsCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="ContentSave"
+                                                   Margin="0,0,5,0"/>
+                        <TextBlock Text="Save Changes"/>
+                    </StackPanel>
+                </Button>
             </StackPanel>
         </Grid>
     </ScrollViewer>

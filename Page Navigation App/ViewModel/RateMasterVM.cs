@@ -37,6 +37,9 @@ namespace Page_Navigation_App.ViewModel
         private string[] _purities = new[] { "18k", "22k", "24k" };
         public string[] Purities => _purities;
 
+        private string[] _sources = new[] { "Market", "Association", "Custom" };
+        public string[] Sources => _sources;
+
         public RateMasterVM(RateMasterService rateService)
         {
             _rateService = rateService;
@@ -77,7 +80,18 @@ namespace Page_Navigation_App.ViewModel
         {
             SelectedRate.EffectiveDate = DateTime.Now;
             SelectedRate.IsActive = true;
+            SelectedRate.EnteredBy = Environment.UserName;
             SelectedRate.UpdatedBy = Environment.UserName;
+            
+            if (SelectedRate.ValidUntil == null)
+            {
+                SelectedRate.ValidUntil = DateTime.Now.AddDays(1); // Default 24h validity
+            }
+
+            if (string.IsNullOrEmpty(SelectedRate.Source))
+            {
+                SelectedRate.Source = "Market"; // Default source
+            }
 
             if (SelectedRate.RateID > 0)
             {
@@ -97,6 +111,8 @@ namespace Page_Navigation_App.ViewModel
             SelectedRate = new RateMaster
             {
                 EffectiveDate = DateTime.Now,
+                ValidUntil = DateTime.Now.AddDays(1),
+                Source = "Market",
                 IsActive = true
             };
         }
@@ -105,7 +121,9 @@ namespace Page_Navigation_App.ViewModel
         {
             return !string.IsNullOrEmpty(SelectedRate.MetalType) &&
                    !string.IsNullOrEmpty(SelectedRate.Purity) &&
-                   SelectedRate.Rate > 0;
+                   !string.IsNullOrEmpty(SelectedRate.Source) &&
+                   SelectedRate.Rate > 0 &&
+                   SelectedRate.ValidUntil > DateTime.Now;
         }
     }
 }

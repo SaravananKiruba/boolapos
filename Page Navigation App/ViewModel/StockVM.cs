@@ -15,6 +15,7 @@ namespace Page_Navigation_App.ViewModel
 
         public ObservableCollection<Stock> Stocks { get; } = new ObservableCollection<Stock>();
         public ObservableCollection<string> Locations { get; } = new ObservableCollection<string>();
+        public ObservableCollection<Product> Products { get; } = new ObservableCollection<Product>();
 
         private Stock _selectedStock;
         public Stock SelectedStock
@@ -34,6 +35,17 @@ namespace Page_Navigation_App.ViewModel
             set
             {
                 _selectedLocation = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string _transferLocation;
+        public string TransferLocation
+        {
+            get => _transferLocation;
+            set
+            {
+                _transferLocation = value;
                 OnPropertyChanged();
             }
         }
@@ -81,6 +93,17 @@ namespace Page_Navigation_App.ViewModel
 
             LoadStocks();
             LoadLocations();
+            LoadProducts();
+        }
+
+        private async void LoadProducts()
+        {
+            Products.Clear();
+            var products = await _productService.GetAllProducts();
+            foreach (var product in products)
+            {
+                Products.Add(product);
+            }
         }
 
         private async void LoadStocks()
@@ -127,14 +150,29 @@ namespace Page_Navigation_App.ViewModel
             ClearForm();
         }
 
+        private bool CanAddOrUpdateStock()
+        {
+            return SelectedStock?.ProductID > 0 && 
+                   !string.IsNullOrEmpty(SelectedLocation) && 
+                   Quantity > 0;
+        }
+
+        private bool CanTransferStock()
+        {
+            return SelectedStock != null && 
+                   !string.IsNullOrEmpty(TransferLocation) && 
+                   Quantity > 0 && 
+                   TransferLocation != SelectedStock.Location;
+        }
+
         private async void TransferStock()
         {
-            if (SelectedStock != null && !string.IsNullOrEmpty(SelectedLocation))
+            if (SelectedStock != null && !string.IsNullOrEmpty(TransferLocation))
             {
                 await _stockService.TransferStock(
                     SelectedStock.ProductID,
                     SelectedStock.Location,
-                    SelectedLocation,
+                    TransferLocation,
                     Quantity);
 
                 LoadStocks();
@@ -176,23 +214,9 @@ namespace Page_Navigation_App.ViewModel
         {
             SelectedStock = new Stock();
             SelectedLocation = null;
+            TransferLocation = null;
             Quantity = 0;
             SearchTerm = string.Empty;
-        }
-
-        private bool CanAddOrUpdateStock()
-        {
-            return SelectedStock != null && 
-                   !string.IsNullOrEmpty(SelectedLocation) && 
-                   Quantity > 0;
-        }
-
-        private bool CanTransferStock()
-        {
-            return SelectedStock != null && 
-                   !string.IsNullOrEmpty(SelectedLocation) && 
-                   Quantity > 0 && 
-                   SelectedLocation != SelectedStock?.Location;
         }
     }
 }

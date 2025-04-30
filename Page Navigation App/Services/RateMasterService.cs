@@ -96,15 +96,15 @@ namespace Page_Navigation_App.Services
 
         private async Task NotifyRateChange(RateMaster newRate)
         {
-            // Get NotificationSettings
-            var settings = await _context.Settings
-                .Where(s => s.Key.StartsWith("Notification"))
-                .ToDictionaryAsync(s => s.Key, s => s.Value);
+            // Get Settings
+            var settings = await _context.Settings.FirstOrDefaultAsync();
+            if (settings == null) return;
 
-            bool sendSMS = settings.GetValueOrDefault("NotificationSMSEnabled") == "true";
-            bool sendWhatsApp = settings.GetValueOrDefault("NotificationWhatsAppEnabled") == "true";
+            // Since we don't have specific SMS/WhatsApp notification settings in our Setting model,
+            // we'll use the generic OrderNotifications setting for now
+            bool sendNotifications = settings.OrderNotifications;
 
-            if (sendSMS || sendWhatsApp)
+            if (sendNotifications)
             {
                 var message = $"Rate Update: {newRate.MetalType} {newRate.Purity} - ₹{newRate.Rate:N2}/g";
                 
@@ -115,13 +115,13 @@ namespace Page_Navigation_App.Services
 
                 foreach (var customer in customers)
                 {
-                    if (sendSMS && !string.IsNullOrEmpty(customer.PhoneNumber))
+                    if (!string.IsNullOrEmpty(customer.PhoneNumber))
                     {
                         // TODO: Implement SMS notification
                         // await _smsService.SendSMS(customer.PhoneNumber, message);
                     }
 
-                    if (sendWhatsApp && !string.IsNullOrEmpty(customer.WhatsAppNumber))
+                    if (!string.IsNullOrEmpty(customer.WhatsAppNumber))
                     {
                         // TODO: Implement WhatsApp notification
                         // await _whatsAppService.SendMessage(customer.WhatsAppNumber, message);

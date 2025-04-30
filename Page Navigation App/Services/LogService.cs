@@ -129,6 +129,14 @@ namespace Page_Navigation_App.Services
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<LogEntry>> GetSystemLogs(DateTime startDate, DateTime endDate)
+        {
+            return await _context.LogEntries
+                .Where(l => l.Timestamp >= startDate && l.Timestamp <= endDate)
+                .OrderByDescending(l => l.Timestamp)
+                .ToListAsync();
+        }
+
         public async Task<IEnumerable<AuditLog>> GetAuditLogs(
             DateTime? startDate = null,
             DateTime? endDate = null,
@@ -148,6 +156,23 @@ namespace Page_Navigation_App.Services
 
             if (!string.IsNullOrEmpty(action))
                 query = query.Where(l => l.Action == action);
+
+            return await query
+                .OrderByDescending(l => l.Timestamp)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<NotificationLog>> GetNotificationLogs(
+            DateTime? startDate = null,
+            DateTime? endDate = null)
+        {
+            var query = _context.NotificationLog.AsQueryable();
+
+            if (startDate.HasValue)
+                query = query.Where(l => l.Timestamp >= startDate.Value);
+
+            if (endDate.HasValue)
+                query = query.Where(l => l.Timestamp <= endDate.Value);
 
             return await query
                 .OrderByDescending(l => l.Timestamp)

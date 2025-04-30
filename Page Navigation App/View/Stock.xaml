@@ -1,0 +1,176 @@
+<UserControl x:Class="Page_Navigation_App.View.Stock"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             mc:Ignorable="d"
+             d:DesignHeight="600"
+             d:DesignWidth="1000">
+
+    <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="350"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Stock Entry Form -->
+        <mah:MetroHeader Header="Stock Details">
+            <mah:MetroContentControl>
+                <StackPanel>
+                    <!-- Product Selection -->
+                    <ComboBox ItemsSource="{Binding Products}"
+                              DisplayMemberPath="ProductName"
+                              SelectedValue="{Binding SelectedStock.ProductID}"
+                              SelectedValuePath="ProductID"
+                              Margin="0,5"
+                              mah:TextBoxHelper.Watermark="Select Product"
+                              Style="{StaticResource MahApps.Styles.ComboBox}"/>
+
+                    <!-- Location -->
+                    <ComboBox ItemsSource="{Binding Locations}"
+                              SelectedValue="{Binding SelectedLocation}"
+                              Margin="0,5"
+                              IsEditable="True"
+                              mah:TextBoxHelper.Watermark="Location"
+                              Style="{StaticResource MahApps.Styles.ComboBox}"/>
+
+                    <!-- Quantity -->
+                    <mah:NumericUpDown Value="{Binding Quantity}"
+                                      Margin="0,5"
+                                      mah:TextBoxHelper.Watermark="Quantity"
+                                      Style="{StaticResource MahApps.Styles.NumericUpDown}"
+                                      StringFormat="N3"
+                                      Minimum="0"/>
+
+                    <!-- Purchase Price -->
+                    <mah:NumericUpDown Value="{Binding SelectedStock.PurchasePrice}"
+                                      Margin="0,5"
+                                      mah:TextBoxHelper.Watermark="Purchase Price"
+                                      Style="{StaticResource MahApps.Styles.NumericUpDown}"
+                                      StringFormat="C2"
+                                      Minimum="0"/>
+
+                    <!-- Dead Stock Toggle -->
+                    <mah:ToggleSwitch Header="Dead Stock Status"
+                                     IsOn="{Binding SelectedStock.IsDeadStock}"
+                                     OnContent="Yes"
+                                     OffContent="No"
+                                     Margin="0,10"/>
+
+                    <!-- Action Buttons -->
+                    <StackPanel Orientation="Horizontal" 
+                              Margin="0,20,0,0"
+                              HorizontalAlignment="Right">
+                        <Button Content="Clear"
+                                Margin="0,0,10,0"
+                                Style="{StaticResource MahApps.Styles.Button}"
+                                Command="{Binding ClearCommand}"/>
+                        
+                        <Button Content="Save"
+                                Style="{StaticResource MahApps.Styles.Button.Square.Accent}"
+                                Command="{Binding AddOrUpdateCommand}"/>
+                    </StackPanel>
+
+                    <!-- Stock Transfer Section -->
+                    <mah:MetroHeader Header="Transfer Stock" Margin="0,20,0,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <ComboBox ItemsSource="{Binding Locations}"
+                                      SelectedValue="{Binding TransferLocation}"
+                                      Margin="0,0,10,0"
+                                      IsEditable="True"
+                                      mah:TextBoxHelper.Watermark="Transfer To Location"
+                                      Style="{StaticResource MahApps.Styles.ComboBox}"/>
+
+                            <Button Grid.Column="1"
+                                    Content="Transfer"
+                                    Style="{StaticResource MahApps.Styles.Button}"
+                                    Command="{Binding TransferCommand}"/>
+                        </Grid>
+                    </mah:MetroHeader>
+                </StackPanel>
+            </mah:MetroContentControl>
+        </mah:MetroHeader>
+
+        <!-- Stock List -->
+        <Grid Grid.Column="1" Margin="20,0,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Search and Filter Controls -->
+            <Grid Margin="0,0,0,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBox Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}"
+                         mah:TextBoxHelper.Watermark="Search stocks..."
+                         Style="{StaticResource MahApps.Styles.TextBox}">
+                    <TextBox.InputBindings>
+                        <KeyBinding Key="Return" Command="{Binding SearchCommand}"/>
+                    </TextBox.InputBindings>
+                </TextBox>
+
+                <Button Grid.Column="1"
+                        Margin="10,0"
+                        Style="{StaticResource MahApps.Styles.Button}"
+                        Command="{Binding LoadDeadStockCommand}">
+                    <TextBlock Text="Dead Stock"/>
+                </Button>
+
+                <Button Grid.Column="2"
+                        Style="{StaticResource MahApps.Styles.Button}"
+                        Command="{Binding LoadLowStockCommand}">
+                    <TextBlock Text="Low Stock"/>
+                </Button>
+            </Grid>
+
+            <!-- Stock Grid -->
+            <DataGrid Grid.Row="1"
+                      ItemsSource="{Binding Stocks}"
+                      SelectedItem="{Binding SelectedStock}"
+                      AutoGenerateColumns="False"
+                      Style="{StaticResource MahApps.Styles.DataGrid}"
+                      GridLinesVisibility="Horizontal"
+                      SelectionMode="Single"
+                      IsReadOnly="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Product" 
+                                      Binding="{Binding Product.ProductName}"
+                                      Width="*"/>
+                    <DataGridTextColumn Header="Location" 
+                                      Binding="{Binding Location}"
+                                      Width="100"/>
+                    <DataGridTextColumn Header="Quantity" 
+                                      Binding="{Binding Quantity, StringFormat=N3}"
+                                      Width="100"/>
+                    <DataGridTextColumn Header="Purchase Price" 
+                                      Binding="{Binding PurchasePrice, StringFormat=C2}"
+                                      Width="120"/>
+                    <DataGridTextColumn Header="Days in Stock" 
+                                      Binding="{Binding DaysInStock}"
+                                      Width="100"/>
+                    <DataGridTextColumn Header="Status" 
+                                      Binding="{Binding StockStatus}"
+                                      Width="100"/>
+                    <DataGridTextColumn Header="Last Updated" 
+                                      Binding="{Binding LastUpdated, StringFormat=d}"
+                                      Width="100"/>
+                    <DataGridTextColumn Header="Last Sold" 
+                                      Binding="{Binding LastSold, StringFormat=d}"
+                                      Width="100"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+    </Grid>
+</UserControl>

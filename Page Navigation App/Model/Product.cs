@@ -70,6 +70,8 @@ namespace Page_Navigation_App.Model
 
         public bool IsDeadStock { get; set; }
 
+        public bool IsActive { get; set; } = true;  // Added IsActive property with default value
+
         [Required]
         [ForeignKey("Category")]
         public int CategoryID { get; set; }

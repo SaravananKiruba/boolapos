@@ -1,0 +1,210 @@
+<UserControl x:Class="Page_Navigation_App.View.Logs"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             mc:Ignorable="d"
+             d:DesignHeight="600"
+             d:DesignWidth="1000">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Filter Controls -->
+        <Grid Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Text="From:" 
+                     VerticalAlignment="Center"/>
+            <mah:DateTimePicker Grid.Column="1"
+                               Margin="10,0"
+                               SelectedDateTime="{Binding StartDate}"
+                               mah:TextBoxHelper.Watermark="Start Date"/>
+
+            <TextBlock Grid.Column="2" 
+                     Text="To:" 
+                     VerticalAlignment="Center"/>
+            <mah:DateTimePicker Grid.Column="3"
+                               Margin="10,0"
+                               SelectedDateTime="{Binding EndDate}"
+                               mah:TextBoxHelper.Watermark="End Date"/>
+
+            <TextBlock Grid.Column="4" 
+                     Text="Log Type:" 
+                     VerticalAlignment="Center"/>
+            <ComboBox Grid.Column="5"
+                      Margin="10,0"
+                      ItemsSource="{Binding LogTypes}"
+                      SelectedItem="{Binding SelectedLogType}"
+                      Style="{StaticResource MahApps.Styles.ComboBox}"/>
+
+            <Button Grid.Column="6"
+                    Style="{StaticResource MahApps.Styles.Button.Square}"
+                    Command="{Binding LoadLogsCommand}">
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial Kind="Refresh" 
+                                           Margin="0,0,5,0"/>
+                    <TextBlock Text="Load"/>
+                </StackPanel>
+            </Button>
+        </Grid>
+
+        <!-- Log Tabs -->
+        <TabControl Grid.Row="1">
+            <!-- System Logs -->
+            <TabItem Header="System Logs">
+                <DataGrid ItemsSource="{Binding SystemLogs}"
+                         AutoGenerateColumns="False"
+                         IsReadOnly="True"
+                         Style="{StaticResource MahApps.Styles.DataGrid}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Timestamp" 
+                                          Binding="{Binding Timestamp}"
+                                          Width="150"/>
+                        <DataGridTextColumn Header="Level" 
+                                          Binding="{Binding Level}"
+                                          Width="80"/>
+                        <DataGridTextColumn Header="Source" 
+                                          Binding="{Binding Source}"
+                                          Width="120"/>
+                        <DataGridTextColumn Header="Message" 
+                                          Binding="{Binding Message}"
+                                          Width="*"/>
+                        <DataGridTextColumn Header="User" 
+                                          Binding="{Binding UserID}"
+                                          Width="100"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+
+            <!-- Security Logs -->
+            <TabItem Header="Security Logs">
+                <DataGrid ItemsSource="{Binding SecurityLogs}"
+                         AutoGenerateColumns="False"
+                         IsReadOnly="True"
+                         Style="{StaticResource MahApps.Styles.DataGrid}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Timestamp" 
+                                          Binding="{Binding Timestamp}"
+                                          Width="150"/>
+                        <DataGridTextColumn Header="User" 
+                                          Binding="{Binding UserID}"
+                                          Width="100"/>
+                        <DataGridTextColumn Header="Action" 
+                                          Binding="{Binding Action}"
+                                          Width="100"/>
+                        <DataGridTextColumn Header="Description" 
+                                          Binding="{Binding Description}"
+                                          Width="*"/>
+                        <DataGridTextColumn Header="IP Address" 
+                                          Binding="{Binding IPAddress}"
+                                          Width="120"/>
+                        <DataGridTextColumn Header="Status" 
+                                          Binding="{Binding IsSuccessful}"
+                                          Width="80">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsSuccessful}" Value="True">
+                                            <Setter Property="Foreground" Value="#43A047"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsSuccessful}" Value="False">
+                                            <Setter Property="Foreground" Value="#E53935"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+
+            <!-- Audit Logs -->
+            <TabItem Header="Audit Logs">
+                <DataGrid ItemsSource="{Binding AuditLogs}"
+                         AutoGenerateColumns="False"
+                         IsReadOnly="True"
+                         Style="{StaticResource MahApps.Styles.DataGrid}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Timestamp" 
+                                          Binding="{Binding Timestamp}"
+                                          Width="150"/>
+                        <DataGridTextColumn Header="User" 
+                                          Binding="{Binding UserID}"
+                                          Width="100"/>
+                        <DataGridTextColumn Header="Action" 
+                                          Binding="{Binding Action}"
+                                          Width="100"/>
+                        <DataGridTextColumn Header="Entity" 
+                                          Binding="{Binding EntityName}"
+                                          Width="100"/>
+                        <DataGridTextColumn Header="Entity ID" 
+                                          Binding="{Binding EntityID}"
+                                          Width="80"/>
+                        <DataGridTextColumn Header="Old Values" 
+                                          Binding="{Binding OldValues}"
+                                          Width="*"/>
+                        <DataGridTextColumn Header="New Values" 
+                                          Binding="{Binding NewValues}"
+                                          Width="*"/>
+                        <DataGridTextColumn Header="Modified By" 
+                                          Binding="{Binding ModifiedBy}"
+                                          Width="100"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+
+            <!-- Notification Logs -->
+            <TabItem Header="Notification Logs">
+                <DataGrid ItemsSource="{Binding NotificationLogs}"
+                         AutoGenerateColumns="False"
+                         IsReadOnly="True"
+                         Style="{StaticResource MahApps.Styles.DataGrid}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Timestamp" 
+                                          Binding="{Binding Timestamp}"
+                                          Width="150"/>
+                        <DataGridTextColumn Header="Recipient" 
+                                          Binding="{Binding Recipient}"
+                                          Width="150"/>
+                        <DataGridTextColumn Header="Channel" 
+                                          Binding="{Binding Channel}"
+                                          Width="100"/>
+                        <DataGridTextColumn Header="Content" 
+                                          Binding="{Binding Content}"
+                                          Width="*"/>
+                        <DataGridTextColumn Header="Status" 
+                                          Binding="{Binding IsSuccessful}"
+                                          Width="80">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsSuccessful}" Value="True">
+                                            <Setter Property="Foreground" Value="#43A047"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsSuccessful}" Value="False">
+                                            <Setter Property="Foreground" Value="#E53935"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>

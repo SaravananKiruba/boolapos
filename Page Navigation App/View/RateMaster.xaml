@@ -76,6 +76,25 @@
                                           Minimum="0"/>
                     </Grid>
 
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <ComboBox Grid.Column="0"
+                                  Margin="0,0,10,0"
+                                  ItemsSource="{Binding Sources}"
+                                  SelectedItem="{Binding SelectedRate.Source}"
+                                  mah:TextBoxHelper.Watermark="Rate Source"
+                                  Style="{StaticResource MahApps.Styles.ComboBox}"/>
+
+                        <mah:DateTimePicker Grid.Column="1"
+                                           SelectedDateTime="{Binding SelectedRate.ValidUntil}"
+                                           mah:TextBoxHelper.Watermark="Valid Until"
+                                           Style="{StaticResource MahApps.Styles.DateTimePicker}"/>
+                    </Grid>
+
                     <TextBox Text="{Binding SelectedRate.Notes}"
                              mah:TextBoxHelper.Watermark="Notes"
                              Style="{StaticResource MahApps.Styles.TextBox}"

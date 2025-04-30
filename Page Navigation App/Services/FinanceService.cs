@@ -208,7 +208,7 @@ namespace Page_Navigation_App.Services
             return new Dictionary<string, decimal>
             {
                 ["TotalOutstanding"] = activePlans.Sum(f => f.RemainingAmount),
-                ["TotalEMIPlans"] = activePlans.Count,
+                ["TotalEMIPlans"] = activePlans.Count(),  // Changed from Count to Count()
                 ["AverageEMIAmount"] = activePlans.Any() 
                     ? activePlans.Average(f => f.InstallmentAmount) 
                     : 0,

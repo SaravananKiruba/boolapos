@@ -1,6 +1,4 @@
-using System;
 using System.Threading.Tasks;
-using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Page_Navigation_App.Data;
 using Page_Navigation_App.Model;
@@ -16,107 +14,84 @@ namespace Page_Navigation_App.Services
             _context = context;
         }
 
-        public async Task<T> GetTypedValue<T>(string key, T defaultValue)
-        {
-            var setting = await _context.Settings.FindAsync(key);
-            if (setting == null)
-                return defaultValue;
-
-            return JsonSerializer.Deserialize<T>(setting.Value);
-        }
-
-        public async Task<NotificationSettings> GetNotificationSettings()
-        {
-            return await GetTypedValue("NotificationSettings", new NotificationSettings
-            {
-                EnableSMS = true,
-                EnableWhatsApp = true,
-                EnableEmailNotifications = true,
-                SendBirthdayWishes = true,
-                SendAnniversaryWishes = true,
-                SendOrderConfirmations = true,
-                SendPaymentReminders = true,
-                SendRepairUpdates = true
-            });
-        }
-
+        // Business Info methods
         public async Task<BusinessInfo> GetBusinessInfo()
         {
-            return await GetTypedValue("BusinessInfo", new BusinessInfo
-            {
-                BusinessName = "Jewelry Shop",
-                Address = "Main Street",
-                Phone = "1234567890",
-                Email = "contact@jewelryshop.com"
-            });
+            return await _context.BusinessInfo.FirstOrDefaultAsync() ?? new BusinessInfo();
         }
 
         public async Task UpdateBusinessInfo(BusinessInfo info)
         {
-            var serialized = JsonSerializer.Serialize(info);
-            var setting = await _context.Settings.FindAsync("BusinessInfo");
-            
-            if (setting == null)
+            var existing = await _context.BusinessInfo.FirstOrDefaultAsync();
+            if (existing != null)
             {
-                setting = new Model.Setting { Key = "BusinessInfo", Value = serialized };
-                _context.Settings.Add(setting);
+                _context.Entry(existing).CurrentValues.SetValues(info);
             }
             else
             {
-                setting.Value = serialized;
+                await _context.BusinessInfo.AddAsync(info);
             }
-            
             await _context.SaveChangesAsync();
         }
 
+        // Settings methods
         public async Task<Setting> GetSettings()
         {
-            return await GetTypedValue("AppSettings", new Setting
-            {
-                OrderNotifications = true,
-                LowStockAlerts = true,
-                PaymentReminders = true,
-                LowStockThreshold = 10,
-                BackupPath = string.Empty
-            });
+            return await _context.Settings.FirstOrDefaultAsync() ?? new Setting();
         }
 
         public async Task UpdateSettings(Setting settings)
         {
-            var serialized = JsonSerializer.Serialize(settings);
-            var setting = await _context.Settings.FindAsync("AppSettings");
-            
-            if (setting == null)
+            var existing = await _context.Settings.FirstOrDefaultAsync();
+            if (existing != null)
             {
-                setting = new Model.Setting { Key = "AppSettings", Value = serialized };
-                _context.Settings.Add(setting);
+                _context.Entry(existing).CurrentValues.SetValues(settings);
             }
             else
             {
-                setting.Value = serialized;
+                await _context.Settings.AddAsync(settings);
             }
-            
             await _context.SaveChangesAsync();
         }
-    }
 
-    public class BusinessInfo
-    {
-        public string Name { get; set; }
-        public string BusinessName { get; set; }
-        public string Address { get; set; }
-        public string Phone { get; set; }
-        public string Email { get; set; }
-        public string Website { get; set; }
-        public string TaxId { get; set; }
-    }
+        // Notification settings methods
+        public async Task<NotificationSettings> GetNotificationSettings()
+        {
+            return await _context.NotificationSettings.FirstOrDefaultAsync() ?? new NotificationSettings();
+        }
 
-    public class Setting
-    {
-        public bool OrderNotifications { get; set; }
-        public bool LowStockAlerts { get; set; }
-        public bool PaymentReminders { get; set; }
-        public int LowStockThreshold { get; set; }
-        public string BackupPath { get; set; }
+        public async Task UpdateNotificationSettings(NotificationSettings settings)
+        {
+            var existing = await _context.NotificationSettings.FirstOrDefaultAsync();
+            if (existing != null)
+            {
+                _context.Entry(existing).CurrentValues.SetValues(settings);
+            }
+            else
+            {
+                await _context.NotificationSettings.AddAsync(settings);
+            }
+            await _context.SaveChangesAsync();
+        }
+
+        // Email settings methods
+        public async Task<EmailSettings> GetEmailSettings()
+        {
+            return await _context.EmailSettings.FirstOrDefaultAsync() ?? new EmailSettings();
+        }
+
+        public async Task UpdateEmailSettings(EmailSettings settings)
+        {
+            var existing = await _context.EmailSettings.FirstOrDefaultAsync();
+            if (existing != null)
+            {
+                _context.Entry(existing).CurrentValues.SetValues(settings);
+            }
+            else
+            {
+                await _context.EmailSettings.AddAsync(settings);
+            }
+            await _context.SaveChangesAsync();
+        }
     }
 }

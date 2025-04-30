@@ -1,9 +1,12 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Page_Navigation_App.Model
 {
     public class NotificationSettings
     {
+        [Key]
+        public int ID { get; set; }
         public bool EnableSMS { get; set; }
         public bool EnableWhatsApp { get; set; }
         public bool EnableEmailNotifications { get; set; }

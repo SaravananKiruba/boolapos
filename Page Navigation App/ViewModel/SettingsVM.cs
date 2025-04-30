@@ -1,4 +1,5 @@
 using Microsoft.Win32;
+using Page_Navigation_App.Model;
 using Page_Navigation_App.Services;
 using Page_Navigation_App.Utilities;
 using System.Windows;
@@ -23,8 +24,7 @@ namespace Page_Navigation_App.ViewModel
             BackupNowCommand = new RelayCommand<object>(_ => BackupNow());
         }
 
-        #region Properties
-
+        #region Business Information Properties
         private string _businessName;
         public string BusinessName
         {
@@ -90,7 +90,44 @@ namespace Page_Navigation_App.ViewModel
                 OnPropertyChanged();
             }
         }
+        #endregion
 
+        #region Notification Channel Properties
+        private bool _enableSMS;
+        public bool EnableSMS
+        {
+            get => _enableSMS;
+            set
+            {
+                _enableSMS = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private bool _enableWhatsApp;
+        public bool EnableWhatsApp
+        {
+            get => _enableWhatsApp;
+            set
+            {
+                _enableWhatsApp = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private bool _enableEmailNotifications;
+        public bool EnableEmailNotifications
+        {
+            get => _enableEmailNotifications;
+            set
+            {
+                _enableEmailNotifications = value;
+                OnPropertyChanged();
+            }
+        }
+        #endregion
+
+        #region Notification Type Properties
         private bool _orderNotifications;
         public bool OrderNotifications
         {
@@ -124,6 +161,50 @@ namespace Page_Navigation_App.ViewModel
             }
         }
 
+        private bool _sendBirthdayWishes;
+        public bool SendBirthdayWishes
+        {
+            get => _sendBirthdayWishes;
+            set
+            {
+                _sendBirthdayWishes = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private bool _sendAnniversaryWishes;
+        public bool SendAnniversaryWishes
+        {
+            get => _sendAnniversaryWishes;
+            set
+            {
+                _sendAnniversaryWishes = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private bool _sendOrderConfirmations;
+        public bool SendOrderConfirmations
+        {
+            get => _sendOrderConfirmations;
+            set
+            {
+                _sendOrderConfirmations = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private bool _sendRepairUpdates;
+        public bool SendRepairUpdates
+        {
+            get => _sendRepairUpdates;
+            set
+            {
+                _sendRepairUpdates = value;
+                OnPropertyChanged();
+            }
+        }
+
         private int _lowStockThreshold;
         public int LowStockThreshold
         {
@@ -134,7 +215,55 @@ namespace Page_Navigation_App.ViewModel
                 OnPropertyChanged();
             }
         }
+        #endregion
 
+        #region Email Configuration Properties
+        private string _smtpServer;
+        public string SmtpServer
+        {
+            get => _smtpServer;
+            set
+            {
+                _smtpServer = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private int _smtpPort;
+        public int SmtpPort
+        {
+            get => _smtpPort;
+            set
+            {
+                _smtpPort = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string _smtpUsername;
+        public string SmtpUsername
+        {
+            get => _smtpUsername;
+            set
+            {
+                _smtpUsername = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string _senderName;
+        public string SenderName
+        {
+            get => _senderName;
+            set
+            {
+                _senderName = value;
+                OnPropertyChanged();
+            }
+        }
+        #endregion
+
+        #region Backup Settings Properties
         private string _backupPath;
         public string BackupPath
         {
@@ -145,7 +274,6 @@ namespace Page_Navigation_App.ViewModel
                 OnPropertyChanged();
             }
         }
-
         #endregion
 
         #region Commands
@@ -159,6 +287,8 @@ namespace Page_Navigation_App.ViewModel
         {
             var businessInfo = await _configService.GetBusinessInfo();
             var settings = await _configService.GetSettings();
+            var notificationSettings = await _configService.GetNotificationSettings();
+            var emailSettings = await _configService.GetEmailSettings();
 
             // Business Information
             BusinessName = businessInfo.BusinessName;
@@ -168,11 +298,26 @@ namespace Page_Navigation_App.ViewModel
             Website = businessInfo.Website;
             TaxId = businessInfo.TaxId;
 
-            // Notification Settings
+            // Notification Channel Settings
+            EnableSMS = notificationSettings.EnableSMS;
+            EnableWhatsApp = notificationSettings.EnableWhatsApp;
+            EnableEmailNotifications = notificationSettings.EnableEmailNotifications;
+
+            // Notification Type Settings
             OrderNotifications = settings.OrderNotifications;
             LowStockAlerts = settings.LowStockAlerts;
             PaymentReminders = settings.PaymentReminders;
+            SendBirthdayWishes = notificationSettings.SendBirthdayWishes;
+            SendAnniversaryWishes = notificationSettings.SendAnniversaryWishes;
+            SendOrderConfirmations = notificationSettings.SendOrderConfirmations;
+            SendRepairUpdates = notificationSettings.SendRepairUpdates;
             LowStockThreshold = settings.LowStockThreshold;
+
+            // Email Settings
+            SmtpServer = emailSettings.SmtpServer;
+            SmtpPort = emailSettings.SmtpPort;
+            SmtpUsername = emailSettings.Username;
+            SenderName = emailSettings.SenderName;
 
             // Backup Settings
             BackupPath = settings.BackupPath;
@@ -199,6 +344,26 @@ namespace Page_Navigation_App.ViewModel
                     PaymentReminders = PaymentReminders,
                     LowStockThreshold = LowStockThreshold,
                     BackupPath = BackupPath
+                });
+
+                await _configService.UpdateNotificationSettings(new NotificationSettings
+                {
+                    EnableSMS = EnableSMS,
+                    EnableWhatsApp = EnableWhatsApp,
+                    EnableEmailNotifications = EnableEmailNotifications,
+                    SendBirthdayWishes = SendBirthdayWishes,
+                    SendAnniversaryWishes = SendAnniversaryWishes,
+                    SendOrderConfirmations = SendOrderConfirmations,
+                    SendPaymentReminders = PaymentReminders,
+                    SendRepairUpdates = SendRepairUpdates
+                });
+
+                await _configService.UpdateEmailSettings(new EmailSettings
+                {
+                    SmtpServer = SmtpServer,
+                    SmtpPort = SmtpPort,
+                    Username = SmtpUsername,
+                    SenderName = SenderName
                 });
 
                 MessageBox.Show("Settings saved successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
