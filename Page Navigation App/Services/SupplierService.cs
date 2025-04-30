@@ -101,7 +101,7 @@ namespace Page_Navigation_App.Services
                 TotalAmount = amount,
                 RemainingAmount = amount,
                 Status = "Purchase",
-                OrderReference = referenceNumber,
+                OrderReference = 0, // Since this is a purchase, not an order
                 StartDate = DateTime.Now
             };
 
@@ -127,7 +127,7 @@ namespace Page_Navigation_App.Services
                 TotalAmount = amount,
                 RemainingAmount = 0,
                 Status = "Payment",
-                OrderReference = referenceNumber,
+                OrderReference = 0, // Since this is a payment, not an order
                 StartDate = DateTime.Now,
                 LastPaymentDate = DateTime.Now
             };
