@@ -31,6 +31,8 @@ namespace Page_Navigation_App.Data
         public DbSet<LogEntry> LogEntries { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<SecurityLog> SecurityLogs { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<UserRole> UserRoles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

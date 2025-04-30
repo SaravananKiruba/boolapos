@@ -206,6 +206,42 @@ namespace Page_Navigation_App.Services
                 { "Regular", customers.Count(c => c.Orders.Sum(o => o.GrandTotal) < 50000) }
             };
         }
+
+        public async Task<IEnumerable<Customer>> GetAllCustomers()
+        {
+            return await _context.Customers
+                .Include(c => c.Orders)
+                .Include(c => c.RepairJobs)
+                .Include(c => c.Payments)
+                .OrderBy(c => c.CustomerName)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Customer>> FilterCustomers(
+            string searchTerm = null,
+            bool? isActive = null)
+        {
+            var query = _context.Customers
+                .Include(c => c.Orders)
+                .Include(c => c.RepairJobs)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                query = query.Where(c =>
+                    c.CustomerName.Contains(searchTerm) ||
+                    c.PhoneNumber.Contains(searchTerm) ||
+                    c.Email.Contains(searchTerm) ||
+                    c.GSTNumber.Contains(searchTerm));
+            }
+
+            if (isActive.HasValue)
+            {
+                query = query.Where(c => c.IsActive == isActive.Value);
+            }
+
+            return await query.ToListAsync();
+        }
     }
 
     public class CustomerStats

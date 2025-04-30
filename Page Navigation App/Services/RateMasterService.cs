@@ -63,6 +63,15 @@ namespace Page_Navigation_App.Services
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<RateMaster>> GetAllCurrentRates()
+        {
+            return await _context.RateMaster
+                .Where(r => r.IsActive)
+                .OrderBy(r => r.MetalType)
+                .ThenBy(r => r.Purity)
+                .ToListAsync();
+        }
+
         public async Task<IEnumerable<RateMaster>> GetRateHistory(
             string metalType,
             string purity,

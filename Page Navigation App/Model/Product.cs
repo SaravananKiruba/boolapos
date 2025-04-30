@@ -18,12 +18,28 @@ namespace Page_Navigation_App.Model
         public string Description { get; set; }
 
         [Required]
-        [StringLength(20)]
-        public string MetalType { get; set; } // Gold, Silver, Platinum
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(0.01, 999999999.99)]
+        public decimal Price { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(0, 999999999.99)]
+        public decimal BasePrice { get; set; }
 
         [Required]
-        [StringLength(10)]
-        public string Purity { get; set; } // 18k, 22k, 24k
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(0.01, 999999999.99)]
+        public decimal FinalPrice { get; set; }
+
+        [Column(TypeName = "decimal(5,2)")]
+        [Range(0, 100)]
+        public decimal WastagePercentage { get; set; }
+
+        [Required]
+        public string MetalType { get; set; }
+
+        [Required]
+        public string Purity { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(10,3)")]
@@ -36,11 +52,6 @@ namespace Page_Navigation_App.Model
         public decimal NetWeight { get; set; }
 
         [Required]
-        [Column(TypeName = "decimal(5,2)")]
-        [Range(0, 100)]
-        public decimal WastagePercentage { get; set; }
-
-        [Required]
         [Column(TypeName = "decimal(18,2)")]
         [Range(0.01, 999999999.99)]
         public decimal MakingCharges { get; set; }
@@ -48,16 +59,6 @@ namespace Page_Navigation_App.Model
         [Column(TypeName = "decimal(18,2)")]
         [Range(0, 999999999.99)]
         public decimal StoneValue { get; set; }
-
-        [Required]
-        [Column(TypeName = "decimal(18,2)")]
-        [Range(0.01, 999999999.99)]
-        public decimal BasePrice { get; set; }
-
-        [Required]
-        [Column(TypeName = "decimal(18,2)")]
-        [Range(0.01, 999999999.99)]
-        public decimal FinalPrice { get; set; }
 
         [StringLength(50)]
         [RegularExpression(@"^[A-Za-z0-9\-]+$")]

@@ -378,7 +378,7 @@ namespace Page_Navigation_App.Services
             bool success,
             string details)
         {
-            var notification = new NotificationLog
+            var notification = new Model.NotificationLog
             {
                 Timestamp = DateTime.Now,
                 Recipient = recipient,
@@ -398,17 +398,6 @@ namespace Page_Navigation_App.Services
                     "NotificationService");
             }
         }
-    }
-
-    public class NotificationLog
-    {
-        public int ID { get; set; }
-        public DateTime Timestamp { get; set; }
-        public string Recipient { get; set; }
-        public string Channel { get; set; }
-        public string Content { get; set; }
-        public bool IsSuccessful { get; set; }
-        public string Details { get; set; }
     }
 
     public class EmailSettings

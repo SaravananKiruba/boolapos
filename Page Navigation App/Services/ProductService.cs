@@ -199,5 +199,29 @@ namespace Page_Navigation_App.Services
 
             await _context.SaveChangesAsync();
         }
+
+        public async Task<IEnumerable<Product>> GetAllProducts()
+        {
+            return await _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Subcategory)
+                .Include(p => p.Supplier)
+                .OrderBy(p => p.ProductName)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Product>> FilterProducts(string searchTerm)
+        {
+            return await _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Subcategory)
+                .Include(p => p.Supplier)
+                .Where(p => 
+                    p.ProductName.Contains(searchTerm) ||
+                    p.Barcode.Contains(searchTerm) ||
+                    p.Description.Contains(searchTerm))
+                .OrderBy(p => p.ProductName)
+                .ToListAsync();
+        }
     }
 }

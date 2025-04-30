@@ -12,7 +12,7 @@ namespace Page_Navigation_App.Model
 
         [Required]
         [ForeignKey("Customer")]
-        public string CustomerId { get; set; }
+        public int CustomerId { get; set; }
 
         [Required]
         [StringLength(20)]
@@ -22,9 +22,26 @@ namespace Page_Navigation_App.Model
         [StringLength(500)]
         public string ItemDetails { get; set; }
 
+        [StringLength(500)]
+        public string Description { get; set; }
+
+        [Required]
+        [StringLength(20)]
+        public string MetalType { get; set; }
+
+        [Required]
+        [Column(TypeName = "decimal(10,3)")]
+        [Range(0.001, 9999.999)]
+        public decimal Weight { get; set; }
+
         [Required]
         [StringLength(50)]
-        public string WorkType { get; set; }  // Repair/Resize/Polish/etc
+        public string WorkType { get; set; }
+
+        [Required]
+        public DateTime ReceiptDate { get; set; }
+
+        public DateTime? PromisedDate { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
@@ -36,34 +53,15 @@ namespace Page_Navigation_App.Model
         public decimal FinalAmount { get; set; }
 
         [Required]
-        public DateTime StartDate { get; set; }
-
-        [Required]
-        public DateTime EstimatedEndDate { get; set; }
-
-        public DateTime? CompletionDate { get; set; }
-
-        [Required]
         [StringLength(20)]
-        public string Status { get; set; }  // Pending/InProgress/Completed/Delivered
-
-        [Column(TypeName = "decimal(10,3)")]
-        [Range(0, 9999.999)]
-        public decimal? ItemWeight { get; set; }
+        public string Status { get; set; }  // Pending/In Process/Completed/Delivered
 
         [StringLength(500)]
-        public string Notes { get; set; }
+        public string ImagePath { get; set; }
 
-        [Required]
-        [StringLength(20)]
-        public string Priority { get; set; }  // Normal/High/Urgent
-        public DateTime ReceiptDate { get; set; }
         public bool SMSNotificationSent { get; set; }
         public bool WhatsAppNotificationSent { get; set; }
-        public string ImagePath { get; set; }
-        public DateTime PromisedDate { get; set; }
-        public string MetalType { get; set; }
-        public decimal Weight { get; set; }
+        public DateTime? CompletionDate { get; set; }
 
         // Navigation property
         public virtual Customer Customer { get; set; }

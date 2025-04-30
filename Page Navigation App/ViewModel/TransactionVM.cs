@@ -87,7 +87,7 @@ namespace Page_Navigation_App.ViewModel
 
         private void AddOrUpdateTransaction()
         {
-            if (SelectedTransaction.FinanceID > 0)
+            if (!string.IsNullOrEmpty(SelectedTransaction.FinanceID))
             {
                 _financeService.UpdateTransaction(SelectedTransaction);
             }
@@ -131,6 +131,12 @@ namespace Page_Navigation_App.ViewModel
             {
                 Transactions.Add(transaction);
             }
+        }
+        
+        private bool ValidateTransaction()
+        {
+            if (SelectedTransaction == null) return false;
+            return SelectedTransaction.Amount > 0;
         }
     }
 }

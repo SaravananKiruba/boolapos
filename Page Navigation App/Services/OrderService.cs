@@ -1,10 +1,10 @@
-using Microsoft.EntityFrameworkCore;
-using Page_Navigation_App.Data;
-using Page_Navigation_App.Model;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using Page_Navigation_App.Data;
+using Page_Navigation_App.Model;
 
 namespace Page_Navigation_App.Services
 {
@@ -84,10 +84,10 @@ namespace Page_Navigation_App.Services
                 {
                     var exchangeRate = await _rateService.GetCurrentRate(
                         order.ExchangeMetalType,
-                        order.ExchangeMetalPurity);
+                        order.ExchangeMetalPurity.ToString());
 
                     order.ExchangeValue = order.ExchangeMetalWeight * exchangeRate.PurchaseRate;
-                    totalAmount -= order.ExchangeValue.Value;
+                    totalAmount -= order.ExchangeValue;
                 }
 
                 // Update order totals
@@ -98,7 +98,7 @@ namespace Page_Navigation_App.Services
                 // Handle EMI
                 if (order.PaymentType == "EMI" && order.EMIMonths > 0)
                 {
-                    order.EMIAmount = Math.Ceiling(order.GrandTotal / order.EMIMonths.Value);
+                    order.EMIAmount = Math.Ceiling(order.GrandTotal / order.EMIMonths);
                 }
 
                 await _context.OrderDetails.AddRangeAsync(details);
@@ -132,9 +132,7 @@ namespace Page_Navigation_App.Services
                 .ToListAsync();
         }
 
-        public async Task<Dictionary<string, decimal>> GetSalesSummary(
-            DateTime startDate,
-            DateTime endDate)
+        public async Task<Dictionary<string, decimal>> GetSalesSummary(DateTime startDate, DateTime endDate)
         {
             var orders = await _context.Orders
                 .Include(o => o.OrderDetails)
@@ -150,7 +148,7 @@ namespace Page_Navigation_App.Services
                 { "CGST", orders.Sum(o => o.OrderDetails.Sum(od => od.CGSTAmount)) },
                 { "SGST", orders.Sum(o => o.OrderDetails.Sum(od => od.SGSTAmount)) },
                 { "IGST", orders.Sum(o => o.OrderDetails.Sum(od => od.IGSTAmount)) },
-                { "ExchangeValue", orders.Where(o => o.HasMetalExchange).Sum(o => o.ExchangeValue ?? 0) }
+                { "ExchangeValue", orders.Where(o => o.HasMetalExchange).Sum(o => o.ExchangeValue) }
             };
         }
 
@@ -170,6 +168,28 @@ namespace Page_Navigation_App.Services
             }
 
             return $"{today:yyyyMMdd}-{sequence:D4}";
+        }
+
+        public async Task<IEnumerable<Order>> GetOrdersByDate(DateTime startDate, DateTime endDate)
+        {
+            return await _context.Orders
+                .Include(o => o.Customer)
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                .Where(o => o.OrderDate.Date >= startDate.Date && 
+                           o.OrderDate.Date <= endDate.Date)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Order>> GetAllOrders()
+        {
+            return await _context.Orders
+                .Include(o => o.Customer)
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
         }
     }
 }

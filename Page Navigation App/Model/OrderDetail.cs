@@ -28,9 +28,14 @@ namespace Page_Navigation_App.Model
         public decimal NetWeight { get; set; }
 
         [Required]
-        [Column(TypeName = "decimal(5,2)")]
-        [Range(0, 100)]
-        public decimal WastagePercentage { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(0.01, 999999999.99)]
+        public decimal MetalRate { get; set; }
+
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(0.01, 999999999.99)]
+        public decimal BaseAmount { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
@@ -44,22 +49,24 @@ namespace Page_Navigation_App.Model
         [Required]
         [Column(TypeName = "decimal(18,2)")]
         [Range(0.01, 999999999.99)]
-        public decimal UnitPrice { get; set; }
+        public decimal TaxableAmount { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal CGSTAmount { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal SGSTAmount { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal IGSTAmount { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
         [Range(0.01, 999999999.99)]
-        public decimal LineTotal { get; set; }
+        public decimal FinalAmount { get; set; }
 
         [StringLength(500)]
         public string Notes { get; set; }
-        public decimal MetalRate { get; set; }
-        public decimal BaseAmount { get; set; }
-        public decimal TaxableAmount { get; set; }
-        public decimal CGSTAmount { get; set; }
-        public decimal SGSTAmount { get; set; }
-        public decimal IGSTAmount { get; set; }
-        public decimal FinalAmount { get; set; }
 
         // Navigation properties
         public Order Order { get; set; }

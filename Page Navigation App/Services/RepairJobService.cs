@@ -120,10 +120,10 @@ namespace Page_Navigation_App.Services
                     r.Customer.PhoneNumber.Contains(searchTerm));
             }
 
-            if (startDate.HasValue)
+            if (startDate != null)
                 query = query.Where(r => r.ReceiptDate.Date >= startDate.Value.Date);
 
-            if (endDate.HasValue)
+            if (endDate != null)
                 query = query.Where(r => r.ReceiptDate.Date <= endDate.Value.Date);
 
             if (!string.IsNullOrWhiteSpace(status))
@@ -170,6 +170,23 @@ namespace Page_Navigation_App.Services
             await _context.SaveChangesAsync();
 
             return true;
+        }
+
+        public async Task<RepairJob> GetRepairJobById(int id)
+        {
+            return await _context.RepairJobs
+                .Include(r => r.Customer)
+                .FirstOrDefaultAsync(r => r.RepairJobID == id);
+        }
+
+        public async Task<IEnumerable<RepairJob>> GetRepairsByDate(DateTime startDate, DateTime endDate)
+        {
+            return await _context.RepairJobs
+                .Include(r => r.Customer)
+                .Where(r => r.ReceiptDate.Date >= startDate.Date && 
+                           r.ReceiptDate.Date <= endDate.Date)
+                .OrderByDescending(r => r.ReceiptDate)
+                .ToListAsync();
         }
     }
 }

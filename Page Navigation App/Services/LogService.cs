@@ -1,10 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Page_Navigation_App.Data;
+using Page_Navigation_App.Model;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 using System.IO;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Page_Navigation_App.Services
 {
@@ -49,18 +51,39 @@ namespace Page_Navigation_App.Services
             string source = "",
             string userId = null)
         {
-            var fullMessage = message;
-            if (ex != null)
-            {
-                fullMessage += $"\nException: {ex.Message}";
-                fullMessage += $"\nStack Trace: {ex.StackTrace}";
-                if (ex.InnerException != null)
-                {
-                    fullMessage += $"\nInner Exception: {ex.InnerException.Message}";
-                }
-            }
+            var details = ex != null
+                ? $"{message}\nException: {ex.Message}\nStack Trace: {ex.StackTrace}"
+                : message;
 
-            await LogMessage(LogLevel.Error, fullMessage, source, userId);
+            await LogMessage(LogLevel.Error, details, source, userId);
+        }
+
+        private async Task LogMessage(
+            LogLevel level,
+            string message,
+            string source,
+            string userId)
+        {
+            var logEntry = new LogEntry
+            {
+                Level = level.ToString(),
+                Message = message,
+                Source = source,
+                UserID = userId,
+                Timestamp = DateTime.Now
+            };
+
+            await _context.LogEntries.AddAsync(logEntry);
+            await _context.SaveChangesAsync();
+
+            // Also write to file for backup
+            var logFile = Path.Combine(
+                _logDirectory,
+                $"{LOG_FILE_PREFIX}{DateTime.Now:yyyy-MM-dd}.log");
+
+            await File.AppendAllTextAsync(
+                logFile,
+                $"{DateTime.Now:yyyy-MM-dd HH:mm:ss}|{level}|{source}|{userId ?? "N/A"}|{message}\n");
         }
 
         public async Task LogAudit(
@@ -68,31 +91,24 @@ namespace Page_Navigation_App.Services
             string details,
             string userId = null)
         {
-            var audit = new AuditLog
+            var auditLog = new AuditLog
             {
-                Timestamp = DateTime.Now,
-                UserID = userId,
                 Action = action,
-                Details = details
+                Details = details,
+                UserID = userId,
+                Timestamp = DateTime.Now,
+                IPAddress = "127.0.0.1" // TODO: Implement proper IP capture
             };
 
-            await _context.AuditLogs.AddAsync(audit);
+            await _context.AuditLogs.AddAsync(auditLog);
             await _context.SaveChangesAsync();
-
-            // Also log to file system for redundancy
-            await LogMessage(
-                LogLevel.Audit,
-                $"Audit: {action} - {details}",
-                "AuditLog",
-                userId);
         }
 
         public async Task<IEnumerable<LogEntry>> GetLogs(
             DateTime? startDate = null,
             DateTime? endDate = null,
-            LogLevel? level = null,
-            string source = null,
-            string userId = null)
+            string level = null,
+            string source = null)
         {
             var query = _context.LogEntries.AsQueryable();
 
@@ -102,14 +118,11 @@ namespace Page_Navigation_App.Services
             if (endDate.HasValue)
                 query = query.Where(l => l.Timestamp <= endDate.Value);
 
-            if (level.HasValue)
-                query = query.Where(l => l.Level == level.Value);
+            if (!string.IsNullOrEmpty(level))
+                query = query.Where(l => l.Level == level);
 
             if (!string.IsNullOrEmpty(source))
                 query = query.Where(l => l.Source == source);
-
-            if (!string.IsNullOrEmpty(userId))
-                query = query.Where(l => l.UserID == userId);
 
             return await query
                 .OrderByDescending(l => l.Timestamp)
@@ -141,16 +154,19 @@ namespace Page_Navigation_App.Services
                 .ToListAsync();
         }
 
-        public async Task CleanupOldLogs(int daysToKeep = 90)
+        public async Task<bool> ClearOldLogs(int daysToKeep)
         {
             var cutoffDate = DateTime.Now.AddDays(-daysToKeep);
-
-            // Clean up database logs
-            await _context.LogEntries
+            
+            // Delete old log entries in batches to avoid timeouts
+            var oldLogs = await _context.LogEntries
                 .Where(l => l.Timestamp < cutoffDate)
-                .ExecuteDeleteAsync();
+                .ToListAsync();
+                
+            _context.LogEntries.RemoveRange(oldLogs);
+            await _context.SaveChangesAsync();
 
-            // Clean up file system logs
+            // Also clean up log files
             var oldFiles = Directory.GetFiles(_logDirectory, $"{LOG_FILE_PREFIX}*.log")
                 .Where(f => File.GetCreationTime(f) < cutoffDate);
 
@@ -166,59 +182,11 @@ namespace Page_Navigation_App.Services
                         $"Failed to delete old log file: {file}",
                         ex,
                         "LogService");
+                    return false;
                 }
             }
-        }
 
-        private async Task LogMessage(
-            LogLevel level,
-            string message,
-            string source,
-            string userId)
-        {
-            var logEntry = new LogEntry
-            {
-                Timestamp = DateTime.Now,
-                Level = level,
-                Message = message,
-                Source = source,
-                UserID = userId
-            };
-
-            // Log to database
-            await _context.LogEntries.AddAsync(logEntry);
-            await _context.SaveChangesAsync();
-
-            // Log to file system
-            var logFile = Path.Combine(
-                _logDirectory,
-                $"{LOG_FILE_PREFIX}{DateTime.Now:yyyy-MM-dd}.log");
-
-            var logLine = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] " +
-                         $"[{level}] " +
-                         $"[{source}] " +
-                         $"[User: {userId ?? "System"}] " +
-                         $"{message}";
-
-            try
-            {
-                await File.AppendAllLinesAsync(logFile, new[] { logLine });
-            }
-            catch (Exception ex)
-            {
-                // If file logging fails, at least we have the database log
-                var errorEntry = new LogEntry
-                {
-                    Timestamp = DateTime.Now,
-                    Level = LogLevel.Error,
-                    Message = $"Failed to write to log file: {ex.Message}",
-                    Source = "LogService",
-                    UserID = userId
-                };
-
-                await _context.LogEntries.AddAsync(errorEntry);
-                await _context.SaveChangesAsync();
-            }
+            return true;
         }
     }
 
@@ -227,25 +195,6 @@ namespace Page_Navigation_App.Services
         Info,
         Warning,
         Error,
-        Audit
-    }
-
-    public class LogEntry
-    {
-        public int ID { get; set; }
-        public DateTime Timestamp { get; set; }
-        public LogLevel Level { get; set; }
-        public string Message { get; set; }
-        public string Source { get; set; }
-        public string UserID { get; set; }
-    }
-
-    public class AuditLog
-    {
-        public int ID { get; set; }
-        public DateTime Timestamp { get; set; }
-        public string UserID { get; set; }
-        public string Action { get; set; }
-        public string Details { get; set; }
+        Debug
     }
 }

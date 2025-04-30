@@ -1,34 +1,27 @@
 using System;
-using System.Threading.Tasks;
-using Microsoft.Reporting.WinForms;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using System.IO;
+using Microsoft.Reporting.WinForms;
 using Page_Navigation_App.Model;
 
 namespace Page_Navigation_App.Services
 {
     public class PrintService
     {
-        private readonly string _reportPath;
         private readonly OrderService _orderService;
         private readonly RepairJobService _repairService;
         private readonly RateMasterService _rateService;
 
         public PrintService(
-            string reportPath,
             OrderService orderService,
             RepairJobService repairService,
             RateMasterService rateService)
         {
-            _reportPath = reportPath;
             _orderService = orderService;
             _repairService = repairService;
             _rateService = rateService;
-
-            if (!Directory.Exists(_reportPath))
-            {
-                Directory.CreateDirectory(_reportPath);
-            }
         }
 
         public async Task<byte[]> GenerateInvoice(int orderId)
@@ -37,7 +30,7 @@ namespace Page_Navigation_App.Services
             if (order == null) return null;
 
             using var report = new LocalReport();
-            report.ReportPath = Path.Combine(_reportPath, "Invoice.rdlc");
+            report.ReportPath = "Invoice.rdlc";
 
             // Prepare invoice data
             var reportData = new
@@ -88,7 +81,7 @@ namespace Page_Navigation_App.Services
             if (repair == null) return null;
 
             using var report = new LocalReport();
-            report.ReportPath = Path.Combine(_reportPath, "RepairReceipt.rdlc");
+            report.ReportPath = "RepairReceipt.rdlc";
 
             var reportData = new
             {
@@ -114,12 +107,12 @@ namespace Page_Navigation_App.Services
         {
             var rates = await _rateService.GetAllCurrentRates();
             using var report = new LocalReport();
-            report.ReportPath = Path.Combine(_reportPath, "RateCard.rdlc");
+            report.ReportPath = "RateCard.rdlc";
 
             var reportData = rates.Select(r => new
             {
-                MetalTypePurity = $"{r.Key}",
-                Rate = r.Value,
+                MetalTypePurity = $"{r.MetalType} {r.Purity}",
+                Rate = r.SaleRate,
                 Date = DateTime.Now.ToString("dd-MMM-yyyy")
             });
 
@@ -130,10 +123,10 @@ namespace Page_Navigation_App.Services
         public async Task<byte[]> GenerateDailyReport(DateTime date)
         {
             using var report = new LocalReport();
-            report.ReportPath = Path.Combine(_reportPath, "DailyReport.rdlc");
+            report.ReportPath = "DailyReport.rdlc";
 
-            var orders = await _orderService.GetOrdersByDate(date);
-            var repairs = await _repairService.GetRepairsByDate(date);
+            var orders = await _orderService.GetOrdersByDate(date, date);
+            var repairs = await _repairService.GetRepairsByDate(date, date);
 
             var reportData = new
             {

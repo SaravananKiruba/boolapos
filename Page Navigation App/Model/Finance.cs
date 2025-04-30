@@ -60,6 +60,11 @@ namespace Page_Navigation_App.Model
         public decimal Amount { get; set; }
         public string TransactionType { get; set; }
         public string FinanceID { get; set; }
+        public string PaymentMode { get; set; }
+        public string Category { get; set; }
+        public decimal? CGSTAmount { get; set; }
+        public decimal? SGSTAmount { get; set; }
+        public decimal? IGSTAmount { get; set; }
 
         // Navigation properties
         public virtual Customer Customer { get; set; }

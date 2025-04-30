@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Page_Navigation_App.Data;
+using Page_Navigation_App.Model;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -25,11 +26,9 @@ namespace Page_Navigation_App.Services
 
         public async Task<User> CreateUser(User user, string password)
         {
-            // Check if username already exists
             if (await _context.Users.AnyAsync(u => u.Username == user.Username))
                 return null;
 
-            // Hash password
             (user.PasswordHash, user.PasswordSalt) = HashPassword(password);
             
             user.CreatedDate = DateTime.Now;
@@ -231,28 +230,5 @@ namespace Page_Navigation_App.Services
                 { "SalesUsers", users.Count(u => u.Roles.Any(r => r.RoleName == "Sales")) }
             };
         }
-    }
-
-    public class User
-    {
-        public int UserID { get; set; }
-        public string Username { get; set; }
-        public byte[] PasswordHash { get; set; }
-        public byte[] PasswordSalt { get; set; }
-        public string FullName { get; set; }
-        public string Email { get; set; }
-        public string Phone { get; set; }
-        public DateTime CreatedDate { get; set; }
-        public DateTime? LastLoginDate { get; set; }
-        public bool IsActive { get; set; }
-        public virtual ICollection<UserRole> Roles { get; set; } = new List<UserRole>();
-    }
-
-    public class UserRole
-    {
-        public int UserRoleID { get; set; }
-        public int UserID { get; set; }
-        public string RoleName { get; set; }
-        public virtual User User { get; set; }
     }
 }

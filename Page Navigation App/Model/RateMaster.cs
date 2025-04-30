@@ -41,6 +41,7 @@ namespace Page_Navigation_App.Model
         [StringLength(500)]
         public string Notes { get; set; }
         public decimal SaleRate { get; set; }
+        public decimal PurchaseRate { get; set; }
         public string UpdatedBy { get; set; }
     }
 }

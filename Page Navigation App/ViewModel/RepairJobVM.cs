@@ -187,12 +187,20 @@ namespace Page_Navigation_App.ViewModel
             await _repairService.SendStatusUpdateNotification(SelectedJob.Id);
         }
 
+        private bool ValidateInputs()
+        {
+            if (SelectedJob == null) return false;
+            if (string.IsNullOrWhiteSpace(SelectedJob.ItemDetails)) return false;
+
+            return SelectedJob.EstimatedAmount > 0;
+        }
+
         private bool CanAddOrUpdateRepairJob()
         {
             return !string.IsNullOrEmpty(SelectedJob?.ItemDetails) &&
                    !string.IsNullOrEmpty(SelectedJob?.MetalType) &&
                    !string.IsNullOrEmpty(SelectedJob?.WorkType) &&
-                   SelectedJob?.CustomerId > 0 &&
+                   SelectedJob?.Customer != null &&
                    SelectedJob?.Weight > 0 &&
                    SelectedJob?.EstimatedAmount > 0;
         }
