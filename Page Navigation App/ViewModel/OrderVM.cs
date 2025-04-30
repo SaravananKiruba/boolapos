@@ -79,24 +79,25 @@ namespace Page_Navigation_App.ViewModel
             }
         }
 
-        private void LoadOrders()
+        private async void LoadOrders()
         {
             Orders.Clear();
-            foreach (var order in _orderService.GetAllOrders())
+            var orders = await _orderService.GetAllOrders();
+            foreach (var order in orders)
             {
                 Orders.Add(order);
             }
         }
 
-        private void AddOrUpdateOrder()
+        private async void AddOrUpdateOrder()
         {
             if (SelectedOrder.OrderID > 0)
             {
-                _orderService.UpdateOrder(SelectedOrder);
+                await _orderService.UpdateOrder(SelectedOrder);
             }
             else
             {
-                _orderService.AddOrder(SelectedOrder);
+                await _orderService.AddOrder(SelectedOrder);
             }
 
             LoadOrders();
@@ -116,21 +117,21 @@ namespace Page_Navigation_App.ViewModel
             return SelectedOrder.CustomerID > 0 && SelectedOrder.TotalAmount > 0;
         }
 
-        private void SearchOrdersByDate()
+        private async void SearchOrdersByDate()
         {
             Orders.Clear();
-            var filteredOrders = _orderService.FilterOrdersByDate(StartDate, EndDate);
-            foreach (var order in filteredOrders)
+            var orders = await _orderService.FilterOrdersByDate(StartDate, EndDate);
+            foreach (var order in orders)
             {
                 Orders.Add(order);
             }
         }
 
-        private void SearchOrdersByCustomer()
+        private async void SearchOrdersByCustomer()
         {
             Orders.Clear();
-            var filteredOrders = _orderService.FilterOrdersByCustomer(CustomerId);
-            foreach (var order in filteredOrders)
+            var orders = await _orderService.FilterOrdersByCustomer(CustomerId);
+            foreach (var order in orders)
             {
                 Orders.Add(order);
             }

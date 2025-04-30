@@ -34,12 +34,16 @@ namespace Page_Navigation_App.ViewModel
 
         public ICommand ExportReportCommand { get; }
 
-        private void LoadDashboardData()
+        private async void LoadDashboardData()
         {
-            TotalProducts = _productService.GetAllProducts().Count;
-            TotalOrders = _orderService.GetAllOrders().Count;
-            TotalCustomers = _customerService.GetAllCustomers().Count;
-            TotalRevenue = _orderService.GetAllOrders().Sum(o => o.TotalAmount);
+            var products = await _productService.GetAllProducts();
+            var orders = await _orderService.GetAllOrders();
+            var customers = await _customerService.GetAllCustomers();
+
+            TotalProducts = products.Count();
+            TotalOrders = orders.Count();
+            TotalCustomers = customers.Count();
+            TotalRevenue = orders.Sum(o => o.TotalAmount);
 
             OnPropertyChanged(nameof(TotalProducts));
             OnPropertyChanged(nameof(TotalOrders));

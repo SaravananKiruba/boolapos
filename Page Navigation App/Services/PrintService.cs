@@ -85,17 +85,13 @@ namespace Page_Navigation_App.Services
 
             var reportData = new
             {
-                ReceiptNumber = repair.Id.ToString("D6"),
+                ReceiptNumber = repair.RepairJobID.ToString(),
+                CustomerName = repair.Customer?.CustomerName,
+                CustomerPhone = repair.Customer?.PhoneNumber,
                 ReceiptDate = repair.ReceiptDate,
-                CustomerName = repair.Customer.CustomerName,
-                CustomerPhone = repair.Customer.PhoneNumber,
                 ItemDetails = repair.ItemDetails,
-                MetalType = repair.MetalType,
-                Weight = repair.Weight,
                 WorkType = repair.WorkType,
-                Description = repair.Description,
                 EstimatedAmount = repair.EstimatedAmount,
-                PromisedDate = repair.PromisedDate,
                 Status = repair.Status
             };
 

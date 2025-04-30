@@ -65,10 +65,11 @@ namespace Page_Navigation_App.ViewModel
             }
         }
 
-        private void LoadCustomers()
+        private async void LoadCustomers()
         {
             Customers.Clear();
-            foreach (var customer in _customerService.GetAllCustomers())
+            var customers = await _customerService.GetAllCustomers();
+            foreach (var customer in customers)
             {
                 Customers.Add(customer);
             }
@@ -95,7 +96,7 @@ namespace Page_Navigation_App.ViewModel
             }
         }
 
-        private void AddOrUpdateCustomer()
+        private async void AddOrUpdateCustomer()
         {
             // Validate the customer before saving
             var validationContext = new ValidationContext(SelectedCustomer, null, null);
@@ -104,7 +105,6 @@ namespace Page_Navigation_App.ViewModel
 
             if (!isValid)
             {
-                // Show validation errors (you can use a MessageBox or a validation summary)
                 string errorMessage = string.Join("\n", validationResults.Select(v => v.ErrorMessage));
                 System.Windows.MessageBox.Show($"Validation Errors:\n{errorMessage}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 return;
@@ -112,11 +112,11 @@ namespace Page_Navigation_App.ViewModel
 
             if (SelectedCustomer.CustomerID > 0)
             {
-                _customerService.UpdateCustomer(SelectedCustomer);
+                await _customerService.UpdateCustomer(SelectedCustomer);
             }
             else
             {
-                _customerService.AddCustomer(SelectedCustomer);
+                await _customerService.AddCustomer(SelectedCustomer);
             }
 
             LoadCustomers();
@@ -137,11 +137,11 @@ namespace Page_Navigation_App.ViewModel
                    !string.IsNullOrEmpty(SelectedCustomer.PhoneNumber);
         }
 
-        private void SearchCustomers()
+        private async void SearchCustomers()
         {
             Customers.Clear();
-            var filteredCustomers = _customerService.FilterCustomers(SearchName);
-            foreach (var customer in filteredCustomers)
+            var customers = await _customerService.FilterCustomers(SearchName);
+            foreach (var customer in customers)
             {
                 Customers.Add(customer);
             }

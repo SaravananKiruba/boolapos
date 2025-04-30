@@ -91,12 +91,12 @@ namespace Page_Navigation_App.ViewModel
 
             LoadInitialData();
 
-            AddOrUpdateCommand = new RelayCommand<object>(_ => AddOrUpdateRepairJob(), _ => CanAddOrUpdateRepairJob());
+            AddOrUpdateCommand = new RelayCommand<object>(_ => UpdateJobStatus(), _ => CanAddOrUpdateRepairJob());
             SearchCommand = new RelayCommand<object>(_ => SearchRepairJobs(), _ => true);
             ClearCommand = new RelayCommand<object>(_ => ClearForm(), _ => true);
-            UploadImageCommand = new RelayCommand<object>(_ => UploadImage(), _ => SelectedJob?.Id > 0);
-            UpdateStatusCommand = new RelayCommand<object>(param => UpdateStatus(param?.ToString()), _ => SelectedJob?.Id > 0);
-            SendNotificationCommand = new RelayCommand<object>(_ => SendNotification(), _ => SelectedJob?.Id > 0);
+            UploadImageCommand = new RelayCommand<object>(_ => UploadImage(), _ => SelectedJob?.RepairJobID > 0);
+            UpdateStatusCommand = new RelayCommand<object>(param => UpdateStatus(param?.ToString()), _ => SelectedJob?.RepairJobID > 0);
+            SendNotificationCommand = new RelayCommand<object>(_ => SendNotification(), _ => SelectedJob?.RepairJobID > 0);
         }
 
         private async void LoadInitialData()
@@ -131,60 +131,48 @@ namespace Page_Navigation_App.ViewModel
             }
         }
 
-        private async void AddOrUpdateRepairJob()
+        private async void UpdateJobStatus()
         {
-            if (SelectedJob.Id > 0)
-            {
-                await _repairService.UpdateStatus(SelectedJob.Id, SelectedJob.Status);
-                await _repairService.UpdateFinalAmount(SelectedJob.Id, SelectedJob.FinalAmount);
-            }
-            else
+            if (SelectedJob.RepairJobID == 0)
             {
                 await _repairService.CreateRepairJob(SelectedJob);
             }
+            else
+            {
+                await _repairService.UpdateStatus(SelectedJob.RepairJobID, SelectedJob.Status);
+                if (!string.IsNullOrEmpty(SelectedJob.ImagePath))
+                {
+                    await _repairService.UpdateImage(SelectedJob.RepairJobID, SelectedJob.ImagePath);
+                }
+            }
 
-            await LoadPendingJobs();
+            LoadJobs();
             ClearForm();
         }
 
-        private void ClearForm()
+        private async void LoadJobs()
         {
-            SelectedJob = new RepairJob
+            RepairJobs.Clear();
+            var jobs = await _repairService.GetPendingJobs();
+            foreach (var job in jobs)
             {
-                ReceiptDate = DateTime.Now,
-                Status = "Pending"
-            };
-            SearchTerm = string.Empty;
-            StartDate = DateTime.Now.AddMonths(-1);
-            EndDate = DateTime.Now;
-            SelectedStatus = null;
-        }
-
-        private async void UploadImage()
-        {
-            var dialog = new OpenFileDialog
-            {
-                Filter = "Image files (*.jpg, *.jpeg, *.png) | *.jpg; *.jpeg; *.png",
-                Title = "Select an image"
-            };
-
-            if (dialog.ShowDialog() == true)
-            {
-                await _repairService.UpdateImage(SelectedJob.Id, dialog.FileName);
-                SelectedJob.ImagePath = dialog.FileName;
+                RepairJobs.Add(job);
             }
         }
 
-        private async void UpdateStatus(string newStatus)
+        private async void UpdateFinalAmount()
         {
-            if (string.IsNullOrEmpty(newStatus)) return;
-            await _repairService.UpdateStatus(SelectedJob.Id, newStatus);
-            await LoadPendingJobs();
+            if (SelectedJob.RepairJobID == 0) return;
+
+            await _repairService.UpdateFinalAmount(SelectedJob.RepairJobID, SelectedJob.FinalAmount);
+            LoadJobs();
         }
 
         private async void SendNotification()
         {
-            await _repairService.SendStatusUpdateNotification(SelectedJob.Id);
+            if (SelectedJob.RepairJobID == 0) return;
+
+            await _repairService.SendStatusUpdateNotification(SelectedJob.RepairJobID);
         }
 
         private bool ValidateInputs()
@@ -203,6 +191,45 @@ namespace Page_Navigation_App.ViewModel
                    SelectedJob?.Customer != null &&
                    SelectedJob?.Weight > 0 &&
                    SelectedJob?.EstimatedAmount > 0;
+        }
+
+        private void ClearForm()
+        {
+            SelectedJob = new RepairJob { ReceiptDate = DateTime.Now };
+            SearchTerm = string.Empty;
+            StartDate = DateTime.Now.AddMonths(-1);
+            EndDate = DateTime.Now;
+            SelectedStatus = null;
+        }
+
+        private async void UploadImage()
+        {
+            var dialog = new OpenFileDialog
+            {
+                Filter = "Image files (*.jpg, *.jpeg, *.png) | *.jpg; *.jpeg; *.png",
+                Title = "Select an image for the repair job"
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                string imagePath = dialog.FileName;
+                await _repairService.UpdateImage(SelectedJob.RepairJobID, imagePath);
+                SelectedJob.ImagePath = imagePath;
+            }
+        }
+
+        private async void UpdateStatus(string newStatus)
+        {
+            if (string.IsNullOrEmpty(newStatus) || SelectedJob == null) return;
+
+            var updatedJob = await _repairService.UpdateStatus(SelectedJob.RepairJobID, newStatus);
+            if (updatedJob != null)
+            {
+                SelectedJob.Status = updatedJob.Status;
+                SelectedJob.CompletionDate = updatedJob.CompletionDate;
+            }
+
+            await LoadPendingJobs();
         }
     }
 }

@@ -15,8 +15,8 @@ namespace Page_Navigation_App.Model
         public int CustomerId { get; set; }
 
         [Required]
-        [StringLength(50)]
-        public string OrderReference { get; set; }
+        [ForeignKey("Order")]
+        public int OrderReference { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]

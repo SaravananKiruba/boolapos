@@ -30,7 +30,7 @@ namespace Page_Navigation_App.Services
         {
             var job = await _context.RepairJobs
                 .Include(r => r.Customer)
-                .FirstOrDefaultAsync(r => r.Id == jobId);
+                .FirstOrDefaultAsync(r => r.RepairJobID == jobId);
 
             if (job == null) return null;
 
@@ -38,7 +38,6 @@ namespace Page_Navigation_App.Services
             
             if (newStatus == "In Process")
             {
-                // Send notification when work starts
                 if (!job.SMSNotificationSent)
                 {
                     await SendSMSNotification(job, "Your repair work has started.");
@@ -152,7 +151,7 @@ namespace Page_Navigation_App.Services
         {
             var job = await _context.RepairJobs
                 .Include(r => r.Customer)
-                .FirstOrDefaultAsync(r => r.Id == jobId);
+                .FirstOrDefaultAsync(r => r.RepairJobID == jobId);
 
             if (job == null) return false;
 
@@ -172,11 +171,11 @@ namespace Page_Navigation_App.Services
             return true;
         }
 
-        public async Task<RepairJob> GetRepairJobById(int id)
+        public async Task<RepairJob> GetRepairJobById(int jobId)
         {
             return await _context.RepairJobs
                 .Include(r => r.Customer)
-                .FirstOrDefaultAsync(r => r.RepairJobID == id);
+                .FirstOrDefaultAsync(r => r.RepairJobID == jobId);
         }
 
         public async Task<IEnumerable<RepairJob>> GetRepairsByDate(DateTime startDate, DateTime endDate)

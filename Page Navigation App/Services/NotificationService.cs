@@ -264,29 +264,32 @@ namespace Page_Navigation_App.Services
             if (!settings.SendRepairUpdates)
                 return;
 
-            var customer = await _context.Customers.FindAsync(repair.CustomerId);
-            if (customer == null)
-                return;
-
-            var message = await GenerateRepairStatusUpdate(repair);
-
-            if (settings.EnableSMS && !string.IsNullOrEmpty(customer.PhoneNumber))
+            string message = $"Update on your repair job #{repair.RepairJobID}: {repair.Status}";
+            if (repair.Status == "Completed")
             {
-                await SendSMS(customer.PhoneNumber, message);
+                message += $"\nTotal Amount: {repair.FinalAmount:C}";
             }
 
-            if (settings.EnableWhatsApp && !string.IsNullOrEmpty(customer.PhoneNumber))
+            // Send notifications based on settings
+            if (settings.EnableSMS && !string.IsNullOrEmpty(repair.Customer?.PhoneNumber))
             {
-                await SendWhatsApp(customer.PhoneNumber, message);
+                await SendSMS(repair.Customer.PhoneNumber, message);
+                await LogNotification(repair.Customer.PhoneNumber, "SMS", message, true, null);
             }
 
-            if (settings.EnableEmailNotifications && !string.IsNullOrEmpty(customer.Email))
+            if (settings.EnableWhatsApp && !string.IsNullOrEmpty(repair.Customer?.PhoneNumber))
+            {
+                await SendWhatsApp(repair.Customer.PhoneNumber, message);
+                await LogNotification(repair.Customer.PhoneNumber, "WhatsApp", message, true, null);
+            }
+
+            if (settings.EnableEmailNotifications && !string.IsNullOrEmpty(repair.Customer?.Email))
             {
                 await SendEmail(
-                    customer.Email,
-                    $"Repair Status Update - #",
-                    message,
-                    true);
+                    repair.Customer.Email,
+                    $"Repair Status Update - Job #{repair.RepairJobID}",
+                    message);
+                await LogNotification(repair.Customer.Email, "Email", message, true, null);
             }
         }
 
@@ -365,7 +368,7 @@ namespace Page_Navigation_App.Services
         private async Task<string> GenerateRepairStatusUpdate(RepairJob repair)
         {
             var businessInfo = await _configService.GetBusinessInfo();
-            return $"Repair Job #{repair.Id} Status Update\n\n" +
+            return $"Repair Job #{repair.RepairJobID} Status Update\n\n" +
                    $"Current Status: {repair.Status}\n" +
                    $"Expected Completion: {repair.CompletionDate:d}\n\n" +
                    $"For any queries, contact us at {businessInfo.Phone}";

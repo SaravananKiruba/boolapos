@@ -24,6 +24,45 @@ namespace Page_Navigation_App.Services
             _rateService = rateService;
         }
 
+        // Add new method for adding order
+        public async Task<Order> AddOrder(Order order)
+        {
+            await _context.Orders.AddAsync(order);
+            await _context.SaveChangesAsync();
+            return order;
+        }
+
+        // Add new method for updating order
+        public async Task<bool> UpdateOrder(Order order)
+        {
+            var existingOrder = await _context.Orders.FindAsync(order.OrderID);
+            if (existingOrder == null) return false;
+
+            _context.Entry(existingOrder).CurrentValues.SetValues(order);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        // Add new method for filtering orders by date
+        public async Task<IEnumerable<Order>> FilterOrdersByDate(DateTime startDate, DateTime endDate)
+        {
+            return await _context.Orders
+                .Include(o => o.Customer)
+                .Where(o => o.OrderDate.Date >= startDate.Date && o.OrderDate.Date <= endDate.Date)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+        }
+
+        // Add new method for filtering orders by customer
+        public async Task<IEnumerable<Order>> FilterOrdersByCustomer(int customerId)
+        {
+            return await _context.Orders
+                .Include(o => o.Customer)
+                .Where(o => o.CustomerID == customerId)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+        }
+
         public async Task<Order> CreateOrder(Order order, List<OrderDetail> details)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();

@@ -8,7 +8,7 @@ namespace Page_Navigation_App.Model
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
+        public int RepairJobID { get; set; }
 
         [Required]
         [ForeignKey("Customer")]

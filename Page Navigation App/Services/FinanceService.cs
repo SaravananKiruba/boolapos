@@ -90,7 +90,7 @@ namespace Page_Navigation_App.Services
             int numberOfInstallments,
             decimal interestRate,
             int customerId,
-            string orderReference)
+            int orderReference)
         {
             var finance = new Finance
             {
