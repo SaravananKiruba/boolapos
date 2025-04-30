@@ -1,12 +1,13 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Page_Navigation_App.Data;
-using Page_Navigation_App.Services;
-using Page_Navigation_App.View;
-using Page_Navigation_App.ViewModel;
 using System.Windows;
 using System;
 using Microsoft.EntityFrameworkCore;
 using System.IO;
+using Page_Navigation_App;
+using Page_Navigation_App.Data;
+using Page_Navigation_App.Services;
+using Page_Navigation_App.View;
+using Page_Navigation_App.ViewModel;
 
 namespace Page_Navigation_App
 {
