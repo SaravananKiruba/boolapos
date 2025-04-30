@@ -1,4 +1,5 @@
-﻿<Application x:Class="Page_Navigation_App.App"
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Application x:Class="Page_Navigation_App.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
@@ -12,7 +13,7 @@
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Dark.Amber.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.Buttons.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.DataGrid.xaml" />
-                
+
                 <!-- Your existing resource dictionaries -->
                 <ResourceDictionary Source="/Styles/Page.xaml" />
                 <ResourceDictionary Source="/Styles/Image.xaml" />

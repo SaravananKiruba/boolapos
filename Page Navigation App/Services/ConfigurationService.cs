@@ -102,6 +102,7 @@ namespace Page_Navigation_App.Services
 
     public class BusinessInfo
     {
+        public string Name { get; set; }
         public string BusinessName { get; set; }
         public string Address { get; set; }
         public string Phone { get; set; }
