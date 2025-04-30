@@ -51,7 +51,7 @@
                                 Command="{Binding ClearCommand}"/>
                         
                         <Button Content="Save"
-                                Style="{StaticResource MahApps.Styles.Button.Accent}"
+                                Style="{StaticResource MahApps.Styles.Button.Square.Accent}"
                                 Command="{Binding AddOrUpdateCommand}"/>
                     </StackPanel>
                 </StackPanel>

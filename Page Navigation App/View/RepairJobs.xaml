@@ -103,8 +103,8 @@
                                     Style="{StaticResource MahApps.Styles.Button}"
                                     Command="{Binding ClearCommand}"/>
                             
-                            <Button Content="Save Job"
-                                    Style="{StaticResource MahApps.Styles.Button.Accent}"
+                            <Button Content="Save"
+                                    Style="{StaticResource MahApps.Styles.Button.Square.Accent}"
                                     Command="{Binding AddOrUpdateCommand}"/>
                         </StackPanel>
                     </StackPanel>
