@@ -3,113 +3,89 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              mc:Ignorable="d"
              d:DesignHeight="600"
              d:DesignWidth="1000">
 
     <Grid Margin="20">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="400"/>
+            <ColumnDefinition Width="350"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Left Panel - Supplier Entry Form -->
-        <materialDesign:Card Grid.Column="0"
-                            Margin="0 0 10 0"
-                            Padding="16">
-            <ScrollViewer>
-                <StackPanel>
-                    <TextBlock Text="Supplier Details"
-                             Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                             Margin="0 0 0 16"/>
+        <!-- Supplier Entry Form -->
+        <mah:MetroHeader Header="Supplier Details">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <mah:MetroContentControl>
+                    <StackPanel>
+                        <TextBox Text="{Binding SelectedSupplier.SupplierName}"
+                                 Margin="0,5"
+                                 mah:TextBoxHelper.Watermark="Supplier Name"
+                                 Style="{StaticResource MahApps.Styles.TextBox}"/>
 
-                    <TextBox Text="{Binding SelectedSupplier.SupplierName}"
-                            materialDesign:HintAssist.Hint="Supplier Name"
-                            Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                            Margin="0 8"/>
+                        <TextBox Text="{Binding SelectedSupplier.ContactNumber}"
+                                 Margin="0,5"
+                                 mah:TextBoxHelper.Watermark="Contact Number"
+                                 Style="{StaticResource MahApps.Styles.TextBox}"/>
 
-                    <TextBox Text="{Binding SelectedSupplier.ContactNumber}"
-                            materialDesign:HintAssist.Hint="Contact Number"
-                            Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                            Margin="0 8"/>
+                        <TextBox Text="{Binding SelectedSupplier.ContactPerson}"
+                                 Margin="0,5"
+                                 mah:TextBoxHelper.Watermark="Contact Person"
+                                 Style="{StaticResource MahApps.Styles.TextBox}"/>
 
-                    <TextBox Text="{Binding SelectedSupplier.ContactPerson}"
-                            materialDesign:HintAssist.Hint="Contact Person"
-                            Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                            Margin="0 8"/>
+                        <TextBox Text="{Binding SelectedSupplier.Email}"
+                                 Margin="0,5"
+                                 mah:TextBoxHelper.Watermark="Email"
+                                 Style="{StaticResource MahApps.Styles.TextBox}"/>
 
-                    <TextBox Text="{Binding SelectedSupplier.Email}"
-                            materialDesign:HintAssist.Hint="Email"
-                            Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                            Margin="0 8"/>
+                        <TextBox Text="{Binding SelectedSupplier.Address}"
+                                 Margin="0,5"
+                                 mah:TextBoxHelper.Watermark="Address"
+                                 Style="{StaticResource MahApps.Styles.TextBox}"
+                                 TextWrapping="Wrap"
+                                 AcceptsReturn="True"
+                                 Height="60"/>
 
-                    <TextBox Text="{Binding SelectedSupplier.Address}"
-                            materialDesign:HintAssist.Hint="Address"
-                            Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                            TextWrapping="Wrap"
-                            AcceptsReturn="True"
-                            Height="60"
-                            Margin="0 8"/>
+                        <mah:NumericUpDown Value="{Binding SelectedSupplier.CreditLimit}"
+                                          Margin="0,5"
+                                          mah:TextBoxHelper.Watermark="Credit Limit"
+                                          Style="{StaticResource MahApps.Styles.NumericUpDown}"
+                                          StringFormat="C"
+                                          Minimum="0"/>
 
-                    <TextBox Text="{Binding SelectedSupplier.GSTNumber}"
-                            materialDesign:HintAssist.Hint="GST Number"
-                            Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                            Margin="0 8"/>
+                        <TextBox Text="{Binding SelectedSupplier.PaymentTerms}"
+                                 Margin="0,5"
+                                 mah:TextBoxHelper.Watermark="Payment Terms"
+                                 Style="{StaticResource MahApps.Styles.TextBox}"/>
 
-                    <TextBox Text="{Binding SelectedSupplier.WhatsAppNumber}"
-                            materialDesign:HintAssist.Hint="WhatsApp Number"
-                            Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                            Margin="0 8"/>
+                        <mah:ToggleSwitch Header="Active Status"
+                                         IsOn="{Binding SelectedSupplier.IsActive}"
+                                         OnContent="Active"
+                                         OffContent="Inactive"
+                                         Style="{StaticResource MahApps.Styles.ToggleSwitch}"
+                                         Margin="0,10"/>
 
-                    <!-- Bank Details -->
-                    <TextBox Text="{Binding SelectedSupplier.BankName}"
-                            materialDesign:HintAssist.Hint="Bank Name"
-                            Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                            Margin="0 8"/>
-
-                    <TextBox Text="{Binding SelectedSupplier.AccountNumber}"
-                            materialDesign:HintAssist.Hint="Account Number"
-                            Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                            Margin="0 8"/>
-
-                    <TextBox Text="{Binding SelectedSupplier.IFSCCode}"
-                            materialDesign:HintAssist.Hint="IFSC Code"
-                            Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                            Margin="0 8"/>
-
-                    <TextBox Text="{Binding SelectedSupplier.CreditLimit}"
-                            materialDesign:HintAssist.Hint="Credit Limit"
-                            Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                            Margin="0 8"/>
-
-                    <TextBox Text="{Binding SelectedSupplier.PaymentTerms}"
-                            materialDesign:HintAssist.Hint="Payment Terms"
-                            Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                            Margin="0 8"/>
-
-                    <CheckBox IsChecked="{Binding SelectedSupplier.IsActive}"
-                             Content="Active"
-                             Style="{StaticResource MaterialDesignCheckBox}"
-                             Margin="0 8"/>
-
-                    <StackPanel Orientation="Horizontal" 
-                              HorizontalAlignment="Right"
-                              Margin="0 16 0 0">
-                        <Button Style="{StaticResource MaterialDesignOutlinedButton}"
-                                Command="{Binding ClearCommand}"
-                                Content="Clear"
-                                Margin="0 0 8 0"/>
-                        <Button Style="{StaticResource MaterialDesignRaisedButton}"
-                                Command="{Binding AddOrUpdateCommand}"
-                                Content="Save Supplier"/>
+                        <StackPanel Orientation="Horizontal" 
+                                  Margin="0,20,0,0"
+                                  HorizontalAlignment="Right">
+                            <Button Content="Clear"
+                                    Margin="0,0,10,0"
+                                    Style="{StaticResource MahApps.Styles.Button}"
+                                    Command="{Binding ClearCommand}"/>
+                            
+                            <Button Content="Save Supplier"
+                                    Style="{StaticResource MahApps.Styles.Button.Accent}"
+                                    Command="{Binding AddOrUpdateCommand}"/>
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
+                </mah:MetroContentControl>
             </ScrollViewer>
-        </materialDesign:Card>
+        </mah:MetroHeader>
 
-        <!-- Right Panel - Supplier List and Transactions -->
-        <Grid Grid.Column="1">
+        <!-- Supplier List and Transactions -->
+        <Grid Grid.Column="1" Margin="20,0,0,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
@@ -117,54 +93,98 @@
             </Grid.RowDefinitions>
 
             <!-- Search Panel -->
-            <materialDesign:Card Grid.Row="0"
-                                Padding="16"
-                                Margin="0 0 0 10">
+            <mah:MetroHeader Header="Search Suppliers">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <TextBox Grid.Column="0"
-                            Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}"
-                            materialDesign:HintAssist.Hint="Search suppliers..."
-                            Style="{StaticResource MaterialDesignOutlinedTextBox}"/>
+                    <TextBox Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}"
+                             mah:TextBoxHelper.Watermark="Search suppliers..."
+                             Style="{StaticResource MahApps.Styles.TextBox}">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Return" Command="{Binding SearchCommand}"/>
+                        </TextBox.InputBindings>
+                    </TextBox>
 
                     <Button Grid.Column="1"
-                            Style="{StaticResource MaterialDesignRaisedButton}"
-                            Command="{Binding SearchCommand}"
-                            Content="Search"
-                            Margin="8 0 0 0"/>
+                            Margin="10,0,0,0"
+                            Style="{StaticResource MahApps.Styles.Button.Square}"
+                            Command="{Binding SearchCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="Magnify" 
+                                                           Margin="0,0,5,0"/>
+                            <TextBlock Text="Search"/>
+                        </StackPanel>
+                    </Button>
                 </Grid>
-            </materialDesign:Card>
+            </mah:MetroHeader>
 
             <!-- Suppliers List -->
-            <materialDesign:Card Grid.Row="1" Padding="0">
-                <DataGrid ItemsSource="{Binding Suppliers}"
-                          SelectedItem="{Binding SelectedSupplier}"
-                          AutoGenerateColumns="False"
-                          IsReadOnly="True"
-                          Style="{StaticResource MaterialDesignDataGrid}">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Name"
-                                          Binding="{Binding SupplierName}"/>
-                        <DataGridTextColumn Header="Contact"
-                                          Binding="{Binding ContactNumber}"/>
-                        <DataGridTextColumn Header="Contact Person"
-                                          Binding="{Binding ContactPerson}"/>
-                        <DataGridTextColumn Header="Balance"
-                                          Binding="{Binding CurrentBalance, StringFormat=C2}"/>
-                        <DataGridTextColumn Header="Status"
-                                          Binding="{Binding IsActive}"/>
-                    </DataGrid.Columns>
-                </DataGrid>
-            </materialDesign:Card>
+            <DataGrid Grid.Row="1"
+                      Margin="0,20"
+                      ItemsSource="{Binding Suppliers}"
+                      SelectedItem="{Binding SelectedSupplier}"
+                      AutoGenerateColumns="False"
+                      Style="{StaticResource MahApps.Styles.DataGrid}"
+                      GridLinesVisibility="Horizontal"
+                      SelectionMode="Single"
+                      IsReadOnly="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Name" 
+                                      Binding="{Binding SupplierName}"
+                                      Width="*"/>
+                    <DataGridTextColumn Header="Contact" 
+                                      Binding="{Binding ContactNumber}"
+                                      Width="120"/>
+                    <DataGridTextColumn Header="Contact Person" 
+                                      Binding="{Binding ContactPerson}"
+                                      Width="150"/>
+                    <DataGridTextColumn Header="Balance" 
+                                      Binding="{Binding CurrentBalance, StringFormat=C2}"
+                                      Width="120"/>
+                    <DataGridTemplateColumn Header="Status" Width="100">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding IsActive, Converter={StaticResource BooleanToActiveConverter}}"
+                                           Foreground="{Binding IsActive, Converter={StaticResource BooleanToStatusBrushConverter}}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Width="Auto">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Style="{StaticResource MahApps.Styles.Button.Circle}"
+                                            Width="32"
+                                            Height="32"
+                                            Margin="0,0,5,0"
+                                            ToolTip="Edit"
+                                            Command="{Binding DataContext.EditCommand, 
+                                                    RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                            CommandParameter="{Binding}">
+                                        <iconPacks:PackIconMaterial Kind="Pencil" Width="16" Height="16"/>
+                                    </Button>
+                                    <Button Style="{StaticResource MahApps.Styles.Button.Circle}"
+                                            Width="32"
+                                            Height="32"
+                                            ToolTip="Delete"
+                                            Command="{Binding DataContext.DeleteCommand, 
+                                                    RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                            CommandParameter="{Binding}">
+                                        <iconPacks:PackIconMaterial Kind="Delete" Width="16" Height="16"/>
+                                    </Button>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
 
             <!-- Transaction Panel -->
-            <materialDesign:Card Grid.Row="2"
-                                Padding="16"
-                                Margin="0 10 0 0">
+            <mah:MetroHeader Grid.Row="2"
+                            Header="Quick Actions">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -173,30 +193,41 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <TextBox Grid.Column="0"
-                            Text="{Binding TransactionAmount}"
-                            materialDesign:HintAssist.Hint="Amount"
-                            Style="{StaticResource MaterialDesignOutlinedTextBox}"/>
+                    <mah:NumericUpDown Value="{Binding TransactionAmount}"
+                                      mah:TextBoxHelper.Watermark="Amount"
+                                      Style="{StaticResource MahApps.Styles.NumericUpDown}"
+                                      StringFormat="C"
+                                      Minimum="0"/>
 
                     <TextBox Grid.Column="1"
-                            Text="{Binding ReferenceNumber}"
-                            materialDesign:HintAssist.Hint="Reference #"
-                            Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                            Width="120"
-                            Margin="8 0"/>
+                             Text="{Binding ReferenceNumber}"
+                             mah:TextBoxHelper.Watermark="Reference #"
+                             Style="{StaticResource MahApps.Styles.TextBox}"
+                             Width="120"
+                             Margin="10,0"/>
 
                     <Button Grid.Column="2"
-                            Style="{StaticResource MaterialDesignRaisedButton}"
+                            Style="{StaticResource MahApps.Styles.Button}"
                             Command="{Binding RecordPurchaseCommand}"
-                            Content="Record Purchase"
-                            Margin="0 0 8 0"/>
+                            Margin="0,0,10,0">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="CartArrowDown" 
+                                                           Margin="0,0,5,0"/>
+                            <TextBlock Text="Record Purchase"/>
+                        </StackPanel>
+                    </Button>
 
                     <Button Grid.Column="3"
-                            Style="{StaticResource MaterialDesignRaisedButton}"
-                            Command="{Binding RecordPaymentCommand}"
-                            Content="Record Payment"/>
+                            Style="{StaticResource MahApps.Styles.Button}"
+                            Command="{Binding RecordPaymentCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="CashRegister" 
+                                                           Margin="0,0,5,0"/>
+                            <TextBlock Text="Record Payment"/>
+                        </StackPanel>
+                    </Button>
                 </Grid>
-            </materialDesign:Card>
+            </mah:MetroHeader>
         </Grid>
     </Grid>
 </UserControl>

@@ -33,6 +33,7 @@ namespace Page_Navigation_App.ViewModel
         public ICommand CategoryCommand { get; set; }
         public ICommand UserCommand { get; set; }
         public ICommand ReportCommand { get; set; }
+        public ICommand SettingsCommand { get; set; }
 
         public NavigationVM(
             HomeVM homeVM,
@@ -47,6 +48,7 @@ namespace Page_Navigation_App.ViewModel
             CategoryVM categoryVM,
             UserVM userVM,
             ReportVM reportVM,
+            SettingsVM settingsVM,
             UserService userService)
         {
             _userService = userService;
@@ -64,6 +66,7 @@ namespace Page_Navigation_App.ViewModel
             CategoryCommand = new RelayCommand<object>(_ => NavigateTo(categoryVM));
             UserCommand = new RelayCommand<object>(_ => NavigateTo(userVM), _ => CanAccessUserManagement());
             ReportCommand = new RelayCommand<object>(_ => NavigateTo(reportVM));
+            SettingsCommand = new RelayCommand<object>(_ => NavigateTo(settingsVM));
 
             // Set default view
             CurrentView = homeVM;

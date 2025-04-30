@@ -3,46 +3,125 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:vm="clr-namespace:Page_Navigation_App.ViewModel"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              mc:Ignorable="d"
              d:DesignHeight="600"
-             d:DesignWidth="622"
-             Style="{StaticResource Page_Style}">
+             d:DesignWidth="800">
 
-    <UserControl.DataContext>
-        <vm:OrderVM />
-    </UserControl.DataContext>
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-    <Grid Margin="15" Background="#212529">
-        <Border CornerRadius="20" BorderBrush="#6C757D" BorderThickness="2" Padding="20" Background="#343A40">
-            <StackPanel>
-                <TextBlock Text="Order Management" FontSize="22" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center" Foreground="#F8F9FA"/>
+        <!-- Search Section -->
+        <mah:MetroHeader Header="Search Orders">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-                <!-- Search Order Section -->
-                <StackPanel Orientation="Horizontal" Margin="0,5" HorizontalAlignment="Center">
-                    <Label Content="Search Order ID:" Foreground="#F8F9FA" VerticalAlignment="Center"/>
-                    <TextBox Width="200" Height="30" Text="{Binding SearchOrderID}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D" Margin="5,0"/>
-                    <Button Content="Search" Width="100" Height="30" Background="#198754" Foreground="#F8F9FA" BorderBrush="#157347" Margin="5,0" Command="{Binding SearchCommand}"/>
+                <TextBox Text="{Binding SearchOrderID, UpdateSourceTrigger=PropertyChanged}"
+                         mah:TextBoxHelper.Watermark="Enter Order ID..."
+                         Style="{StaticResource MahApps.Styles.TextBox}"
+                         Margin="0,0,10,0">
+                    <TextBox.InputBindings>
+                        <KeyBinding Key="Return" Command="{Binding SearchCommand}"/>
+                    </TextBox.InputBindings>
+                </TextBox>
+
+                <Button Grid.Column="1"
+                        Style="{StaticResource MahApps.Styles.Button.Square.Accent}"
+                        Command="{Binding SearchCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="Magnify" 
+                                                   Margin="0,0,5,0"/>
+                        <TextBlock Text="Search"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </mah:MetroHeader>
+
+        <!-- Orders List -->
+        <mah:MetroHeader Grid.Row="1"
+                        Margin="0,20"
+                        Header="Orders">
+            <DataGrid ItemsSource="{Binding Orders}"
+                      SelectedItem="{Binding SelectedOrder}"
+                      AutoGenerateColumns="False"
+                      Style="{StaticResource MahApps.Styles.DataGrid}"
+                      GridLinesVisibility="Horizontal"
+                      SelectionMode="Single"
+                      IsReadOnly="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Order ID" 
+                                      Binding="{Binding OrderID}"
+                                      Width="100"/>
+                    <DataGridTextColumn Header="Customer" 
+                                      Binding="{Binding Customer.CustomerName}"
+                                      Width="*"/>
+                    <DataGridTextColumn Header="Order Date" 
+                                      Binding="{Binding OrderDate, StringFormat=d}"
+                                      Width="120"/>
+                    <DataGridTextColumn Header="Total Amount" 
+                                      Binding="{Binding TotalAmount, StringFormat=C}"
+                                      Width="120"/>
+                    <DataGridTemplateColumn Width="Auto">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Style="{StaticResource MahApps.Styles.Button.Circle}"
+                                            Width="32"
+                                            Height="32"
+                                            Margin="0,0,5,0"
+                                            ToolTip="View Details"
+                                            Command="{Binding DataContext.ViewDetailsCommand, 
+                                                    RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                            CommandParameter="{Binding}">
+                                        <iconPacks:PackIconMaterial Kind="Eye" Width="16" Height="16"/>
+                                    </Button>
+                                    <Button Style="{StaticResource MahApps.Styles.Button.Circle}"
+                                            Width="32"
+                                            Height="32"
+                                            ToolTip="Delete"
+                                            Command="{Binding DataContext.DeleteOrderCommand, 
+                                                    RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                            CommandParameter="{Binding}">
+                                        <iconPacks:PackIconMaterial Kind="Delete" Width="16" Height="16"/>
+                                    </Button>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </mah:MetroHeader>
+
+        <!-- Action Buttons -->
+        <StackPanel Grid.Row="2" 
+                  Orientation="Horizontal" 
+                  HorizontalAlignment="Right">
+            <Button Style="{StaticResource MahApps.Styles.Button.Square}"
+                    Command="{Binding ExportCommand}"
+                    Margin="0,0,10,0">
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial Kind="FileExport" 
+                                               Margin="0,0,5,0"/>
+                    <TextBlock Text="Export"/>
                 </StackPanel>
+            </Button>
 
-                <!-- Order List Section -->
-                <ListView ItemsSource="{Binding Orders}" Margin="0,20,0,0" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D">
-                    <ListView.View>
-                        <GridView>
-                            <GridViewColumn Header="Order ID" DisplayMemberBinding="{Binding OrderID}" Width="100"/>
-                            <GridViewColumn Header="Customer" DisplayMemberBinding="{Binding Customer.CustomerName}" Width="150"/>
-                            <GridViewColumn Header="Order Date" DisplayMemberBinding="{Binding OrderDate}" Width="150"/>
-                            <GridViewColumn Header="Total Amount" DisplayMemberBinding="{Binding TotalAmount}" Width="100"/>
-                        </GridView>
-                    </ListView.View>
-                </ListView>
-
-                <!-- Action Buttons -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
-                    <Button Content="Add Order" Width="150" Height="35" Background="#0D6EFD" Foreground="#F8F9FA" FontWeight="Bold" BorderBrush="#0A58CA" Command="{Binding AddOrderCommand}"/>
-                    <Button Content="Delete Order" Width="150" Height="35" Background="#DC3545" Foreground="#F8F9FA" FontWeight="Bold" BorderBrush="#C82333" Command="{Binding DeleteOrderCommand}" Margin="10,0,0,0"/>
+            <Button Style="{StaticResource MahApps.Styles.Button.Square.Accent}"
+                    Command="{Binding AddOrderCommand}">
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial Kind="Plus" 
+                                               Margin="0,0,5,0"/>
+                    <TextBlock Text="New Order"/>
                 </StackPanel>
-            </StackPanel>
-        </Border>
+            </Button>
+        </StackPanel>
     </Grid>
 </UserControl>

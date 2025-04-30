@@ -6,6 +6,7 @@ using Page_Navigation_App.ViewModel;
 using System.Windows;
 using System;
 using Microsoft.EntityFrameworkCore;
+using System.IO;
 
 namespace Page_Navigation_App
 {
@@ -28,7 +29,10 @@ namespace Page_Navigation_App
             // Register DbContext with SQLite
             services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlite("Data Source=StockInventory.db"),
-                ServiceLifetime.Scoped); // Use Scoped for DbContext
+                ServiceLifetime.Scoped);
+
+            // Configure backup path
+            string backupPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Backups");
 
             // Core Services - Scoped lifetime
             services.AddScoped<LogService>();
@@ -36,6 +40,11 @@ namespace Page_Navigation_App
             services.AddScoped<ConfigurationService>();
             services.AddScoped<NotificationService>();
             services.AddScoped<ReportService>();
+            services.AddScoped<BackupService>(provider => 
+                new BackupService(
+                    provider.GetRequiredService<AppDbContext>(),
+                    backupPath
+                ));
 
             // Business Services - Scoped lifetime
             services.AddScoped<CustomerService>();
@@ -63,6 +72,7 @@ namespace Page_Navigation_App
             services.AddTransient<CategoryVM>();
             services.AddTransient<UserVM>();
             services.AddTransient<ReportVM>();
+            services.AddTransient<SettingsVM>();
 
             // Register MainWindow as Singleton
             services.AddSingleton<MainWindow>();

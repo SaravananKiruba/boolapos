@@ -3,90 +3,227 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              xmlns:local="clr-namespace:Page_Navigation_App.View"
              mc:Ignorable="d"
              d:DesignHeight="600"
-             d:DesignWidth="622">
+             d:DesignWidth="800">
 
-    <Grid Margin="15" Background="#212529">
-        <!-- Main Border for Dashboard -->
-        <Border CornerRadius="20" BorderBrush="#6C757D" BorderThickness="2" Padding="20" Background="#343A40">
-            <StackPanel>
-                <TextBlock Text="Stock Inventory Dashboard" FontSize="22" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center" Foreground="#F8F9FA"/>
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-                <!-- Date Range Filter (Global) -->
-                <StackPanel Orientation="Horizontal" Margin="0,10" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <Label Content="Date Range:" Foreground="#F8F9FA" VerticalAlignment="Center" Margin="5"/>
-                    <DatePicker Name="StartDatePicker" Width="150" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D" Margin="5"/>
-                    <TextBlock Text=" to " Foreground="#F8F9FA" VerticalAlignment="Center" Margin="5,0"/>
-                    <DatePicker Name="EndDatePicker" Width="150" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D" Margin="5"/>
-                </StackPanel>
+        <!-- Date Range Filter -->
+        <mah:MetroHeader Header="Date Range"
+                        Margin="0,0,0,20">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-                <!-- Dashboard Stats Grid -->
-                <UniformGrid Columns="2" Rows="3" Margin="10" HorizontalAlignment="Center" VerticalAlignment="Top" >
+                <TextBlock Text="From:" 
+                         Margin="0,0,10,0" 
+                         VerticalAlignment="Center"/>
+                <mah:DateTimePicker Grid.Column="1"
+                                   SelectedDateTime="{Binding StartDate}"
+                                   Culture="en-US"
+                                   mah:ControlsHelper.CornerRadius="4"/>
+                
+                <TextBlock Grid.Column="2" 
+                         Text="To:" 
+                         Margin="20,0,10,0" 
+                         VerticalAlignment="Center"/>
+                <mah:DateTimePicker Grid.Column="3"
+                                   SelectedDateTime="{Binding EndDate}"
+                                   Culture="en-US"
+                                   mah:ControlsHelper.CornerRadius="4"/>
 
-                    <!-- Customer Count Section -->
-                    <Border CornerRadius="10" BorderBrush="#6C757D" BorderThickness="1" Background="#495057" Margin="10" Padding="10">
-                        <StackPanel>
-                            <TextBlock Text="Customer Count" FontSize="18" FontWeight="Bold" Foreground="#F8F9FA" HorizontalAlignment="Center"/>
-                            <TextBlock Name="CustomerCountText" Text="0" FontSize="28" FontWeight="Bold" Foreground="#198754" HorizontalAlignment="Center" Margin="5"/>
-                            <Button Content="View Per Product" Background="#198754" Foreground="#F8F9FA" BorderBrush="#157347" Margin="5">
-                                <Button.Template>
-                                    <ControlTemplate>
-                                        <StackPanel Orientation="Horizontal">
-                                            <Image Source="/Images/img_customer.png" Width="16" Height="16" Margin="0,0,5,0"/>
-                                            <ContentPresenter/>
-                                        </StackPanel>
-                                    </ControlTemplate>
-                                </Button.Template>
-                            </Button>
-                        </StackPanel>
-                    </Border>
+                <Button Grid.Column="4"
+                        Margin="20,0,0,0"
+                        Style="{StaticResource MahApps.Styles.Button.Square.Accent}"
+                        Command="{Binding RefreshCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="Refresh" 
+                                                   Margin="0,0,5,0"/>
+                        <TextBlock Text="Refresh"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </mah:MetroHeader>
 
-                    <!-- Product Count (In/Out) Section -->
-                    <Border CornerRadius="10" BorderBrush="#6C757D" BorderThickness="1" Background="#495057" Margin="10" Padding="10">
-                        <StackPanel>
-                            <TextBlock Text="Product Count (In/Out)" FontSize="18" FontWeight="Bold" Foreground="#F8F9FA" HorizontalAlignment="Center"/>
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="5">
-                                <TextBlock Text="In: " Foreground="#0DCAF0" FontWeight="Bold"/>
-                                <TextBlock Name="ProductInCountText" Text="0" FontSize="22" FontWeight="Bold" Foreground="#0DCAF0" Margin="5,0"/>
-                                <TextBlock Text="Out: " Foreground="#DC3545" FontWeight="Bold" Margin="15,0,0,0"/>
-                                <TextBlock Name="ProductOutCountText" Text="0" FontSize="22" FontWeight="Bold" Foreground="#DC3545" Margin="5,0"/>
+        <!-- Dashboard Stats -->
+        <ScrollViewer Grid.Row="1" 
+                    VerticalScrollBarVisibility="Auto">
+            <WrapPanel>
+                <!-- Customers Stats -->
+                <mah:MetroHeader Margin="0,0,20,20" Width="350">
+                    <mah:Tile Width="350"
+                             Height="180"
+                             Background="{StaticResource SurfaceBrush}"
+                             mah:ControlsHelper.CornerRadius="8">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="AccountGroup"
+                                                         Width="24"
+                                                         Height="24"
+                                                         Foreground="{StaticResource PrimaryBrush}"/>
+                                <TextBlock Text="Customers"
+                                         Margin="10,0,0,0"
+                                         FontSize="18"
+                                         FontWeight="Medium"/>
                             </StackPanel>
-                            <Button Content="View Per Product" Background="#0DCAF0" Foreground="#212529" BorderBrush="#0AA2C0" Margin="5">
-                                <Button.Template>
-                                    <ControlTemplate>
-                                        <StackPanel Orientation="Horizontal">
-                                            <Image Source="/Images/img_product.png" Width="16" Height="16" Margin="0,0,5,0"/>
-                                            <ContentPresenter/>
-                                        </StackPanel>
-                                    </ControlTemplate>
-                                </Button.Template>
-                            </Button>
-                        </StackPanel>
-                    </Border>
 
-                    <!-- Sales / Order Count Section -->
-                    <Border CornerRadius="10" BorderBrush="#6C757D" BorderThickness="1" Background="#495057" Margin="10" Padding="10">
-                        <StackPanel>
-                            <TextBlock Text="Sales / Order Count" FontSize="18" FontWeight="Bold" Foreground="#F8F9FA" HorizontalAlignment="Center"/>
-                            <TextBlock Name="SalesOrderCountText" Text="0" FontSize="28" FontWeight="Bold" Foreground="#FFC107" HorizontalAlignment="Center" Margin="5"/>
-                            <Button Content="View Per Product and Customer" Background="#FFC107" Foreground="#212529" BorderBrush="#E0A800" Margin="5">
-                                <Button.Template>
-                                    <ControlTemplate>
-                                        <StackPanel Orientation="Horizontal">
-                                            <Image Source="/Images/img_order.png" Width="16" Height="16" Margin="0,0,5,0"/>
-                                            <ContentPresenter/>
-                                        </StackPanel>
-                                    </ControlTemplate>
-                                </Button.Template>
-                            </Button>
-                        </StackPanel>
-                    </Border>
+                            <TextBlock Grid.Row="1"
+                                     Text="{Binding TotalCustomers}"
+                                     FontSize="48"
+                                     FontWeight="Bold"
+                                     Foreground="{StaticResource PrimaryBrush}"
+                                     VerticalAlignment="Center"
+                                     HorizontalAlignment="Center"/>
 
-                </UniformGrid>
-            </StackPanel>
-        </Border>
+                            <Button Grid.Row="2"
+                                    Style="{StaticResource MahApps.Styles.Button.Flat}"
+                                    HorizontalAlignment="Right"
+                                    Command="{Binding ViewCustomersCommand}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="View Details"/>
+                                    <iconPacks:PackIconMaterial Kind="ChevronRight"
+                                                               Margin="5,0,0,0"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </mah:Tile>
+                </mah:MetroHeader>
+
+                <!-- Products Stats -->
+                <mah:MetroHeader Margin="0,0,20,20" Width="350">
+                    <mah:Tile Width="350"
+                             Height="180"
+                             Background="{StaticResource SurfaceBrush}"
+                             mah:ControlsHelper.CornerRadius="8">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="Package"
+                                                         Width="24"
+                                                         Height="24"
+                                                         Foreground="#0DCAF0"/>
+                                <TextBlock Text="Product Movement"
+                                         Margin="10,0,0,0"
+                                         FontSize="18"
+                                         FontWeight="Medium"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="1"
+                                      Orientation="Horizontal"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center">
+                                <StackPanel Margin="0,0,20,0">
+                                    <TextBlock Text="IN"
+                                             FontSize="16"
+                                             HorizontalAlignment="Center"/>
+                                    <TextBlock Text="{Binding ProductInCount}"
+                                             FontSize="32"
+                                             FontWeight="Bold"
+                                             Foreground="#0DCAF0"
+                                             HorizontalAlignment="Center"/>
+                                </StackPanel>
+                                <StackPanel Margin="20,0,0,0">
+                                    <TextBlock Text="OUT"
+                                             FontSize="16"
+                                             HorizontalAlignment="Center"/>
+                                    <TextBlock Text="{Binding ProductOutCount}"
+                                             FontSize="32"
+                                             FontWeight="Bold"
+                                             Foreground="#DC3545"
+                                             HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <Button Grid.Row="2"
+                                    Style="{StaticResource MahApps.Styles.Button.Flat}"
+                                    HorizontalAlignment="Right"
+                                    Command="{Binding ViewProductsCommand}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="View Details"/>
+                                    <iconPacks:PackIconMaterial Kind="ChevronRight"
+                                                               Margin="5,0,0,0"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </mah:Tile>
+                </mah:MetroHeader>
+
+                <!-- Orders Stats -->
+                <mah:MetroHeader Margin="0,0,20,20" Width="350">
+                    <mah:Tile Width="350"
+                             Height="180"
+                             Background="{StaticResource SurfaceBrush}"
+                             mah:ControlsHelper.CornerRadius="8">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="CartCheck"
+                                                         Width="24"
+                                                         Height="24"
+                                                         Foreground="#FFC107"/>
+                                <TextBlock Text="Total Orders"
+                                         Margin="10,0,0,0"
+                                         FontSize="18"
+                                         FontWeight="Medium"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="1"
+                                      VerticalAlignment="Center"
+                                      HorizontalAlignment="Center">
+                                <TextBlock Text="{Binding TotalOrders}"
+                                         FontSize="48"
+                                         FontWeight="Bold"
+                                         Foreground="#FFC107"
+                                         HorizontalAlignment="Center"/>
+                                <TextBlock Text="{Binding TotalRevenue, StringFormat={}Total Revenue: {0:C}}"
+                                         FontSize="16"
+                                         Opacity="0.7"
+                                         HorizontalAlignment="Center"/>
+                            </StackPanel>
+
+                            <Button Grid.Row="2"
+                                    Style="{StaticResource MahApps.Styles.Button.Flat}"
+                                    HorizontalAlignment="Right"
+                                    Command="{Binding ViewOrdersCommand}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="View Details"/>
+                                    <iconPacks:PackIconMaterial Kind="ChevronRight"
+                                                               Margin="5,0,0,0"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </mah:Tile>
+                </mah:MetroHeader>
+            </WrapPanel>
+        </ScrollViewer>
     </Grid>
-
 </UserControl>

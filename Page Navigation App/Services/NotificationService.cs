@@ -298,10 +298,10 @@ namespace Page_Navigation_App.Services
             var businessInfo = await _configService.GetBusinessInfo();
             return $"Dear {customer.CustomerName},\n\n" +
                    $"Happy Birthday! 🎉\n\n" +
-                   $"As a valued customer of {businessInfo.Name}, " +
+                   $"As a valued customer of {businessInfo.BusinessName}, " +
                    $"we wish you a wonderful day filled with joy and happiness.\n\n" +
                    $"Visit us today to receive a special birthday discount!\n\n" +
-                   $"Best wishes,\n{businessInfo.Name}";
+                   $"Best wishes,\n{businessInfo.BusinessName}";
         }
 
         private async Task<string> GenerateAnniversaryMessage(Customer customer)
@@ -309,17 +309,17 @@ namespace Page_Navigation_App.Services
             var businessInfo = await _configService.GetBusinessInfo();
             return $"Dear {customer.CustomerName},\n\n" +
                    $"Happy Anniversary! 💑\n\n" +
-                   $"Thank you for choosing {businessInfo.Name} for your special moments. " +
+                   $"Thank you for choosing {businessInfo.BusinessName} for your special moments. " +
                    $"May your love continue to shine bright like our finest diamonds.\n\n" +
                    $"Visit us to celebrate with special anniversary offers!\n\n" +
-                   $"Best wishes,\n{businessInfo.Name}";
+                   $"Best wishes,\n{businessInfo.BusinessName}";
         }
 
         private async Task<string> GenerateOrderConfirmation(Order order)
         {
             var businessInfo = await _configService.GetBusinessInfo();
             return $"Order #{order.OrderID} Confirmation\n\n" +
-                   $"Thank you for your purchase at {businessInfo.Name}!\n" +
+                   $"Thank you for your purchase at {businessInfo.BusinessName}!\n" +
                    $"Order Total: ₹{order.GrandTotal:N2}\n" +
                    $"Date: {order.OrderDate:d}\n\n" +
                    $"Your order will be ready for collection as per the discussed timeline.\n\n" +
@@ -333,7 +333,7 @@ namespace Page_Navigation_App.Services
                 <html>
                 <body>
                     <h2>Order Confirmation</h2>
-                    <p>Thank you for your purchase at {businessInfo.Name}!</p>
+                    <p>Thank you for your purchase at {businessInfo.BusinessName}!</p>
                     <div style='margin: 20px 0; padding: 20px; background-color: #f8f9fa;'>
                         <p><strong>Order Number:</strong> {order.OrderID}</p>
                         <p><strong>Date:</strong> {order.OrderDate:d}</p>
@@ -347,7 +347,7 @@ namespace Page_Navigation_App.Services
                     </ul>
                     <hr>
                     <p style='font-size: small; color: #666;'>
-                        {businessInfo.Name}<br>
+                        {businessInfo.BusinessName}<br>
                         {businessInfo.Address}
                     </p>
                 </body>
@@ -359,10 +359,10 @@ namespace Page_Navigation_App.Services
             var businessInfo = await _configService.GetBusinessInfo();
             return $"Dear {customer.CustomerName},\n\n" +
                    $"This is a friendly reminder that you have a pending payment " +
-                   $"of ₹{amount:N2} at {businessInfo.Name}.\n\n" +
+                   $"of ₹{amount:N2} at {businessInfo.BusinessName}.\n\n" +
                    $"Please clear your dues at your earliest convenience.\n\n" +
                    $"For any queries, contact us at {businessInfo.Phone}\n\n" +
-                   $"Thank you for your business,\n{businessInfo.Name}";
+                   $"Thank you for your business,\n{businessInfo.BusinessName}";
         }
 
         private async Task<string> GenerateRepairStatusUpdate(RepairJob repair)

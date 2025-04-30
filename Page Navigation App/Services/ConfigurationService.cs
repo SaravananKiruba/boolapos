@@ -44,25 +44,78 @@ namespace Page_Navigation_App.Services
         {
             return await GetTypedValue("BusinessInfo", new BusinessInfo
             {
-                Name = "Jewelry Shop",
+                BusinessName = "Jewelry Shop",
                 Address = "Main Street",
                 Phone = "1234567890",
                 Email = "contact@jewelryshop.com"
             });
         }
+
+        public async Task UpdateBusinessInfo(BusinessInfo info)
+        {
+            var serialized = JsonSerializer.Serialize(info);
+            var setting = await _context.Settings.FindAsync("BusinessInfo");
+            
+            if (setting == null)
+            {
+                setting = new Model.Setting { Key = "BusinessInfo", Value = serialized };
+                _context.Settings.Add(setting);
+            }
+            else
+            {
+                setting.Value = serialized;
+            }
+            
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<Setting> GetSettings()
+        {
+            return await GetTypedValue("AppSettings", new Setting
+            {
+                OrderNotifications = true,
+                LowStockAlerts = true,
+                PaymentReminders = true,
+                LowStockThreshold = 10,
+                BackupPath = string.Empty
+            });
+        }
+
+        public async Task UpdateSettings(Setting settings)
+        {
+            var serialized = JsonSerializer.Serialize(settings);
+            var setting = await _context.Settings.FindAsync("AppSettings");
+            
+            if (setting == null)
+            {
+                setting = new Model.Setting { Key = "AppSettings", Value = serialized };
+                _context.Settings.Add(setting);
+            }
+            else
+            {
+                setting.Value = serialized;
+            }
+            
+            await _context.SaveChangesAsync();
+        }
     }
 
     public class BusinessInfo
     {
-        public string Name { get; set; }
+        public string BusinessName { get; set; }
         public string Address { get; set; }
         public string Phone { get; set; }
         public string Email { get; set; }
+        public string Website { get; set; }
+        public string TaxId { get; set; }
     }
 
     public class Setting
     {
-        public string Key { get; set; }
-        public string Value { get; set; }
+        public bool OrderNotifications { get; set; }
+        public bool LowStockAlerts { get; set; }
+        public bool PaymentReminders { get; set; }
+        public int LowStockThreshold { get; set; }
+        public string BackupPath { get; set; }
     }
 }

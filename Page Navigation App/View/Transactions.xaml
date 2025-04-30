@@ -3,55 +3,172 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              mc:Ignorable="d"
              d:DesignHeight="600"
-             d:DesignWidth="622">
+             d:DesignWidth="800">
 
-    <Grid Margin="15" Background="#212529">
-        <Border CornerRadius="20" BorderBrush="#6C757D" BorderThickness="2" Padding="20" Background="#343A40">
-            <StackPanel>
-                <TextBlock Text="Transaction Management" FontSize="22" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center" Foreground="#F8F9FA"/>
+    <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="350"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
 
-                <!-- Transaction Details Section -->
-                <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <Label Content="Transaction Type:" Width="150" VerticalAlignment="Center" Foreground="#F8F9FA"/>
-                    <ComboBox Width="300" Height="30" ItemsSource="{Binding TransactionTypes}" SelectedItem="{Binding SelectedTransaction.TransactionType}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
+        <!-- Transaction Entry Form -->
+        <mah:MetroHeader Header="Transaction Details">
+            <mah:MetroContentControl>
+                <StackPanel>
+                    <ComboBox ItemsSource="{Binding TransactionTypes}"
+                              SelectedItem="{Binding SelectedTransaction.TransactionType}"
+                              Margin="0,5"
+                              mah:TextBoxHelper.Watermark="Transaction Type"
+                              Style="{StaticResource MahApps.Styles.ComboBox}"/>
+
+                    <mah:NumericUpDown Value="{Binding SelectedTransaction.Amount}"
+                                      Margin="0,5"
+                                      mah:TextBoxHelper.Watermark="Amount"
+                                      Style="{StaticResource MahApps.Styles.NumericUpDown}"
+                                      StringFormat="C"
+                                      Minimum="0"/>
+
+                    <mah:DateTimePicker SelectedDateTime="{Binding SelectedTransaction.TransactionDate}"
+                                       Margin="0,5"
+                                       mah:TextBoxHelper.Watermark="Transaction Date"
+                                       Style="{StaticResource MahApps.Styles.DateTimePicker}"/>
+
+                    <TextBox Text="{Binding SelectedTransaction.Description}"
+                             Margin="0,5"
+                             mah:TextBoxHelper.Watermark="Description"
+                             Style="{StaticResource MahApps.Styles.TextBox}"
+                             TextWrapping="Wrap"
+                             AcceptsReturn="True"
+                             Height="80"/>
+
+                    <StackPanel Orientation="Horizontal" 
+                              Margin="0,20,0,0"
+                              HorizontalAlignment="Right">
+                        <Button Content="Clear"
+                                Margin="0,0,10,0"
+                                Style="{StaticResource MahApps.Styles.Button}"
+                                Command="{Binding ClearCommand}"/>
+                        
+                        <Button Content="Save"
+                                Style="{StaticResource MahApps.Styles.Button.Accent}"
+                                Command="{Binding AddOrUpdateCommand}"/>
+                    </StackPanel>
                 </StackPanel>
+            </mah:MetroContentControl>
+        </mah:MetroHeader>
 
-                <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <Label Content="Amount:" Width="150" VerticalAlignment="Center" Foreground="#F8F9FA"/>
-                    <TextBox Width="300" Height="30" Text="{Binding SelectedTransaction.Amount, UpdateSourceTrigger=PropertyChanged}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
-                </StackPanel>
+        <!-- Transaction List -->
+        <mah:MetroHeader Grid.Column="1"
+                        Margin="20,0,0,0"
+                        Header="Transaction History">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
-                <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <Label Content="Date:" Width="150" VerticalAlignment="Center" Foreground="#F8F9FA"/>
-                    <DatePicker Width="300" SelectedDate="{Binding SelectedTransaction.TransactionDate, UpdateSourceTrigger=PropertyChanged}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
-                </StackPanel>
+                <!-- Filter Controls -->
+                <Grid Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-                <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <Label Content="Description:" Width="150" VerticalAlignment="Top" Foreground="#F8F9FA"/>
-                    <TextBox Width="300" Height="60" Text="{Binding SelectedTransaction.Description, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" AcceptsReturn="True" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
-                </StackPanel>
+                    <ComboBox ItemsSource="{Binding TransactionTypes}"
+                              SelectedItem="{Binding FilterTransactionType}"
+                              Width="150"
+                              Margin="0,0,10,0"
+                              mah:TextBoxHelper.Watermark="Filter by Type"
+                              Style="{StaticResource MahApps.Styles.ComboBox}"/>
 
-                <!-- Action Buttons -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
-                    <Button Content="Add/Update" Width="150" Height="35" Background="#198754" Foreground="#F8F9FA" FontWeight="Bold" BorderBrush="#157347" Command="{Binding AddOrUpdateCommand}"/>
-                    <Button Content="Clear" Width="150" Height="35" Background="#DC3545" Foreground="#F8F9FA" FontWeight="Bold" BorderBrush="#C82333" Command="{Binding ClearCommand}" Margin="10,0,0,0"/>
-                </StackPanel>
+                    <TextBox Grid.Column="1"
+                             Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}"
+                             mah:TextBoxHelper.Watermark="Search transactions..."
+                             Style="{StaticResource MahApps.Styles.TextBox}">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Return" Command="{Binding SearchCommand}"/>
+                        </TextBox.InputBindings>
+                    </TextBox>
 
-                <!-- Transaction List Section -->
-                <ListView ItemsSource="{Binding Transactions}" Margin="0,20,0,0" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D">
-                    <ListView.View>
-                        <GridView>
-                            <GridViewColumn Header="Type" DisplayMemberBinding="{Binding TransactionType}" Width="150"/>
-                            <GridViewColumn Header="Amount" DisplayMemberBinding="{Binding Amount}" Width="100"/>
-                            <GridViewColumn Header="Date" DisplayMemberBinding="{Binding TransactionDate}" Width="150"/>
-                            <GridViewColumn Header="Description" DisplayMemberBinding="{Binding Description}" Width="200"/>
-                        </GridView>
-                    </ListView.View>
-                </ListView>
-            </StackPanel>
-        </Border>
+                    <Button Grid.Column="2"
+                            Margin="10,0"
+                            Style="{StaticResource MahApps.Styles.Button.Square}"
+                            Command="{Binding SearchCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="Magnify" 
+                                                           Margin="0,0,5,0"/>
+                            <TextBlock Text="Search"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Grid.Column="3"
+                            Style="{StaticResource MahApps.Styles.Button.Square}"
+                            Command="{Binding ExportCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="FileExport" 
+                                                           Margin="0,0,5,0"/>
+                            <TextBlock Text="Export"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
+
+                <DataGrid Grid.Row="1"
+                          ItemsSource="{Binding Transactions}"
+                          SelectedItem="{Binding SelectedTransaction}"
+                          AutoGenerateColumns="False"
+                          Style="{StaticResource MahApps.Styles.DataGrid}"
+                          GridLinesVisibility="Horizontal"
+                          SelectionMode="Single"
+                          IsReadOnly="True">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Date" 
+                                          Binding="{Binding TransactionDate, StringFormat=d}"
+                                          Width="120"/>
+                        <DataGridTextColumn Header="Type" 
+                                          Binding="{Binding TransactionType}"
+                                          Width="120"/>
+                        <DataGridTextColumn Header="Amount" 
+                                          Binding="{Binding Amount, StringFormat=C}"
+                                          Width="120"/>
+                        <DataGridTextColumn Header="Description" 
+                                          Binding="{Binding Description}"
+                                          Width="*"/>
+                        <DataGridTemplateColumn Width="Auto">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Style="{StaticResource MahApps.Styles.Button.Circle}"
+                                                Width="32"
+                                                Height="32"
+                                                Margin="0,0,5,0"
+                                                ToolTip="Edit"
+                                                Command="{Binding DataContext.EditCommand, 
+                                                        RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding}">
+                                            <iconPacks:PackIconMaterial Kind="Pencil" Width="16" Height="16"/>
+                                        </Button>
+                                        <Button Style="{StaticResource MahApps.Styles.Button.Circle}"
+                                                Width="32"
+                                                Height="32"
+                                                ToolTip="Delete"
+                                                Command="{Binding DataContext.DeleteCommand, 
+                                                        RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding}">
+                                            <iconPacks:PackIconMaterial Kind="Delete" Width="16" Height="16"/>
+                                        </Button>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </mah:MetroHeader>
     </Grid>
-
 </UserControl>

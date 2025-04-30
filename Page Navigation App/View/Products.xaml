@@ -3,57 +3,130 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              mc:Ignorable="d"
              d:DesignHeight="600"
-             d:DesignWidth="622"
-             Style="{StaticResource Page_Style}">
+             d:DesignWidth="800">
 
-    <Grid Margin="15" Background="#212529">
-        <!-- Main Border for Product Form -->
-        <Border CornerRadius="20" BorderBrush="#6C757D" BorderThickness="2" Padding="20" Background="#343A40">
-            <StackPanel>
-                <TextBlock Text="Product Management" FontSize="22" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center" Foreground="#F8F9FA"/>
+    <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="350"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
 
-                <!-- Product Details Section -->
-                <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <Label Content="Product Name:" Width="150" VerticalAlignment="Center" Foreground="#F8F9FA"/>
-                    <TextBox Width="300" Height="30" Text="{Binding SelectedProduct.ProductName, UpdateSourceTrigger=PropertyChanged}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
+        <!-- Product Entry Form -->
+        <mah:MetroHeader Header="Product Details">
+            <mah:MetroContentControl>
+                <StackPanel>
+                    <TextBox Text="{Binding SelectedProduct.ProductName, UpdateSourceTrigger=PropertyChanged}"
+                             Margin="0,5"
+                             mah:TextBoxHelper.Watermark="Product Name"
+                             Style="{StaticResource MahApps.Styles.TextBox}"/>
+
+                    <TextBox Text="{Binding SelectedProduct.Price, UpdateSourceTrigger=PropertyChanged}"
+                             Margin="0,5"
+                             mah:TextBoxHelper.Watermark="Price"
+                             Style="{StaticResource MahApps.Styles.TextBox}"/>
+
+                    <ComboBox ItemsSource="{Binding Categories}"
+                              SelectedItem="{Binding SelectedProduct.Category}"
+                              Margin="0,5"
+                              mah:TextBoxHelper.Watermark="Category"
+                              Style="{StaticResource MahApps.Styles.ComboBox}"/>
+
+                    <TextBox Text="{Binding SelectedProduct.StockLevel, UpdateSourceTrigger=PropertyChanged}"
+                             Margin="0,5"
+                             mah:TextBoxHelper.Watermark="Stock Level"
+                             Style="{StaticResource MahApps.Styles.TextBox}"/>
+
+                    <StackPanel Orientation="Horizontal" 
+                              Margin="0,20,0,0"
+                              HorizontalAlignment="Right">
+                        <Button Content="Clear"
+                                Margin="0,0,10,0"
+                                Style="{StaticResource MahApps.Styles.Button}"
+                                Command="{Binding ClearCommand}"/>
+                        
+                        <Button Content="Save"
+                                Style="{StaticResource MahApps.Styles.Button.Accent}"
+                                Command="{Binding AddOrUpdateCommand}"/>
+                    </StackPanel>
                 </StackPanel>
+            </mah:MetroContentControl>
+        </mah:MetroHeader>
 
-                <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <Label Content="Price:" Width="150" VerticalAlignment="Center" Foreground="#F8F9FA"/>
-                    <TextBox Width="300" Height="30" Text="{Binding SelectedProduct.Price, UpdateSourceTrigger=PropertyChanged}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
-                </StackPanel>
+        <!-- Product List -->
+        <mah:MetroHeader Grid.Column="1"
+                        Margin="20,0,0,0"
+                        Header="Product List">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
-                <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <Label Content="Category:" Width="150" VerticalAlignment="Center" Foreground="#F8F9FA"/>
-                    <ComboBox Width="300" Height="30" ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedProduct.Category}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
-                </StackPanel>
+                <!-- Search Box -->
+                <TextBox Margin="0,0,0,10"
+                         mah:TextBoxHelper.Watermark="Search products..."
+                         Style="{StaticResource MahApps.Styles.TextBox}"
+                         Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}">
+                    <TextBox.InputBindings>
+                        <KeyBinding Key="Return" Command="{Binding SearchCommand}"/>
+                    </TextBox.InputBindings>
+                </TextBox>
 
-                <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <Label Content="Stock Level:" Width="150" VerticalAlignment="Center" Foreground="#F8F9FA"/>
-                    <TextBox Width="300" Height="30" Text="{Binding SelectedProduct.StockLevel, UpdateSourceTrigger=PropertyChanged}" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D"/>
-                </StackPanel>
-
-                <!-- Action Buttons -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
-                    <Button Content="Add/Update" Width="150" Height="35" Background="#198754" Foreground="#F8F9FA" FontWeight="Bold" BorderBrush="#157347" Command="{Binding AddOrUpdateCommand}"/>
-                    <Button Content="Clear" Width="150" Height="35" Background="#DC3545" Foreground="#F8F9FA" FontWeight="Bold" BorderBrush="#C82333" Command="{Binding ClearCommand}" Margin="10,0,0,0"/>
-                </StackPanel>
-
-                <!-- Product List Section -->
-                <ListView ItemsSource="{Binding Products}" Margin="0,20,0,0" Background="#495057" Foreground="#F8F9FA" BorderBrush="#6C757D">
-                    <ListView.View>
-                        <GridView>
-                            <GridViewColumn Header="Name" DisplayMemberBinding="{Binding ProductName}" Width="150"/>
-                            <GridViewColumn Header="Price" DisplayMemberBinding="{Binding Price}" Width="100"/>
-                            <GridViewColumn Header="Category" DisplayMemberBinding="{Binding Category.Name}" Width="150"/>
-                            <GridViewColumn Header="Stock" DisplayMemberBinding="{Binding StockLevel}" Width="100"/>
-                        </GridView>
-                    </ListView.View>
-                </ListView>
-            </StackPanel>
-        </Border>
+                <DataGrid Grid.Row="1"
+                          ItemsSource="{Binding Products}"
+                          SelectedItem="{Binding SelectedProduct}"
+                          AutoGenerateColumns="False"
+                          Style="{StaticResource MahApps.Styles.DataGrid}"
+                          GridLinesVisibility="Horizontal"
+                          SelectionMode="Single"
+                          IsReadOnly="True">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Name" 
+                                          Binding="{Binding ProductName}"
+                                          Width="*"/>
+                        <DataGridTextColumn Header="Price" 
+                                          Binding="{Binding Price, StringFormat=C}"
+                                          Width="100"/>
+                        <DataGridTextColumn Header="Category" 
+                                          Binding="{Binding Category.Name}"
+                                          Width="120"/>
+                        <DataGridTextColumn Header="Stock" 
+                                          Binding="{Binding StockLevel}"
+                                          Width="80"/>
+                        <DataGridTemplateColumn Width="Auto">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Style="{StaticResource MahApps.Styles.Button.Circle}"
+                                                Width="32"
+                                                Height="32"
+                                                Margin="0,0,5,0"
+                                                ToolTip="Edit"
+                                                Command="{Binding DataContext.EditCommand, 
+                                                        RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding}">
+                                            <iconPacks:PackIconMaterial Kind="Pencil" Width="16" Height="16"/>
+                                        </Button>
+                                        <Button Style="{StaticResource MahApps.Styles.Button.Circle}"
+                                                Width="32"
+                                                Height="32"
+                                                ToolTip="Delete"
+                                                Command="{Binding DataContext.DeleteCommand, 
+                                                        RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding}">
+                                            <iconPacks:PackIconMaterial Kind="Delete" Width="16" Height="16"/>
+                                        </Button>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </mah:MetroHeader>
     </Grid>
-
 </UserControl>
