@@ -44,7 +44,7 @@ namespace Page_Navigation_App.Model
 
         [Required]
         [StringLength(20)]
-        public string CustomerType { get; set; } // Retail, Wholesale
+        public string? CustomerType { get; set; } // Retail, Wholesale
 
         [EmailAddress]
         [StringLength(100)]
