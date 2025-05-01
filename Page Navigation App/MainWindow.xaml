@@ -50,136 +50,292 @@
                                                Margin="0 0 10 0"
                                                Foreground="{StaticResource PrimaryBrush}"/>
                     <TextBlock Text="Boola POS"
-                             Foreground="{StaticResource PrimaryBrush}"
-                             FontSize="24"
-                             FontWeight="Bold"/>
+                             FontSize="22"
+                             FontWeight="SemiBold"
+                             Foreground="{StaticResource TextOnSurfaceBrush}"
+                             VerticalAlignment="Center"/>
                 </StackPanel>
 
-                <!-- Navigation Buttons -->
-                <ScrollViewer Grid.Row="1" 
+                <!-- Menu Items -->
+                <ScrollViewer Grid.Row="1"
                             VerticalScrollBarVisibility="Auto"
-                            mah:ScrollViewerHelper.IsHorizontalScrollWheelEnabled="False">
+                            Margin="0,20">
                     <StackPanel>
-                        <mah:Tile Title="Home"
-                               Command="{Binding HomeCommand}"
-                               Background="Transparent"
-                               mah:ControlsHelper.CornerRadius="8"
-                               Height="50"
-                               Margin="10,5">
-                            <iconPacks:PackIconMaterial Kind="Home" 
-                                                       Width="22" 
-                                                       Height="22"/>
-                        </mah:Tile>
+                        <!-- Navigation Buttons -->
+                        <Button Style="{StaticResource NavigationButton}"
+                                Command="{Binding HomeCommand}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <iconPacks:PackIconMaterial Kind="Home"
+                                                       Width="20"
+                                                       Height="20"
+                                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                <TextBlock Grid.Column="1"
+                                       Text="Home"
+                                       Margin="15,0,0,0"
+                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                            </Grid>
+                        </Button>
 
-                        <mah:Tile Title="Customers"
-                               Command="{Binding CustomersCommand}"
-                               Background="Transparent"
-                               mah:ControlsHelper.CornerRadius="8"
-                               Height="50"
-                               Margin="10,5">
-                            <iconPacks:PackIconMaterial Kind="AccountGroup" 
-                                                       Width="22" 
-                                                       Height="22"/>
-                        </mah:Tile>
+                        <Button Style="{StaticResource NavigationButton}"
+                                Command="{Binding CustomersCommand}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <iconPacks:PackIconMaterial Kind="AccountGroup"
+                                                       Width="20"
+                                                       Height="20"
+                                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                <TextBlock Grid.Column="1"
+                                       Text="Customers"
+                                       Margin="15,0,0,0"
+                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                            </Grid>
+                        </Button>
 
-                        <mah:Tile Title="Products"
-                               Command="{Binding ProductsCommand}"
-                               Background="Transparent"
-                               mah:ControlsHelper.CornerRadius="8"
-                               Height="50"
-                               Margin="10,5">
-                            <iconPacks:PackIconMaterial Kind="Package" 
-                                                       Width="22" 
-                                                       Height="22"/>
-                        </mah:Tile>
+                        <Button Style="{StaticResource NavigationButton}"
+                                Command="{Binding ProductsCommand}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <iconPacks:PackIconMaterial Kind="Package"
+                                                       Width="20"
+                                                       Height="20"
+                                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                <TextBlock Grid.Column="1"
+                                       Text="Products"
+                                       Margin="15,0,0,0"
+                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                            </Grid>
+                        </Button>
 
-                        <mah:Tile Title="Orders"
-                               Command="{Binding OrdersCommand}"
-                               Background="Transparent"
-                               mah:ControlsHelper.CornerRadius="8"
-                               Height="50"
-                               Margin="10,5">
-                            <iconPacks:PackIconMaterial Kind="CartOutline" 
-                                                       Width="22" 
-                                                       Height="22"/>
-                        </mah:Tile>
+                        <Button Style="{StaticResource NavigationButton}"
+                                Command="{Binding OrdersCommand}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <iconPacks:PackIconMaterial Kind="CartOutline"
+                                                       Width="20"
+                                                       Height="20"
+                                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                <TextBlock Grid.Column="1"
+                                       Text="Orders"
+                                       Margin="15,0,0,0"
+                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                            </Grid>
+                        </Button>
 
-                        <mah:Tile Title="Transactions"
-                               Command="{Binding TransactionsCommand}"
-                               Background="Transparent"
-                               mah:ControlsHelper.CornerRadius="8"
-                               Height="50"
-                               Margin="10,5">
-                            <iconPacks:PackIconMaterial Kind="CashRegister" 
-                                                       Width="22" 
-                                                       Height="22"/>
-                        </mah:Tile>
+                        <Button Style="{StaticResource NavigationButton}"
+                                Command="{Binding TransactionsCommand}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <iconPacks:PackIconMaterial Kind="CashRegister"
+                                                       Width="20"
+                                                       Height="20"
+                                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                <TextBlock Grid.Column="1"
+                                       Text="Transactions"
+                                       Margin="15,0,0,0"
+                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                            </Grid>
+                        </Button>
 
-                        <mah:Tile Title="Rate Master"
-                               Command="{Binding RateMasterCommand}"
-                               Background="Transparent"
-                               mah:ControlsHelper.CornerRadius="8"
-                               Height="50"
-                               Margin="10,5">
-                            <iconPacks:PackIconMaterial Kind="ChartLineVariant" 
-                                                       Width="22" 
-                                                       Height="22"/>
-                        </mah:Tile>
+                        <Button Style="{StaticResource NavigationButton}"
+                                Command="{Binding SuppliersCommand}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <iconPacks:PackIconMaterial Kind="TruckDelivery"
+                                                       Width="20"
+                                                       Height="20"
+                                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                <TextBlock Grid.Column="1"
+                                       Text="Suppliers"
+                                       Margin="15,0,0,0"
+                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                            </Grid>
+                        </Button>
 
-                        <mah:Tile Title="Repair Jobs"
-                               Command="{Binding RepairJobsCommand}"
-                               Background="Transparent"
-                               mah:ControlsHelper.CornerRadius="8"
-                               Height="50"
-                               Margin="10,5">
-                            <iconPacks:PackIconMaterial Kind="Tools" 
-                                                       Width="22" 
-                                                       Height="22"/>
-                        </mah:Tile>
+                        <Button Style="{StaticResource NavigationButton}"
+                                Command="{Binding RateMasterCommand}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <iconPacks:PackIconMaterial Kind="ChartLineVariant"
+                                                       Width="20"
+                                                       Height="20"
+                                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                <TextBlock Grid.Column="1"
+                                       Text="Rate Master"
+                                       Margin="15,0,0,0"
+                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                            </Grid>
+                        </Button>
 
-                        <mah:Tile Title="Settings"
-                               Command="{Binding SettingsCommand}"
-                               Background="Transparent"
-                               mah:ControlsHelper.CornerRadius="8"
-                               Height="50"
-                               Margin="10,5">
-                            <iconPacks:PackIconMaterial Kind="Cog" 
-                                                       Width="22" 
-                                                       Height="22"/>
-                        </mah:Tile>
+                        <Button Style="{StaticResource NavigationButton}"
+                                Command="{Binding RepairJobsCommand}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <iconPacks:PackIconMaterial Kind="Tools"
+                                                       Width="20"
+                                                       Height="20"
+                                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                <TextBlock Grid.Column="1"
+                                       Text="Repair Jobs"
+                                       Margin="15,0,0,0"
+                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                            </Grid>
+                        </Button>
+
+                        <Button Style="{StaticResource NavigationButton}"
+                                Command="{Binding StockCommand}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <iconPacks:PackIconMaterial Kind="PackageVariant"
+                                                       Width="20"
+                                                       Height="20"
+                                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                <TextBlock Grid.Column="1"
+                                       Text="Stock"
+                                       Margin="15,0,0,0"
+                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                            </Grid>
+                        </Button>
+
+                        <Button Style="{StaticResource NavigationButton}"
+                                Command="{Binding CategoryCommand}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <iconPacks:PackIconMaterial Kind="ShapeOutline"
+                                                       Width="20"
+                                                       Height="20"
+                                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                <TextBlock Grid.Column="1"
+                                       Text="Categories"
+                                       Margin="15,0,0,0"
+                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                            </Grid>
+                        </Button>
+
+                        <Button Style="{StaticResource NavigationButton}"
+                                Command="{Binding UserCommand}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <iconPacks:PackIconMaterial Kind="AccountCog"
+                                                       Width="20"
+                                                       Height="20"
+                                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                <TextBlock Grid.Column="1"
+                                       Text="Users"
+                                       Margin="15,0,0,0"
+                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                            </Grid>
+                        </Button>
+
+                        <Button Style="{StaticResource NavigationButton}"
+                                Command="{Binding ReportCommand}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <iconPacks:PackIconMaterial Kind="ChartBox"
+                                                       Width="20"
+                                                       Height="20"
+                                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                <TextBlock Grid.Column="1"
+                                       Text="Reports"
+                                       Margin="15,0,0,0"
+                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                            </Grid>
+                        </Button>
+
+                        <Button Style="{StaticResource NavigationButton}"
+                                Command="{Binding SettingsCommand}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <iconPacks:PackIconMaterial Kind="Cog"
+                                                       Width="20"
+                                                       Height="20"
+                                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                <TextBlock Grid.Column="1"
+                                       Text="Settings"
+                                       Margin="15,0,0,0"
+                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                            </Grid>
+                        </Button>
+
+                        <!-- Close Button -->
+                        <Button Grid.Row="2"
+                                Style="{StaticResource NavigationButton}"
+                                Height="45"
+                                Margin="20,5"
+                                Click="CloseApp_Click">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <iconPacks:PackIconMaterial Kind="Logout"
+                                                       Width="20"
+                                                       Height="20"
+                                                       Foreground="{StaticResource ErrorBrush}"/>
+                                <TextBlock Grid.Column="1"
+                                       Text="Close"
+                                       Margin="15,0,0,0"
+                                       Foreground="{StaticResource ErrorBrush}"/>
+                            </Grid>
+                        </Button>
                     </StackPanel>
                 </ScrollViewer>
-
-                <!-- Logout Button -->
-                <Button Grid.Row="2"
-                        Style="{StaticResource MahApps.Styles.Button.Flat}"
-                        Height="40"
-                        Margin="20,10"
-                        Command="{Binding LogoutCommand}"
-                        mah:ControlsHelper.CornerRadius="8">
-                    <StackPanel Orientation="Horizontal">
-                        <iconPacks:PackIconMaterial Kind="Logout" 
-                                                   Width="22" 
-                                                   Height="22"/>
-                        <TextBlock Text="Logout" 
-                                 Margin="10 0"/>
-                    </StackPanel>
-                </Button>
             </Grid>
         </Border>
 
         <!-- Main Content Area -->
         <Border Grid.Column="1"
                 Background="{StaticResource BackgroundBrush}"
-                Margin="20">
+                CornerRadius="15 0 0 15"
+                Margin="0 0 0 0">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- Top Bar -->
-                <Grid Height="60">
+                <!-- Header -->
+                <Grid Height="80"
+                      Margin="20,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
@@ -197,13 +353,13 @@
                               Orientation="Horizontal" 
                               VerticalAlignment="Center">
                         <TextBlock Text="{Binding CurrentUser}"
-                                 Foreground="{StaticResource TextSecondaryBrush}"
+                                 Foreground="{StaticResource TextPrimaryBrush}"
                                  VerticalAlignment="Center"
                                  Margin="0 0 10 0"/>
                         <Button Style="{StaticResource MahApps.Styles.Button.Circle}"
                                 Width="40"
                                 Height="40"
-                                Padding="0"
+                                Background="{StaticResource SurfaceBrush}"
                                 BorderThickness="0">
                             <iconPacks:PackIconMaterial Kind="AccountCircle"
                                                      Width="24"
@@ -216,7 +372,7 @@
                 <!-- Main Content -->
                 <ContentControl Grid.Row="1" 
                               Content="{Binding CurrentView}"
-                              Margin="0,20,0,0">
+                              Margin="20">
                     <ContentControl.Resources>
                         <Style TargetType="UserControl">
                             <Setter Property="HorizontalAlignment" Value="Stretch"/>

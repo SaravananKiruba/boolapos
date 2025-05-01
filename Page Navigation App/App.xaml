@@ -12,11 +12,13 @@
         <ResourceDictionary>
             <!-- MahApps.Metro ResourceDictionaries -->
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.Buttons.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.DataGrid.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Dark.Blue.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.Buttons.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.DataGrid.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Dark.Blue.xaml"/>
+                <!-- Local Theme Resources -->
+                <ResourceDictionary Source="/Styles/Controls.Themes.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <!-- View-ViewModel Mappings -->
@@ -63,14 +65,26 @@
             <!-- Converters -->
             <utilities:ViewModelToTitleConverter x:Key="ViewModelToTitleConverter"/>
 
-            <!-- Application Theme Colors -->
-            <Color x:Key="Primary">#FFD700</Color>
-            <Color x:Key="PrimaryLight">#FFDF33</Color>
-            <Color x:Key="PrimaryDark">#B39700</Color>
-            <Color x:Key="Background">#1B1C1F</Color>
-            <Color x:Key="Surface">#2D2F33</Color>
-            <Color x:Key="TextPrimary">#FFFFFF</Color>
-            <Color x:Key="TextSecondary">#B3B3B3</Color>
+            <!-- Theme Colors -->
+            <Color x:Key="Primary">#FF2D98DA</Color>
+            <Color x:Key="PrimaryLight">#FF74B9FF</Color>
+            <Color x:Key="PrimaryDark">#FF2475A2</Color>
+
+            <!-- Background & Surface -->
+            <Color x:Key="Background">#FF45AAF2</Color>
+            <Color x:Key="Surface">#FFFFFFFF</Color>
+            <Color x:Key="SurfaceSecondary">#FFF1F2F6</Color>
+
+            <!-- Text -->
+            <Color x:Key="TextPrimary">#FFFFFFFF</Color>
+            <Color x:Key="TextSecondary">#FFDFF1FF</Color>
+            <Color x:Key="TextOnSurface">#FF2D3436</Color>
+
+            <!-- Status Colors -->
+            <Color x:Key="Success">#FF26DE81</Color>
+            <Color x:Key="Warning">#FFF1C40F</Color>
+            <Color x:Key="Error">#FFEB3B5A</Color>
+            <Color x:Key="Info">#FF00CEC9</Color>
 
             <!-- Base Brushes -->
             <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}"/>
@@ -78,16 +92,22 @@
             <SolidColorBrush x:Key="PrimaryDarkBrush" Color="{StaticResource PrimaryDark}"/>
             <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource Background}"/>
             <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource Surface}"/>
+            <SolidColorBrush x:Key="SurfaceSecondaryBrush" Color="{StaticResource SurfaceSecondary}"/>
             <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimary}"/>
             <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondary}"/>
+            <SolidColorBrush x:Key="TextOnSurfaceBrush" Color="{StaticResource TextOnSurface}"/>
+            <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource Success}"/>
+            <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource Warning}"/>
+            <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource Error}"/>
+            <SolidColorBrush x:Key="InfoBrush" Color="{StaticResource Info}"/>
 
             <!-- MahApps.Metro Theme Override Colors -->
-            <Color x:Key="MahApps.Colors.ThemeBackground">#1B1C1F</Color>
-            <Color x:Key="MahApps.Colors.AccentBase">#FFD700</Color>
-            <Color x:Key="MahApps.Colors.Accent">#FFD700</Color>
-            <Color x:Key="MahApps.Colors.Accent2">#FFDF33</Color>
-            <Color x:Key="MahApps.Colors.Accent3">#B39700</Color>
-            <Color x:Key="MahApps.Colors.Highlight">#FFD700</Color>
+            <Color x:Key="MahApps.Colors.ThemeBackground">#45aaf2</Color>
+            <Color x:Key="MahApps.Colors.AccentBase">#2d98da</Color>
+            <Color x:Key="MahApps.Colors.Accent">#2d98da</Color>
+            <Color x:Key="MahApps.Colors.Accent2">#74b9ff</Color>
+            <Color x:Key="MahApps.Colors.Accent3">#2475a2</Color>
+            <Color x:Key="MahApps.Colors.Highlight">#74b9ff</Color>
 
             <!-- MahApps.Metro Theme Override Brushes -->
             <SolidColorBrush x:Key="MahApps.Brushes.ThemeBackground" Color="{StaticResource Background}"/>
@@ -96,18 +116,45 @@
             <SolidColorBrush x:Key="MahApps.Brushes.Accent" Color="{StaticResource Primary}"/>
             <SolidColorBrush x:Key="MahApps.Brushes.Accent2" Color="{StaticResource PrimaryLight}"/>
             <SolidColorBrush x:Key="MahApps.Brushes.Accent3" Color="{StaticResource PrimaryDark}"/>
-            <SolidColorBrush x:Key="MahApps.Brushes.Highlight" Color="{StaticResource Primary}"/>
+            <SolidColorBrush x:Key="MahApps.Brushes.Highlight" Color="{StaticResource PrimaryLight}"/>
+
+            <!-- Navigation Button Style -->
+            <Style x:Key="NavigationButton" TargetType="{x:Type Button}" BasedOn="{StaticResource MahApps.Styles.Button.Flat}">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Height" Value="45"/>
+                <Setter Property="Margin" Value="20,0"/>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
+                        <Setter Property="Foreground" Value="{StaticResource SurfaceBrush}"/>
+                    </Trigger>
+                    <Trigger Property="IsPressed" Value="True">
+                        <Setter Property="Background" Value="{StaticResource PrimaryDarkBrush}"/>
+                        <Setter Property="Foreground" Value="{StaticResource SurfaceBrush}"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
 
             <!-- MetroWindow Default Style -->
-            <Style TargetType="{x:Type mah:MetroWindow}" BasedOn="{StaticResource {x:Type mah:MetroWindow}}">
-                <Setter Property="GlowBrush" Value="{StaticResource PrimaryBrush}"/>
-                <Setter Property="WindowTransitionsEnabled" Value="False"/>
-                <Setter Property="WindowTitleBrush" Value="{StaticResource SurfaceBrush}"/>
-                <Setter Property="NonActiveGlowBrush" Value="{StaticResource SurfaceBrush}"/>
-                <Setter Property="TitleForeground" Value="{StaticResource TextPrimaryBrush}"/>
-                <Setter Property="Background" Value="{StaticResource BackgroundBrush}"/>
-                <Setter Property="BorderThickness" Value="1"/>
-                <Setter Property="TitleCharacterCasing" Value="Normal"/>
+            <Style TargetType="{x:Type mah:MetroWindow}"
+                    BasedOn="{StaticResource {x:Type mah:MetroWindow}}">
+                <Setter Property="GlowBrush"
+                        Value="{StaticResource PrimaryBrush}"/>
+                <Setter Property="WindowTransitionsEnabled"
+                        Value="False"/>
+                <Setter Property="WindowTitleBrush"
+                        Value="{StaticResource SurfaceBrush}"/>
+                <Setter Property="NonActiveGlowBrush"
+                        Value="{StaticResource SurfaceBrush}"/>
+                <Setter Property="TitleForeground"
+                        Value="{StaticResource TextPrimaryBrush}"/>
+                <Setter Property="Background"
+                        Value="{StaticResource BackgroundBrush}"/>
+                <Setter Property="BorderThickness"
+                        Value="1"/>
+                <Setter Property="TitleCharacterCasing"
+                        Value="Normal"/>
             </Style>
         </ResourceDictionary>
     </Application.Resources>
