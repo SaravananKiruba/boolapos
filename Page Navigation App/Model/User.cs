@@ -40,7 +40,7 @@ namespace Page_Navigation_App.Model
         [Required]
         public bool IsActive { get; set; }
         
-        public virtual ICollection<UserRole> Roles { get; set; } = new List<UserRole>();
+        public virtual ICollection<Role> Roles { get; set; } = new HashSet<Role>();
     }
 
     public class UserRole

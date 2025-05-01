@@ -30,5 +30,18 @@ namespace Page_Navigation_App.Data
         public DbSet<Model.Setting> Settings { get; set; }
         public DbSet<NotificationSettings> NotificationSettings { get; set; }
         public DbSet<EmailSettings> EmailSettings { get; set; }
+        public DbSet<Role> Roles { get; set; }
+        public DbSet<UserRole> UserRoles { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // Configure User-Role relationship through UserRole
+            modelBuilder.Entity<UserRole>()
+                .HasOne(ur => ur.User)
+                .WithMany()
+                .HasForeignKey(ur => ur.UserID);
+        }
     }
 }
