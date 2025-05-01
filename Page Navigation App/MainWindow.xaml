@@ -214,9 +214,16 @@
                 </Grid>
 
                 <!-- Main Content -->
-                <mah:TransitioningContentControl Grid.Row="1"
-                                               Content="{Binding CurrentView}"
-                                               Transition="Left"/>
+                <ContentControl Grid.Row="1" 
+                              Content="{Binding CurrentView}"
+                              Margin="0,20,0,0">
+                    <ContentControl.Resources>
+                        <Style TargetType="UserControl">
+                            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                            <Setter Property="VerticalAlignment" Value="Stretch"/>
+                        </Style>
+                    </ContentControl.Resources>
+                </ContentControl>
             </Grid>
         </Border>
     </Grid>

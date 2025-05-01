@@ -160,6 +160,7 @@
                             <mah:NumericUpDown Value="{Binding LowStockThreshold}"
                                               Margin="0,5"
                                               mah:TextBoxHelper.Watermark="Low Stock Threshold"
+                                              Style="{StaticResource {x:Type mah:NumericUpDown}}"
                                               Minimum="0"/>
                         </StackPanel>
                     </Grid>
@@ -180,6 +181,7 @@
                         <mah:NumericUpDown Value="{Binding SmtpPort}"
                                           Margin="0,5"
                                           mah:TextBoxHelper.Watermark="SMTP Port"
+                                          Style="{StaticResource {x:Type mah:NumericUpDown}}"
                                           Minimum="1"
                                           Maximum="65535"/>
 

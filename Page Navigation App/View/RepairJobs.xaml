@@ -44,7 +44,7 @@
                             <mah:NumericUpDown Grid.Column="1"
                                               Value="{Binding SelectedJob.Weight}"
                                               mah:TextBoxHelper.Watermark="Weight (g)"
-                                              Style="{StaticResource MahApps.Styles.NumericUpDown}"
+                                              Style="{StaticResource {x:Type mah:NumericUpDown}}"
                                               StringFormat="N2"
                                               Minimum="0"/>
                         </Grid>
@@ -67,7 +67,7 @@
                         <mah:DateTimePicker SelectedDateTime="{Binding SelectedJob.PromisedDate}"
                                            Margin="0,5"
                                            mah:TextBoxHelper.Watermark="Promised Date"
-                                           Style="{StaticResource MahApps.Styles.DateTimePicker}"/>
+                                           Style="{StaticResource {x:Type mah:DateTimePicker}}"/>
 
                         <Grid Margin="0,5">
                             <Grid.ColumnDefinitions>
@@ -77,7 +77,7 @@
 
                             <mah:NumericUpDown Value="{Binding SelectedJob.EstimatedAmount}"
                                               mah:TextBoxHelper.Watermark="Estimated Amount"
-                                              Style="{StaticResource MahApps.Styles.NumericUpDown}"
+                                              Style="{StaticResource {x:Type mah:NumericUpDown}}"
                                               StringFormat="C"
                                               Minimum="0"/>
 
@@ -149,7 +149,7 @@
                                        Width="150"
                                        SelectedDateTime="{Binding FilterDate}"
                                        mah:TextBoxHelper.Watermark="Filter by Date"
-                                       Style="{StaticResource MahApps.Styles.DateTimePicker}"/>
+                                       Style="{StaticResource {x:Type mah:DateTimePicker}}"/>
 
                     <Button Grid.Column="3"
                             Margin="10,0,0,0"

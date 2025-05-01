@@ -51,7 +51,7 @@
                         <mah:NumericUpDown Value="{Binding SelectedSupplier.CreditLimit}"
                                           Margin="0,5"
                                           mah:TextBoxHelper.Watermark="Credit Limit"
-                                          Style="{StaticResource MahApps.Styles.NumericUpDown}"
+                                          Style="{StaticResource {x:Type mah:NumericUpDown}}"
                                           StringFormat="C"
                                           Minimum="0"/>
 
@@ -195,7 +195,7 @@
 
                     <mah:NumericUpDown Value="{Binding TransactionAmount}"
                                       mah:TextBoxHelper.Watermark="Amount"
-                                      Style="{StaticResource MahApps.Styles.NumericUpDown}"
+                                      Style="{StaticResource {x:Type mah:NumericUpDown}}"
                                       StringFormat="C"
                                       Minimum="0"/>
 

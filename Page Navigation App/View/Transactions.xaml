@@ -28,14 +28,14 @@
                     <mah:NumericUpDown Value="{Binding SelectedTransaction.Amount}"
                                       Margin="0,5"
                                       mah:TextBoxHelper.Watermark="Amount"
-                                      Style="{StaticResource MahApps.Styles.NumericUpDown}"
+                                      Style="{StaticResource {x:Type mah:NumericUpDown}}"
                                       StringFormat="C"
                                       Minimum="0"/>
 
                     <mah:DateTimePicker SelectedDateTime="{Binding SelectedTransaction.TransactionDate}"
                                        Margin="0,5"
                                        mah:TextBoxHelper.Watermark="Transaction Date"
-                                       Style="{StaticResource MahApps.Styles.DateTimePicker}"/>
+                                       Style="{StaticResource {x:Type mah:DateTimePicker}}"/>
 
                     <TextBox Text="{Binding SelectedTransaction.Description}"
                              Margin="0,5"

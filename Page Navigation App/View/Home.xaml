@@ -34,6 +34,7 @@
                 <mah:DateTimePicker Grid.Column="1"
                                    SelectedDateTime="{Binding StartDate}"
                                    Culture="en-US"
+                                   Style="{StaticResource {x:Type mah:DateTimePicker}}"
                                    mah:ControlsHelper.CornerRadius="4"/>
                 
                 <TextBlock Grid.Column="2" 
@@ -43,6 +44,7 @@
                 <mah:DateTimePicker Grid.Column="3"
                                    SelectedDateTime="{Binding EndDate}"
                                    Culture="en-US"
+                                   Style="{StaticResource {x:Type mah:DateTimePicker}}"
                                    mah:ControlsHelper.CornerRadius="4"/>
 
                 <Button Grid.Column="4"

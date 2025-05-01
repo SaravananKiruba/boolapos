@@ -49,7 +49,7 @@
                         <mah:NumericUpDown Grid.Column="2"
                                           Value="{Binding SelectedRate.Rate}"
                                           mah:TextBoxHelper.Watermark="Rate (per gram)"
-                                          Style="{StaticResource MahApps.Styles.NumericUpDown}"
+                                          Style="{StaticResource {x:Type mah:NumericUpDown}}"
                                           StringFormat="N2"
                                           Minimum="0"/>
                     </Grid>
@@ -90,9 +90,9 @@
                                   Style="{StaticResource MahApps.Styles.ComboBox}"/>
 
                         <mah:DateTimePicker Grid.Column="1"
-                                           SelectedDateTime="{Binding SelectedRate.ValidUntil}"
-                                           mah:TextBoxHelper.Watermark="Valid Until"
-                                           Style="{StaticResource MahApps.Styles.DateTimePicker}"/>
+                                           SelectedDateTime="{Binding SelectedRate.EffectiveDate}"
+                                           Style="{StaticResource {x:Type mah:DateTimePicker}}"
+                                           mah:TextBoxHelper.Watermark="Effective Date"/>
                     </Grid>
 
                     <TextBox Text="{Binding SelectedRate.Notes}"

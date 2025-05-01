@@ -40,7 +40,7 @@
                     <mah:NumericUpDown Value="{Binding Quantity}"
                                       Margin="0,5"
                                       mah:TextBoxHelper.Watermark="Quantity"
-                                      Style="{StaticResource MahApps.Styles.NumericUpDown}"
+                                      Style="{StaticResource {x:Type mah:NumericUpDown}}"
                                       StringFormat="N3"
                                       Minimum="0"/>
 
@@ -48,7 +48,7 @@
                     <mah:NumericUpDown Value="{Binding SelectedStock.PurchasePrice}"
                                       Margin="0,5"
                                       mah:TextBoxHelper.Watermark="Purchase Price"
-                                      Style="{StaticResource MahApps.Styles.NumericUpDown}"
+                                      Style="{StaticResource {x:Type mah:NumericUpDown}}"
                                       StringFormat="C2"
                                       Minimum="0"/>
 
