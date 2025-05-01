@@ -11,7 +11,7 @@ using Page_Navigation_App.Data;
 namespace Page_Navigation_App.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250501135936_init")]
+    [Migration("20250501151559_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

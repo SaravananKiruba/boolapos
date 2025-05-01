@@ -1,47 +1,203 @@
 using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.CompilerServices;
 
 namespace Page_Navigation_App.Model
 {
-    public class RateMaster
+    public class RateMaster : INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int RateID { get; set; }
 
+        private string _metalType;
         [Required]
         [StringLength(20)]
-        public string MetalType { get; set; }  // Gold/Silver/Platinum
+        public string MetalType
+        {
+            get => _metalType;
+            set
+            {
+                if (_metalType != value)
+                {
+                    _metalType = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
+        private string _purity;
         [Required]
         [StringLength(10)]
-        public string Purity { get; set; }  // 18k/22k/24k
+        public string Purity
+        {
+            get => _purity;
+            set
+            {
+                if (_purity != value)
+                {
+                    _purity = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
+        private decimal _rate;
         [Required]
         [Column(TypeName = "decimal(18,2)")]
         [Range(0.01, 999999999.99)]
-        public decimal Rate { get; set; }
+        public decimal Rate
+        {
+            get => _rate;
+            set
+            {
+                if (_rate != value)
+                {
+                    _rate = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
+        private DateTime _effectiveDate;
         [Required]
-        public DateTime EffectiveDate { get; set; }
+        public DateTime EffectiveDate
+        {
+            get => _effectiveDate;
+            set
+            {
+                if (_effectiveDate != value)
+                {
+                    _effectiveDate = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
-        public DateTime? ValidUntil { get; set; }
+        private DateTime? _validUntil;
+        public DateTime? ValidUntil
+        {
+            get => _validUntil;
+            set
+            {
+                if (_validUntil != value)
+                {
+                    _validUntil = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
+        private bool _isActive;
         [Required]
-        public bool IsActive { get; set; }
+        public bool IsActive
+        {
+            get => _isActive;
+            set
+            {
+                if (_isActive != value)
+                {
+                    _isActive = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
+        private string _source;
         [StringLength(20)]
-        public string Source { get; set; }  // Market/Association/Custom
+        public string Source
+        {
+            get => _source;
+            set
+            {
+                if (_source != value)
+                {
+                    _source = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
+        private string _enteredBy;
         [Required]
         [StringLength(50)]
-        public string EnteredBy { get; set; }
+        public string EnteredBy
+        {
+            get => _enteredBy;
+            set
+            {
+                if (_enteredBy != value)
+                {
+                    _enteredBy = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
+        private string _notes;
         [StringLength(500)]
-        public string Notes { get; set; }
-        public decimal SaleRate { get; set; }
-        public decimal PurchaseRate { get; set; }
-        public string UpdatedBy { get; set; }
+        public string Notes
+        {
+            get => _notes;
+            set
+            {
+                if (_notes != value)
+                {
+                    _notes = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private decimal _saleRate;
+        public decimal SaleRate
+        {
+            get => _saleRate;
+            set
+            {
+                if (_saleRate != value)
+                {
+                    _saleRate = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private decimal _purchaseRate;
+        public decimal PurchaseRate
+        {
+            get => _purchaseRate;
+            set
+            {
+                if (_purchaseRate != value)
+                {
+                    _purchaseRate = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private string _updatedBy;
+        public string UpdatedBy
+        {
+            get => _updatedBy;
+            set
+            {
+                if (_updatedBy != value)
+                {
+                    _updatedBy = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
     }
 }

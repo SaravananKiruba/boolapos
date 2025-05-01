@@ -64,14 +64,14 @@
                                           Margin="0,0,10,0"
                                           Value="{Binding SelectedRate.PurchaseRate}"
                                           mah:TextBoxHelper.Watermark="Purchase Rate"
-                                          Style="{StaticResource MahApps.Styles.NumericUpDown}"
+                                          Style="{StaticResource {x:Type mah:NumericUpDown}}"
                                           StringFormat="N2"
                                           Minimum="0"/>
 
                         <mah:NumericUpDown Grid.Column="1"
                                           Value="{Binding SelectedRate.SaleRate}"
                                           mah:TextBoxHelper.Watermark="Sale Rate"
-                                          Style="{StaticResource MahApps.Styles.NumericUpDown}"
+                                          Style="{StaticResource {x:Type mah:NumericUpDown}}"
                                           StringFormat="N2"
                                           Minimum="0"/>
                     </Grid>
