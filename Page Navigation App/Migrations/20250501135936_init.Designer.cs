@@ -11,7 +11,7 @@ using Page_Navigation_App.Data;
 namespace Page_Navigation_App.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250430175049_init")]
+    [Migration("20250501135936_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -779,6 +779,28 @@ namespace Page_Navigation_App.Migrations
                     b.ToTable("RepairJobs");
                 });
 
+            modelBuilder.Entity("Page_Navigation_App.Model.Role", b =>
+                {
+                    b.Property<int>("RoleID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RoleName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("UserID")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("RoleID");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("Roles");
+                });
+
             modelBuilder.Entity("Page_Navigation_App.Model.SecurityLog", b =>
                 {
                     b.Property<int>("ID")
@@ -1092,7 +1114,7 @@ namespace Page_Navigation_App.Migrations
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("UserRole");
+                    b.ToTable("UserRoles");
                 });
 
             modelBuilder.Entity("Page_Navigation_App.Model.Finance", b =>
@@ -1184,6 +1206,13 @@ namespace Page_Navigation_App.Migrations
                     b.Navigation("Customer");
                 });
 
+            modelBuilder.Entity("Page_Navigation_App.Model.Role", b =>
+                {
+                    b.HasOne("Page_Navigation_App.Model.User", null)
+                        .WithMany("Roles")
+                        .HasForeignKey("UserID");
+                });
+
             modelBuilder.Entity("Page_Navigation_App.Model.Stock", b =>
                 {
                     b.HasOne("Page_Navigation_App.Model.Product", "Product")
@@ -1209,7 +1238,7 @@ namespace Page_Navigation_App.Migrations
             modelBuilder.Entity("Page_Navigation_App.Model.UserRole", b =>
                 {
                     b.HasOne("Page_Navigation_App.Model.User", "User")
-                        .WithMany("Roles")
+                        .WithMany()
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

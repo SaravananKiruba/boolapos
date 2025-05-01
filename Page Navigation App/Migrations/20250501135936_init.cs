@@ -388,7 +388,27 @@ namespace Page_Navigation_App.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserRole",
+                name: "Roles",
+                columns: table => new
+                {
+                    RoleID = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    RoleName = table.Column<string>(type: "TEXT", nullable: true),
+                    Description = table.Column<string>(type: "TEXT", nullable: true),
+                    UserID = table.Column<int>(type: "INTEGER", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Roles", x => x.RoleID);
+                    table.ForeignKey(
+                        name: "FK_Roles_Users_UserID",
+                        column: x => x.UserID,
+                        principalTable: "Users",
+                        principalColumn: "UserID");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserRoles",
                 columns: table => new
                 {
                     UserRoleID = table.Column<int>(type: "INTEGER", nullable: false)
@@ -398,9 +418,9 @@ namespace Page_Navigation_App.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserRole", x => x.UserRoleID);
+                    table.PrimaryKey("PK_UserRoles", x => x.UserRoleID);
                     table.ForeignKey(
-                        name: "FK_UserRole_Users_UserID",
+                        name: "FK_UserRoles_Users_UserID",
                         column: x => x.UserID,
                         principalTable: "Users",
                         principalColumn: "UserID",
@@ -621,6 +641,11 @@ namespace Page_Navigation_App.Migrations
                 column: "CustomerId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Roles_UserID",
+                table: "Roles",
+                column: "UserID");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Stocks_ProductID",
                 table: "Stocks",
                 column: "ProductID");
@@ -631,8 +656,8 @@ namespace Page_Navigation_App.Migrations
                 column: "CategoryID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserRole_UserID",
-                table: "UserRole",
+                name: "IX_UserRoles_UserID",
+                table: "UserRoles",
                 column: "UserID");
         }
 
@@ -669,6 +694,9 @@ namespace Page_Navigation_App.Migrations
                 name: "RepairJobs");
 
             migrationBuilder.DropTable(
+                name: "Roles");
+
+            migrationBuilder.DropTable(
                 name: "SecurityLogs");
 
             migrationBuilder.DropTable(
@@ -678,7 +706,7 @@ namespace Page_Navigation_App.Migrations
                 name: "Stocks");
 
             migrationBuilder.DropTable(
-                name: "UserRole");
+                name: "UserRoles");
 
             migrationBuilder.DropTable(
                 name: "Orders");
