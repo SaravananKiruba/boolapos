@@ -1,0 +1,119 @@
+<UserControl x:Class="Page_Navigation_App.View.Categories"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             mc:Ignorable="d"
+             d:DesignHeight="600"
+             d:DesignWidth="800">
+
+    <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="350"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Category Entry Form -->
+        <mah:MetroHeader Header="Category Details">
+            <mah:MetroContentControl>
+                <StackPanel>
+                    <TextBox Text="{Binding SelectedCategory.CategoryName}"
+                             Margin="0,5"
+                             mah:TextBoxHelper.Watermark="Category Name"
+                             Style="{StaticResource MahApps.Styles.TextBox}"/>
+
+                    <TextBox Text="{Binding SelectedCategory.Description}"
+                             Margin="0,5"
+                             mah:TextBoxHelper.Watermark="Description"
+                             Style="{StaticResource MahApps.Styles.TextBox}"
+                             TextWrapping="Wrap"
+                             AcceptsReturn="True"
+                             Height="60"/>
+
+                    <StackPanel Orientation="Horizontal" 
+                              Margin="0,20,0,0"
+                              HorizontalAlignment="Right">
+                        <Button Content="Clear"
+                                Margin="0,0,10,0"
+                                Style="{StaticResource MahApps.Styles.Button}"
+                                Command="{Binding ClearCommand}"/>
+                        <Button Content="Save"
+                                Style="{StaticResource MahApps.Styles.Button.Accent}"
+                                Command="{Binding AddOrUpdateCommand}"/>
+                    </StackPanel>
+                </StackPanel>
+            </mah:MetroContentControl>
+        </mah:MetroHeader>
+
+        <!-- Categories List -->
+        <mah:MetroHeader Grid.Column="1"
+                        Header="Categories List">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Search Box -->
+                <TextBox Margin="0,0,0,10"
+                         mah:TextBoxHelper.Watermark="Search categories..."
+                         Style="{StaticResource MahApps.Styles.TextBox}"
+                         Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}">
+                    <TextBox.InputBindings>
+                        <KeyBinding Key="Return" Command="{Binding SearchCommand}"/>
+                    </TextBox.InputBindings>
+                </TextBox>
+
+                <DataGrid Grid.Row="1"
+                          ItemsSource="{Binding Categories}"
+                          SelectedItem="{Binding SelectedCategory}"
+                          AutoGenerateColumns="False"
+                          Style="{StaticResource MahApps.Styles.DataGrid}"
+                          GridLinesVisibility="Horizontal"
+                          SelectionMode="Single"
+                          IsReadOnly="True">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Name" 
+                                          Binding="{Binding CategoryName}"
+                                          Width="*"/>
+                        <DataGridTextColumn Header="Description" 
+                                          Binding="{Binding Description}"
+                                          Width="*"/>
+                        <DataGridTextColumn Header="Products" 
+                                          Binding="{Binding Products.Count}"
+                                          Width="100"/>
+                        <DataGridTemplateColumn Width="Auto">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Style="{StaticResource MahApps.Styles.Button.Circle}"
+                                                Width="32"
+                                                Height="32"
+                                                Margin="0,0,5,0"
+                                                ToolTip="Edit"
+                                                Command="{Binding DataContext.EditCommand, 
+                                                        RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding}">
+                                            <iconPacks:PackIconMaterial Kind="Pencil" Width="16" Height="16"/>
+                                        </Button>
+                                        <Button Style="{StaticResource MahApps.Styles.Button.Circle}"
+                                                Width="32"
+                                                Height="32"
+                                                ToolTip="Delete"
+                                                Command="{Binding DataContext.DeleteCommand, 
+                                                        RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding}">
+                                            <iconPacks:PackIconMaterial Kind="Delete" Width="16" Height="16"/>
+                                        </Button>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </mah:MetroHeader>
+    </Grid>
+</UserControl>

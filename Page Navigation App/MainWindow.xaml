@@ -186,7 +186,7 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- Page Title -->
-                    <TextBlock Text="{Binding CurrentView}"
+                    <TextBlock Text="{Binding CurrentView, Converter={StaticResource ViewModelToTitleConverter}}"
                              FontSize="24"
                              FontWeight="Medium"
                              Foreground="{StaticResource TextPrimaryBrush}"
