@@ -97,7 +97,6 @@
     </PackageReference>
     <PackageReference Include="ClosedXML" Version="0.102.2" />
     <PackageReference Include="CsvHelper" Version="30.1.0" />
-    <PackageReference Include="Moq" Version="4.20.70" />
     <PackageReference Include="ReportViewerCore.WinForms" Version="15.1.19" />
     <PackageReference Include="MahApps.Metro" Version="2.4.10" />
     <PackageReference Include="MahApps.Metro.IconPacks.Material" Version="4.11.0" />

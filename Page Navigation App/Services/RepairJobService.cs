@@ -30,21 +30,13 @@ namespace Page_Navigation_App.Services
         {
             var job = await _context.RepairJobs
                 .Include(r => r.Customer)
-                .FirstOrDefaultAsync(r => r.RepairID == jobId); // Changed from RepairJobID to RepairID
+                .FirstOrDefaultAsync(r => r.RepairID == jobId);
 
             if (job == null) return null;
 
             job.Status = newStatus;
             
-            if (newStatus == "In Process")
-            {
-                if (!job.SMSNotificationSent)
-                {
-                    await SendSMSNotification(job, "Your repair work has started.");
-                    job.SMSNotificationSent = true;
-                }
-            }
-            else if (newStatus == "Delivered")
+            if (newStatus == "Delivered")
             {
                 job.CompletionDate = DateTime.Now;
             }
@@ -68,7 +60,7 @@ namespace Page_Navigation_App.Services
             return await _context.RepairJobs
                 .Where(r => r.Status == "Pending" || r.Status == "In Process")
                 .Include(r => r.Customer)
-                .OrderBy(r => r.ExpectedDeliveryDate) // Changed from PromisedDate to ExpectedDeliveryDate
+                .OrderBy(r => r.ExpectedDeliveryDate)
                 .ToListAsync();
         }
 
@@ -114,7 +106,7 @@ namespace Page_Navigation_App.Services
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 query = query.Where(r => 
-                    r.ItemDescription.Contains(searchTerm) || // Changed from ItemDetails to ItemDescription
+                    r.ItemDescription.Contains(searchTerm) ||
                     r.Customer.CustomerName.Contains(searchTerm) ||
                     r.Customer.PhoneNumber.Contains(searchTerm));
             }
@@ -133,49 +125,11 @@ namespace Page_Navigation_App.Services
                 .ToListAsync();
         }
 
-        private async Task SendSMSNotification(RepairJob job, string message)
-        {
-            // TODO: Implement actual SMS sending logic
-            // This is a placeholder for SMS integration
-            await Task.CompletedTask;
-        }
-
-        private async Task SendWhatsAppNotification(RepairJob job, string message)
-        {
-            // TODO: Implement actual WhatsApp sending logic
-            // This is a placeholder for WhatsApp integration
-            await Task.CompletedTask;
-        }
-
-        public async Task<bool> SendStatusUpdateNotification(int jobId)
-        {
-            var job = await _context.RepairJobs
-                .Include(r => r.Customer)
-                .FirstOrDefaultAsync(r => r.RepairID == jobId); // Changed from RepairJobID to RepairID
-
-            if (job == null) return false;
-
-            string message = $"Update on your repair job: {job.ItemDescription}\nStatus: {job.Status}"; // Changed from ItemDetails to ItemDescription
-            if (job.Status == "Delivered")
-            {
-                message += $"\nFinal Amount: {job.FinalAmount:C}";
-            }
-
-            await SendSMSNotification(job, message);
-            await SendWhatsAppNotification(job, message);
-
-            job.SMSNotificationSent = true;
-            job.WhatsAppNotificationSent = true;
-            await _context.SaveChangesAsync();
-
-            return true;
-        }
-
         public async Task<RepairJob> GetRepairJobById(int jobId)
         {
             return await _context.RepairJobs
                 .Include(r => r.Customer)
-                .FirstOrDefaultAsync(r => r.RepairID == jobId); // Changed from RepairJobID to RepairID
+                .FirstOrDefaultAsync(r => r.RepairID == jobId);
         }
 
         public async Task<IEnumerable<RepairJob>> GetRepairsByDate(DateTime startDate, DateTime endDate)

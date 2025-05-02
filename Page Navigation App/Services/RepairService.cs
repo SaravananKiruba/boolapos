@@ -11,14 +11,10 @@ namespace Page_Navigation_App.Services
     public class RepairService
     {
         private readonly AppDbContext _context;
-        private readonly INotificationService _notificationService;
 
-        public RepairService(
-            AppDbContext context,
-            INotificationService notificationService)
+        public RepairService(AppDbContext context)
         {
             _context = context;
-            _notificationService = notificationService;
         }
 
         // Create a new repair job
@@ -31,13 +27,6 @@ namespace Page_Navigation_App.Services
                 
                 await _context.RepairJobs.AddAsync(repairJob);
                 await _context.SaveChangesAsync();
-                
-                // Create a notification entry for receipt
-                await _notificationService.SendRepairNotification(
-                    repairJob.CustomerID,
-                    repairJob.RepairJobID,
-                    "Your repair job has been registered. Estimated completion date: " + 
-                    repairJob.EstimatedDeliveryDate.ToString("dd-MMM-yyyy"));
                 
                 return repairJob;
             }
@@ -127,12 +116,6 @@ namespace Page_Navigation_App.Services
                 else if (newStatus == "Completed" && (oldStatus == "Pending" || oldStatus == "In Process"))
                 {
                     repairJob.CompletionDate = DateTime.Now;
-                    
-                    // Send completion notification
-                    await _notificationService.SendRepairNotification(
-                        repairJob.CustomerID,
-                        repairJob.RepairJobID,
-                        "Your repair for " + repairJob.ItemDescription + " is now complete. You can collect it from our store.");
                 }
                 else if (newStatus == "Delivered")
                 {

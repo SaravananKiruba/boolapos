@@ -7,8 +7,7 @@ namespace Page_Navigation_App.Model
         [Key]
         public int ID { get; set; }
         
-        // Notification Settings
-        public bool OrderNotifications { get; set; }
+        // Business Settings
         public bool LowStockAlerts { get; set; }
         public bool PaymentReminders { get; set; }
         public int LowStockThreshold { get; set; }

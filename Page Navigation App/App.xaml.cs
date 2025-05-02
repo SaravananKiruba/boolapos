@@ -39,7 +39,6 @@ namespace Page_Navigation_App
             services.AddScoped<LogService>();
             services.AddScoped<SecurityService>();
             services.AddScoped<ConfigurationService>();
-            services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<ReportService>();
             services.AddScoped<BackupService>(provider => 
                 new BackupService(

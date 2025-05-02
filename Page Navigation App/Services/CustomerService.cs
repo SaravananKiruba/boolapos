@@ -11,16 +11,13 @@ namespace Page_Navigation_App.Services
     public class CustomerService
     {
         private readonly AppDbContext _context;
-        private readonly INotificationService _notificationService;
         private readonly FinanceService _financeService;
 
         public CustomerService(
             AppDbContext context,
-            INotificationService notificationService,
             FinanceService financeService)
         {
             _context = context;
-            _notificationService = notificationService;
             _financeService = financeService;
         }
 
@@ -113,38 +110,6 @@ namespace Page_Navigation_App.Services
             customer.LoyaltyPoints -= pointsToRedeem;
             await _context.SaveChangesAsync();
             return true;
-        }
-
-        public async Task CheckAndSendBirthdayWishes()
-        {
-            var today = DateTime.Now.Date;
-            var customers = await _context.Customers
-                .Where(c => c.DateOfBirth.HasValue &&
-                           c.DateOfBirth.Value.Month == today.Month &&
-                           c.DateOfBirth.Value.Day == today.Day &&
-                           c.IsActive)
-                .ToListAsync();
-
-            foreach (var customer in customers)
-            {
-                await _notificationService.SendBirthdayWishes(customer);
-            }
-        }
-
-        public async Task CheckAndSendAnniversaryWishes()
-        {
-            var today = DateTime.Now.Date;
-            var customers = await _context.Customers
-                .Where(c => c.DateOfAnniversary.HasValue &&
-                           c.DateOfAnniversary.Value.Month == today.Month &&
-                           c.DateOfAnniversary.Value.Day == today.Day &&
-                           c.IsActive)
-                .ToListAsync();
-
-            foreach (var customer in customers)
-            {
-                await _notificationService.SendAnniversaryWishes(customer);
-            }
         }
 
         public async Task<CustomerStats> GetCustomerStats(int customerId)

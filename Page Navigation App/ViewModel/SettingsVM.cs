@@ -92,53 +92,6 @@ namespace Page_Navigation_App.ViewModel
         }
         #endregion
 
-        #region Notification Channel Properties
-        private bool _enableSMS;
-        public bool EnableSMS
-        {
-            get => _enableSMS;
-            set
-            {
-                _enableSMS = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private bool _enableWhatsApp;
-        public bool EnableWhatsApp
-        {
-            get => _enableWhatsApp;
-            set
-            {
-                _enableWhatsApp = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private bool _enableEmailNotifications;
-        public bool EnableEmailNotifications
-        {
-            get => _enableEmailNotifications;
-            set
-            {
-                _enableEmailNotifications = value;
-                OnPropertyChanged();
-            }
-        }
-        #endregion
-
-        #region Notification Type Properties
-        private bool _orderNotifications;
-        public bool OrderNotifications
-        {
-            get => _orderNotifications;
-            set
-            {
-                _orderNotifications = value;
-                OnPropertyChanged();
-            }
-        }
-
         private bool _lowStockAlerts;
         public bool LowStockAlerts
         {
@@ -161,50 +114,6 @@ namespace Page_Navigation_App.ViewModel
             }
         }
 
-        private bool _sendBirthdayWishes;
-        public bool SendBirthdayWishes
-        {
-            get => _sendBirthdayWishes;
-            set
-            {
-                _sendBirthdayWishes = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private bool _sendAnniversaryWishes;
-        public bool SendAnniversaryWishes
-        {
-            get => _sendAnniversaryWishes;
-            set
-            {
-                _sendAnniversaryWishes = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private bool _sendOrderConfirmations;
-        public bool SendOrderConfirmations
-        {
-            get => _sendOrderConfirmations;
-            set
-            {
-                _sendOrderConfirmations = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private bool _sendRepairUpdates;
-        public bool SendRepairUpdates
-        {
-            get => _sendRepairUpdates;
-            set
-            {
-                _sendRepairUpdates = value;
-                OnPropertyChanged();
-            }
-        }
-
         private int _lowStockThreshold;
         public int LowStockThreshold
         {
@@ -215,7 +124,6 @@ namespace Page_Navigation_App.ViewModel
                 OnPropertyChanged();
             }
         }
-        #endregion
 
         #region Email Configuration Properties
         private string _smtpServer;
@@ -287,7 +195,6 @@ namespace Page_Navigation_App.ViewModel
         {
             var businessInfo = await _configService.GetBusinessInfo();
             var settings = await _configService.GetSettings();
-            var notificationSettings = await _configService.GetNotificationSettings();
             var emailSettings = await _configService.GetEmailSettings();
 
             // Business Information
@@ -298,19 +205,9 @@ namespace Page_Navigation_App.ViewModel
             Website = businessInfo.Website;
             TaxId = businessInfo.TaxId;
 
-            // Notification Channel Settings
-            EnableSMS = notificationSettings.EnableSMS;
-            EnableWhatsApp = notificationSettings.EnableWhatsApp;
-            EnableEmailNotifications = notificationSettings.EnableEmailNotifications;
-
-            // Notification Type Settings
-            OrderNotifications = settings.OrderNotifications;
+            // General Settings
             LowStockAlerts = settings.LowStockAlerts;
             PaymentReminders = settings.PaymentReminders;
-            SendBirthdayWishes = notificationSettings.SendBirthdayWishes;
-            SendAnniversaryWishes = notificationSettings.SendAnniversaryWishes;
-            SendOrderConfirmations = notificationSettings.SendOrderConfirmations;
-            SendRepairUpdates = notificationSettings.SendRepairUpdates;
             LowStockThreshold = settings.LowStockThreshold;
 
             // Email Settings
@@ -339,23 +236,10 @@ namespace Page_Navigation_App.ViewModel
 
                 await _configService.UpdateSettings(new Setting
                 {
-                    OrderNotifications = OrderNotifications,
                     LowStockAlerts = LowStockAlerts,
                     PaymentReminders = PaymentReminders,
                     LowStockThreshold = LowStockThreshold,
                     BackupPath = BackupPath
-                });
-
-                await _configService.UpdateNotificationSettings(new NotificationSettings
-                {
-                    EnableSMS = EnableSMS,
-                    EnableWhatsApp = EnableWhatsApp,
-                    EnableEmailNotifications = EnableEmailNotifications,
-                    SendBirthdayWishes = SendBirthdayWishes,
-                    SendAnniversaryWishes = SendAnniversaryWishes,
-                    SendOrderConfirmations = SendOrderConfirmations,
-                    SendPaymentReminders = PaymentReminders,
-                    SendRepairUpdates = SendRepairUpdates
                 });
 
                 await _configService.UpdateEmailSettings(new EmailSettings

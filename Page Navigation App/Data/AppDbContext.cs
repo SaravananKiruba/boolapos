@@ -23,12 +23,10 @@ namespace Page_Navigation_App.Data
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<LogEntry> LogEntries { get; set; }
         public DbSet<SecurityLog> SecurityLogs { get; set; }
-        public DbSet<NotificationLog> NotificationLog { get; set; }
         public DbSet<RateMaster> RateMaster { get; set; }
         public DbSet<RepairJob> RepairJobs { get; set; }
         public DbSet<BusinessInfo> BusinessInfo { get; set; }
         public DbSet<Model.Setting> Settings { get; set; }
-        public DbSet<NotificationSettings> NotificationSettings { get; set; }
         public DbSet<EmailSettings> EmailSettings { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }

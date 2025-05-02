@@ -54,26 +54,6 @@ namespace Page_Navigation_App.Services
             await _context.SaveChangesAsync();
         }
 
-        // Notification settings methods
-        public async Task<NotificationSettings> GetNotificationSettings()
-        {
-            return await _context.NotificationSettings.FirstOrDefaultAsync() ?? new NotificationSettings();
-        }
-
-        public async Task UpdateNotificationSettings(NotificationSettings settings)
-        {
-            var existing = await _context.NotificationSettings.FirstOrDefaultAsync();
-            if (existing != null)
-            {
-                _context.Entry(existing).CurrentValues.SetValues(settings);
-            }
-            else
-            {
-                await _context.NotificationSettings.AddAsync(settings);
-            }
-            await _context.SaveChangesAsync();
-        }
-
         // Email settings methods
         public async Task<EmailSettings> GetEmailSettings()
         {

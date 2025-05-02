@@ -12,7 +12,6 @@ namespace Page_Navigation_App.ViewModel
     public class RateMasterVM : ViewModelBase
     {
         private readonly RateMasterService _rateService;
-        private readonly INotificationService _notificationService;
         private readonly ProductService _productService;
 
         public ICommand AddOrUpdateCommand { get; }
@@ -60,17 +59,6 @@ namespace Page_Navigation_App.ViewModel
             }
         }
 
-        private bool _enableNotifications = true;
-        public bool EnableNotifications
-        {
-            get => _enableNotifications;
-            set
-            {
-                _enableNotifications = value;
-                OnPropertyChanged();
-            }
-        }
-
         private bool _autoUpdatePrices = true;
         public bool AutoUpdatePrices
         {
@@ -84,11 +72,9 @@ namespace Page_Navigation_App.ViewModel
 
         public RateMasterVM(
             RateMasterService rateService,
-            INotificationService notificationService,
             ProductService productService)
         {
             _rateService = rateService;
-            _notificationService = notificationService;
             _productService = productService;
             
             LoadCurrentRates();
@@ -162,14 +148,6 @@ namespace Page_Navigation_App.ViewModel
                     Change24h = change24h,
                     Change7d = change7d
                 });
-
-                // Check for volatility alerts
-                if (Math.Abs(change24h) > VolatilityThreshold && EnableNotifications)
-                {
-                    await _notificationService.SendNotification(
-                        "Rate Volatility Alert",
-                        $"{current.MetalType} {current.Purity} rate changed by {change24h:N2}% in last 24h");
-                }
             }
         }
 
@@ -213,9 +191,8 @@ namespace Page_Navigation_App.ViewModel
             }
             catch (Exception ex)
             {
-                await _notificationService.SendNotification(
-                    "Error",
-                    $"Failed to save rate: {ex.Message}");
+                System.Windows.MessageBox.Show($"Failed to save rate: {ex.Message}", "Error", 
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
@@ -267,19 +244,11 @@ namespace Page_Navigation_App.ViewModel
 
                     await _productService.UpdateProduct(product);
                 }
-
-                if (products.Any())
-                {
-                    await _notificationService.SendNotification(
-                        "Price Update",
-                        $"Updated prices for {products.Count()} {newRate.MetalType} {newRate.Purity} products");
-                }
             }
             catch (Exception ex)
             {
-                await _notificationService.SendNotification(
-                    "Error",
-                    $"Failed to update product prices: {ex.Message}");
+                System.Windows.MessageBox.Show($"Failed to update product prices: {ex.Message}", "Error", 
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 

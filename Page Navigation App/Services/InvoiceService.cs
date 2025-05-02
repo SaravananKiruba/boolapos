@@ -13,12 +13,10 @@ namespace Page_Navigation_App.Services
     public class InvoiceService
     {
         private readonly AppDbContext _context;
-        private readonly INotificationService _notificationService;
 
-        public InvoiceService(AppDbContext context, INotificationService notificationService)
+        public InvoiceService(AppDbContext context)
         {
             _context = context;
-            _notificationService = notificationService;
         }
 
         public async Task<string> GenerateInvoiceNumber()
@@ -182,48 +180,6 @@ namespace Page_Navigation_App.Services
             sb.AppendLine($"Visit us again".PadCenter(80));
             
             return sb.ToString();
-        }
-
-        public async Task<bool> SendInvoiceToCustomer(int orderId)
-        {
-            try
-            {
-                var order = await _context.Orders
-                    .Include(o => o.Customer)
-                    .FirstOrDefaultAsync(o => o.OrderID == orderId);
-                    
-                if (order == null) return false;
-                
-                // Generate invoice data
-                var invoiceData = await GetInvoiceData(orderId);
-                
-                // Prepare notification message
-                var message = $"Dear {order.Customer.Name}, " +
-                             $"Your invoice #{order.InvoiceNumber} for amount {invoiceData["FormattedGrandTotal"]} " +
-                             $"dated {invoiceData["InvoiceDate"]} is now available. " +
-                             $"Thank you for shopping with us!";
-                             
-                // If customer has email, send full invoice as attachment
-                if (!string.IsNullOrEmpty(order.Customer.Email))
-                {
-                    await _notificationService.SendEmail(
-                        order.Customer.Email,
-                        $"Invoice #{order.InvoiceNumber} - Thank you for your purchase",
-                        message);
-                }
-                
-                // Send SMS notification
-                if (!string.IsNullOrEmpty(order.Customer.Mobile))
-                {
-                    await _notificationService.SendSMS(order.Customer.Mobile, message);
-                }
-                
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
         }
 
         private string ConvertAmountToWords(decimal amount)
