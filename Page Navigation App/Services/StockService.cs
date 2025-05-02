@@ -439,5 +439,76 @@ namespace Page_Navigation_App.Services
                 .OrderByDescending(s => s.Product.StoneValue)
                 .ToListAsync();
         }
+
+        public async Task<bool> ReduceStock(int productId, decimal quantity)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var product = await _context.Products.FindAsync(productId);
+                if (product == null || product.StockQuantity < quantity) return false;
+
+                // Update product stock quantity
+                product.StockQuantity -= quantity;
+                await _context.SaveChangesAsync();
+
+                // Add stock ledger entry
+                var ledgerEntry = new StockLedger
+                {
+                    ProductID = productId,
+                    TransactionDate = DateTime.Now,
+                    Quantity = -quantity, // Negative for reduction
+                    TransactionType = "Sale",
+                    Notes = $"Stock reduced by {quantity} units"
+                };
+                
+                await _context.StockLedgers.AddAsync(ledgerEntry);
+                await _context.SaveChangesAsync();
+                
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                return false;
+            }
+        }
+
+        public async Task<bool> IncreaseStock(int productId, decimal quantity, string referenceId = null, string transactionType = "Purchase")
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var product = await _context.Products.FindAsync(productId);
+                if (product == null) return false;
+
+                // Update product stock quantity
+                product.StockQuantity += quantity;
+                await _context.SaveChangesAsync();
+
+                // Add stock ledger entry
+                var ledgerEntry = new StockLedger
+                {
+                    ProductID = productId,
+                    TransactionDate = DateTime.Now,
+                    Quantity = quantity, // Positive for addition
+                    TransactionType = transactionType,
+                    ReferenceID = referenceId,
+                    Notes = $"Stock increased by {quantity} units"
+                };
+                
+                await _context.StockLedgers.AddAsync(ledgerEntry);
+                await _context.SaveChangesAsync();
+                
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                return false;
+            }
+        }
     }
 }

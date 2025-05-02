@@ -665,5 +665,97 @@ namespace Page_Navigation_App.Services
             var remainingTenure = (int)Math.Ceiling(remainingAmount / (finance.InstallmentAmount ?? 1));
             return (remainingAmount, remainingTenure);
         }
+
+        public async Task<bool> StartDay(decimal openingCashBalance, string notes = null)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // Check if day is already started
+                var today = DateTime.Now.Date;
+                var existingDayStart = await _context.Finances
+                    .FirstOrDefaultAsync(f => f.TransactionDate.Date == today && f.Category == "Day Start");
+                    
+                if (existingDayStart != null) return false; // Day already started
+                
+                // Create day start entry
+                var dayStart = new Finance
+                {
+                    TransactionDate = DateTime.Now,
+                    Amount = openingCashBalance,
+                    Type = "System",
+                    Category = "Day Start",
+                    Description = "Opening cash balance",
+                    PaymentMethod = "Cash",
+                    RecordedBy = Environment.UserName,
+                    Notes = notes ?? "Day start operation"
+                };
+                
+                await _context.Finances.AddAsync(dayStart);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                await _logService.LogError("FinanceService.StartDay", ex.Message, ex.StackTrace);
+                return false;
+            }
+        }
+
+        public async Task<bool> EndDay(string notes = null)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // Calculate closing balance
+                var today = DateTime.Now.Date;
+                var dayTransactions = await _context.Finances
+                    .Where(f => f.TransactionDate.Date == today && f.PaymentMethod == "Cash")
+                    .ToListAsync();
+                    
+                if (!dayTransactions.Any(t => t.Category == "Day Start"))
+                    return false; // Day not started
+                    
+                if (dayTransactions.Any(t => t.Category == "Day Close"))
+                    return false; // Day already closed
+
+                decimal closingBalance = 0;
+                foreach (var txn in dayTransactions)
+                {
+                    if (txn.Type == "Income" || txn.Type == "System")
+                        closingBalance += txn.Amount;
+                    else if (txn.Type == "Expense")
+                        closingBalance -= txn.Amount;
+                }
+                
+                // Create day close entry
+                var dayClose = new Finance
+                {
+                    TransactionDate = DateTime.Now,
+                    Amount = closingBalance,
+                    Type = "System",
+                    Category = "Day Close",
+                    Description = "Closing cash balance",
+                    PaymentMethod = "Cash",
+                    RecordedBy = Environment.UserName,
+                    Notes = notes ?? "Day end operation"
+                };
+                
+                await _context.Finances.AddAsync(dayClose);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                await _logService.LogError("FinanceService.EndDay", ex.Message, ex.StackTrace);
+                return false;
+            }
+        }
     }
 }

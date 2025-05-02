@@ -3,400 +3,145 @@ using Page_Navigation_App.Data;
 using Page_Navigation_App.Model;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Page_Navigation_App.Services
 {
     public class ReportService
     {
         private readonly AppDbContext _context;
-        private readonly StockService _stockService;
-        private readonly RateMasterService _rateService;
 
-        public ReportService(
-            AppDbContext context,
-            StockService stockService,
-            RateMasterService rateService)
+        public ReportService(AppDbContext context)
         {
             _context = context;
-            _stockService = stockService;
-            _rateService = rateService;
         }
 
-        public async Task<Dictionary<string, decimal>> GetDashboardSummary()
+        // Dashboard Overview
+        public async Task<Dictionary<string, object>> GetDashboardMetrics()
         {
+            // Get today's date for filtering
             var today = DateTime.Now.Date;
-            var thisMonth = new DateTime(today.Year, today.Month, 1);
+            var monthStart = new DateTime(today.Year, today.Month, 1);
+            var monthEnd = monthStart.AddMonths(1).AddDays(-1);
 
-            var orders = await _context.Orders
-                .Include(o => o.OrderDetails)
-                .Where(o => o.OrderDate >= thisMonth)
-                .ToListAsync();
+            // Sales metrics
+            var totalSales = await _context.Orders
+                .Where(o => o.OrderDate.Date >= monthStart && o.OrderDate.Date <= monthEnd)
+                .SumAsync(o => o.GrandTotal);
+                
+            var todaySales = await _context.Orders
+                .Where(o => o.OrderDate.Date == today)
+                .SumAsync(o => o.GrandTotal);
+                
+            var totalOrders = await _context.Orders
+                .Where(o => o.OrderDate.Date >= monthStart && o.OrderDate.Date <= monthEnd)
+                .CountAsync();
+                
+            var todayOrders = await _context.Orders
+                .Where(o => o.OrderDate.Date == today)
+                .CountAsync();
 
-            var repairs = await _context.RepairJobs
-                .Where(r => r.ReceiptDate >= thisMonth)
-                .ToListAsync();
+            // Inventory metrics
+            var totalProducts = await _context.Products.CountAsync();
+            var lowStockProducts = await _context.Products
+                .Where(p => p.StockQuantity <= 5 && p.StockQuantity > 0)
+                .CountAsync();
+            var outOfStockProducts = await _context.Products
+                .Where(p => p.StockQuantity <= 0)
+                .CountAsync();
+            var inventoryValue = await _context.Products.SumAsync(p => p.FinalPrice * p.StockQuantity);
 
-            var stockValue = await _stockService.GetTotalStockValue();
-            var deadStock = await _stockService.GetDeadStock();
+            // Customer metrics
+            var totalCustomers = await _context.Customers.CountAsync();
+            var newCustomersThisMonth = await _context.Customers
+                .Where(c => c.RegistrationDate >= monthStart && c.RegistrationDate <= monthEnd)
+                .CountAsync();
 
-            return new Dictionary<string, decimal>
+            return new Dictionary<string, object>
             {
-                { "MonthlyRevenue", orders.Sum(o => o.GrandTotal) },
-                { "RepairRevenue", repairs.Sum(r => r.FinalAmount) },
-                { "TotalStockValue", stockValue },
-                { "DeadStockValue", deadStock.Sum(s => s.Quantity * s.Product.BasePrice) },
-                { "OrderCount", orders.Count },
-                { "RepairCount", repairs.Count }
+                { "TotalSalesThisMonth", totalSales },
+                { "TodaySales", todaySales },
+                { "TotalOrdersThisMonth", totalOrders },
+                { "TodayOrders", todayOrders },
+                { "TotalProducts", totalProducts },
+                { "LowStockProducts", lowStockProducts },
+                { "OutOfStockProducts", outOfStockProducts },
+                { "InventoryValue", inventoryValue },
+                { "TotalCustomers", totalCustomers },
+                { "NewCustomersThisMonth", newCustomersThisMonth }
             };
         }
 
-        public async Task<Dictionary<string, decimal>> GetStockAnalytics()
+        // Sales Reports
+        public async Task<List<Order>> GetSalesReport(DateTime startDate, DateTime endDate, 
+                                                    string paymentMethod = null,
+                                                    int? customerId = null)
         {
-            var products = await _context.Products
-                .Include(p => p.Stocks)
-                .ToListAsync();
+            var query = _context.Orders
+                .Include(o => o.Customer)
+                .Include(o => o.OrderDetails)
+                .ThenInclude(od => od.Product)
+                .Where(o => o.OrderDate.Date >= startDate.Date && o.OrderDate.Date <= endDate.Date);
 
-            var metalTypes = new[] { "Gold", "Silver", "Platinum" };
-            var result = new Dictionary<string, decimal>();
+            if (!string.IsNullOrEmpty(paymentMethod))
+                query = query.Where(o => o.PaymentMethod == paymentMethod);
 
-            foreach (var metalType in metalTypes)
-            {
-                var metalProducts = products.Where(p => p.MetalType == metalType);
-                result[$"{metalType}Weight"] = metalProducts.Sum(p => 
-                    p.Stocks.Sum(s => s.Quantity * p.NetWeight));
-                result[$"{metalType}Value"] = metalProducts.Sum(p => 
-                    p.Stocks.Sum(s => s.Quantity * p.BasePrice));
-            }
+            if (customerId.HasValue)
+                query = query.Where(o => o.CustomerID == customerId.Value);
 
-            return result;
+            return await query.OrderByDescending(o => o.OrderDate).ToListAsync();
         }
 
-        public async Task<Dictionary<string, decimal>> GetSalesAnalytics(
-            DateTime startDate,
-            DateTime endDate)
+        // Customer Purchase History
+        public async Task<List<Order>> GetCustomerPurchaseHistory(int customerId)
+        {
+            return await _context.Orders
+                .Include(o => o.OrderDetails)
+                .ThenInclude(od => od.Product)
+                .Where(o => o.CustomerID == customerId)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+        }
+
+        // GST Reports
+        public async Task<List<GST_Report>> GetGSTReport(DateTime startDate, DateTime endDate)
         {
             var orders = await _context.Orders
-                .Include(o => o.OrderDetails)
-                .Where(o => o.OrderDate >= startDate && o.OrderDate <= endDate)
+                .Include(o => o.Customer)
+                .Where(o => o.OrderDate.Date >= startDate.Date && o.OrderDate.Date <= endDate.Date)
+                .OrderBy(o => o.OrderDate)
                 .ToListAsync();
 
-            return new Dictionary<string, decimal>
-            {
-                { "TotalSales", orders.Sum(o => o.GrandTotal) },
-                { "RetailSales", orders.Where(o => o.OrderType == "Retail").Sum(o => o.GrandTotal) },
-                { "WholesaleSales", orders.Where(o => o.OrderType == "Wholesale").Sum(o => o.GrandTotal) },
-                { "ExchangeSales", orders.Where(o => o.HasMetalExchange).Sum(o => o.GrandTotal) },
-                { "EMISales", orders.Where(o => o.PaymentType == "EMI").Sum(o => o.GrandTotal) },
-                { "GoldSales", orders.Sum(o => o.OrderDetails
-                    .Where(od => od.Product.MetalType == "Gold")
-                    .Sum(od => od.FinalAmount)) },
-                { "SilverSales", orders.Sum(o => o.OrderDetails
-                    .Where(od => od.Product.MetalType == "Silver")
-                    .Sum(od => od.FinalAmount)) },
-                { "PlatinumSales", orders.Sum(o => o.OrderDetails
-                    .Where(od => od.Product.MetalType == "Platinum")
-                    .Sum(od => od.FinalAmount)) }
-            };
-        }
-
-        public async Task<IEnumerable<RepairJob>> GetRepairAnalytics(
-            DateTime startDate,
-            DateTime endDate)
-        {
-            return await _context.RepairJobs
-                .Include(r => r.Customer)
-                .Where(r => r.ReceiptDate >= startDate && r.ReceiptDate <= endDate)
-                .GroupBy(r => r.WorkType)
-                .Select(g => new RepairJob
+            // Group by month for monthly reporting
+            return orders
+                .GroupBy(o => new { Month = o.OrderDate.Month, Year = o.OrderDate.Year })
+                .Select(g => new GST_Report
                 {
-                    WorkType = g.Key,
-                    EstimatedCost = g.Sum(r => r.EstimatedCost), // Changed to EstimatedCost which is the actual property name
-                    FinalAmount = g.Sum(r => r.FinalAmount),
-                    Notes = g.Count().ToString() // Using Notes instead of Status to store count
+                    Period = $"{g.Key.Year}-{g.Key.Month:D2}",
+                    TaxableAmount = g.Sum(o => o.TotalAmount),
+                    CGST = g.Sum(o => o.CGST),
+                    SGST = g.Sum(o => o.SGST),
+                    IGST = g.Sum(o => o.IGST ?? 0),
+                    TotalTax = g.Sum(o => (o.CGST + o.SGST + (o.IGST ?? 0))),
+                    InvoiceCount = g.Count(),
+                    TotalInvoiceValue = g.Sum(o => o.GrandTotal)
                 })
-                .ToListAsync();
+                .OrderBy(r => r.Period)
+                .ToList();
         }
 
-        public async Task<Dictionary<string, decimal>> GetFinancialReports(
-            DateTime startDate,
-            DateTime endDate)
+        // Helper class for GST reporting
+        public class GST_Report
         {
-            var transactions = await _context.Finances
-                .Where(f => f.TransactionDate >= startDate && 
-                           f.TransactionDate <= endDate)
-                .ToListAsync();
-
-            var result = new Dictionary<string, decimal>();
-
-            // Income breakdown
-            var incomeTransactions = transactions
-                .Where(t => t.TransactionType == "Income")
-                .GroupBy(t => t.PaymentMode);
-
-            foreach (var group in incomeTransactions)
-            {
-                result[$"Income_{group.Key}"] = group.Sum(t => t.Amount);
-            }
-
-            // Expense breakdown
-            var expenseTransactions = transactions
-                .Where(t => t.TransactionType == "Expense")
-                .GroupBy(t => t.Category);
-
-            foreach (var group in expenseTransactions)
-            {
-                result[$"Expense_{group.Key}"] = group.Sum(t => t.Amount);
-            }
-
-            // GST Summary
-            result["CGST_Collected"] = transactions.Sum(t => t.CGSTAmount ?? 0);
-            result["SGST_Collected"] = transactions.Sum(t => t.SGSTAmount ?? 0);
-            result["IGST_Collected"] = transactions.Sum(t => t.IGSTAmount ?? 0);
-
-            // Totals
-            result["TotalIncome"] = transactions
-                .Where(t => t.TransactionType == "Income")
-                .Sum(t => t.Amount);
-            result["TotalExpense"] = transactions
-                .Where(t => t.TransactionType == "Expense")
-                .Sum(t => t.Amount);
-            result["NetProfit"] = result["TotalIncome"] - result["TotalExpense"];
-
-            return result;
-        }
-
-        public async Task<Dictionary<string, int>> GetCustomerAnalytics(
-            DateTime startDate,
-            DateTime endDate)
-        {
-            var customers = await _context.Customers
-                .Include(c => c.Orders)
-                .Include(c => c.RepairJobs)
-                .ToListAsync();
-
-            var newCustomers = customers
-                .Count(c => c.Orders.Any(o => o.OrderDate >= startDate && 
-                                            o.OrderDate <= endDate) ||
-                           c.RepairJobs.Any(r => r.ReceiptDate >= startDate && 
-                                               r.ReceiptDate <= endDate));
-
-            var repeatCustomers = customers
-                .Count(c => c.Orders.Count(o => o.OrderDate >= startDate && 
-                                              o.OrderDate <= endDate) > 1 ||
-                           c.RepairJobs.Count(r => r.ReceiptDate >= startDate && 
-                                                 r.ReceiptDate <= endDate) > 1);
-
-            return new Dictionary<string, int>
-            {
-                { "TotalCustomers", customers.Count },
-                { "NewCustomers", newCustomers },
-                { "RepeatCustomers", repeatCustomers },
-                { "RetailCustomers", customers.Count(c => c.Orders.Any(o => o.OrderType == "Retail")) },
-                { "WholesaleCustomers", customers.Count(c => c.Orders.Any(o => o.OrderType == "Wholesale")) },
-                { "RepairCustomers", customers.Count(c => c.RepairJobs.Any()) }
-            };
-        }
-
-        public async Task<Dictionary<string, decimal>> GetMetalWiseAnalytics(
-            DateTime startDate,
-            DateTime endDate)
-        {
-            var orders = await _context.Orders
-                .Include(o => o.OrderDetails)
-                    .ThenInclude(od => od.Product)
-                .Where(o => o.OrderDate >= startDate && o.OrderDate <= endDate)
-                .ToListAsync();
-
-            var result = new Dictionary<string, decimal>();
-
-            // Metal-wise weight sold
-            var metalWeights = orders
-                .SelectMany(o => o.OrderDetails)
-                .GroupBy(od => od.Product.MetalType)
-                .ToDictionary(
-                    g => $"{g.Key}WeightSold",
-                    g => g.Sum(od => od.NetWeight)
-                );
-
-            foreach (var kv in metalWeights)
-            {
-                result[kv.Key] = kv.Value;
-            }
-
-            // Metal-wise revenue
-            var metalRevenue = orders
-                .SelectMany(o => o.OrderDetails)
-                .GroupBy(od => od.Product.MetalType)
-                .ToDictionary(
-                    g => $"{g.Key}Revenue",
-                    g => g.Sum(od => od.FinalAmount)
-                );
-
-            foreach (var kv in metalRevenue)
-            {
-                result[kv.Key] = kv.Value;
-            }
-
-            // Exchange metal received
-            var exchangeMetals = orders
-                .Where(o => o.HasMetalExchange)
-                .GroupBy(o => o.ExchangeMetalType)
-                .ToDictionary(
-                    g => $"{g.Key}ExchangeReceived",
-                    g => g.Sum(o => o.ExchangeMetalWeight)
-                );
-
-            foreach (var kv in exchangeMetals)
-            {
-                result[kv.Key] = kv.Value;
-            }
-
-            return result;
-        }
-
-        public async Task<Dictionary<string, decimal>> GetPurityWiseAnalytics(
-            string metalType,
-            DateTime startDate,
-            DateTime endDate)
-        {
-            var orders = await _context.Orders
-                .Include(o => o.OrderDetails)
-                    .ThenInclude(od => od.Product)
-                .Where(o => o.OrderDate >= startDate && 
-                           o.OrderDate <= endDate &&
-                           o.OrderDetails.Any(od => od.Product.MetalType == metalType))
-                .ToListAsync();
-
-            var orderDetails = orders
-                .SelectMany(o => o.OrderDetails)
-                .Where(od => od.Product.MetalType == metalType);
-
-            return orderDetails
-                .GroupBy(od => od.Product.Purity)
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.Sum(od => od.NetWeight)
-                );
-        }
-
-        public async Task<Dictionary<string, decimal>> GetMakingChargesAnalytics(
-            DateTime startDate,
-            DateTime endDate)
-        {
-            var orders = await _context.Orders
-                .Include(o => o.OrderDetails)
-                    .ThenInclude(od => od.Product)
-                        .ThenInclude(p => p.Category)
-                .Where(o => o.OrderDate >= startDate && o.OrderDate <= endDate)
-                .ToListAsync();
-
-            var result = new Dictionary<string, decimal>();
-
-            // Category-wise making charges collected
-            var categoryMakingCharges = orders
-                .SelectMany(o => o.OrderDetails)
-                .GroupBy(od => od.Product.Category.CategoryName)
-                .ToDictionary(
-                    g => $"Making_{g.Key}",
-                    g => g.Sum(od => od.MakingCharges)
-                );
-
-            foreach (var kv in categoryMakingCharges)
-            {
-                result[kv.Key] = kv.Value;
-            }
-
-            // Metal-wise making charges
-            var metalMakingCharges = orders
-                .SelectMany(o => o.OrderDetails)
-                .GroupBy(od => od.Product.MetalType)
-                .ToDictionary(
-                    g => $"Making_{g.Key}",
-                    g => g.Sum(od => od.MakingCharges)
-                );
-
-            foreach (var kv in metalMakingCharges)
-            {
-                result[kv.Key] = kv.Value;
-            }
-
-            return result;
-        }
-
-        public async Task<Dictionary<string, decimal>> GetStoneValueAnalytics(
-            DateTime startDate,
-            DateTime endDate)
-        {
-            var orders = await _context.Orders
-                .Include(o => o.OrderDetails)
-                    .ThenInclude(od => od.Product)
-                        .ThenInclude(p => p.Category)
-                .Where(o => o.OrderDate >= startDate && o.OrderDate <= endDate)
-                .ToListAsync();
-
-            var result = new Dictionary<string, decimal>();
-
-            // Category-wise stone values
-            var categoryStoneValues = orders
-                .SelectMany(o => o.OrderDetails)
-                .GroupBy(od => od.Product.Category.CategoryName)
-                .ToDictionary(
-                    g => $"Stones_{g.Key}",
-                    g => g.Sum(od => od.StoneValue)
-                );
-
-            foreach (var kv in categoryStoneValues)
-            {
-                result[kv.Key] = kv.Value;
-            }
-
-            // Total stone weight
-            result["TotalStoneWeight"] = orders
-                .SelectMany(o => o.OrderDetails)
-                .Sum(od => od.Product.StoneWeight);
-
-            // Total stone value
-            result["TotalStoneValue"] = orders
-                .SelectMany(o => o.OrderDetails)
-                .Sum(od => od.StoneValue);
-
-            return result;
-        }
-
-        public async Task<Dictionary<string, decimal>> GetRepairTypeAnalytics(
-            DateTime startDate,
-            DateTime endDate)
-        {
-            var repairs = await _context.RepairJobs
-                .Where(r => r.ReceiptDate >= startDate && r.ReceiptDate <= endDate)
-                .ToListAsync();
-
-            // Group by work type
-            var byWorkType = repairs
-                .GroupBy(r => r.WorkType)
-                .ToDictionary(
-                    g => $"Repairs_{g.Key}",
-                    g => g.Average(r => r.FinalAmount)
-                );
-
-            var result = new Dictionary<string, decimal>();
-
-            // Add work type averages
-            foreach (var kv in byWorkType)
-            {
-                result[kv.Key] = kv.Value;
-            }
-
-            // Add totals
-            result["TotalRepairs"] = repairs.Count;
-            result["TotalRepairAmount"] = repairs.Sum(r => r.FinalAmount);
-            result["AverageRepairAmount"] = repairs.Average(r => r.FinalAmount);
-            result["PendingRepairs"] = repairs.Count(r => r.Status == "Pending");
-            result["CompletedRepairs"] = repairs.Count(r => r.Status == "Completed");
-
-            return result;
+            public string Period { get; set; }
+            public decimal TaxableAmount { get; set; }
+            public decimal CGST { get; set; }
+            public decimal SGST { get; set; }
+            public decimal IGST { get; set; }
+            public decimal TotalTax { get; set; }
+            public int InvoiceCount { get; set; }
+            public decimal TotalInvoiceValue { get; set; }
         }
     }
 }

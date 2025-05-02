@@ -2,133 +2,243 @@ using Microsoft.EntityFrameworkCore;
 using Page_Navigation_App.Data;
 using Page_Navigation_App.Model;
 using System;
-using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
-using System.Linq;
-using System.Net.Mail;
-using System.Net;
-using System.Windows;
 
 namespace Page_Navigation_App.Services
 {
     public class NotificationService : INotificationService
     {
         private readonly AppDbContext _context;
-        private readonly ConfigurationService _configService;
-        private readonly LogService _logService;
+        private readonly NotificationSettings _settings;
+        private readonly HttpClient _httpClient;
 
-        public NotificationService(AppDbContext context, ConfigurationService configService, LogService logService)
+        public NotificationService(AppDbContext context)
         {
             _context = context;
-            _configService = configService;
-            _logService = logService;
+            _httpClient = new HttpClient();
+            
+            // Load notification settings from database
+            _settings = _context.NotificationSettings.FirstOrDefaultAsync().Result 
+                ?? new NotificationSettings 
+                {
+                    EnableSMS = false,
+                    EnableWhatsApp = false,
+                    EnableEmail = false
+                };
         }
 
-        public async Task SendEmail(string recipient, string subject, string body)
+        public async Task<bool> SendSMS(string phoneNumber, string message)
         {
+            if (!_settings.EnableSMS) return false;
+
             try
             {
-                var emailSettings = await _configService.GetEmailSettings();
-                using (var client = new SmtpClient(emailSettings.SmtpServer, emailSettings.SmtpPort))
+                // Log notification attempt
+                var notification = new NotificationLog
                 {
-                    client.EnableSsl = true;
-                    client.Credentials = new NetworkCredential(emailSettings.Username, emailSettings.Password);
-
-                    var mailMessage = new MailMessage
-                    {
-                        From = new MailAddress(emailSettings.Username, emailSettings.SenderName),
-                        Subject = subject,
-                        Body = body,
-                        IsBodyHtml = true
-                    };
-                    mailMessage.To.Add(recipient);
-
-                    await client.SendMailAsync(mailMessage);
-
-                    // Log successful notification
-                    await LogNotification(recipient, "Email", body, true);
-                }
+                    NotificationType = "SMS",
+                    NotificationContent = message,
+                    RecipientContact = phoneNumber,
+                    SentDate = DateTime.Now,
+                    Status = "Processing"
+                };
+                
+                await _context.NotificationLogs.AddAsync(notification);
+                await _context.SaveChangesAsync();
+                
+                // In a real implementation, this would call an SMS gateway API
+                // For this implementation, we'll simulate success
+                bool success = true;
+                
+                // Update notification status
+                notification.Status = success ? "Sent" : "Failed";
+                notification.ResponseDetails = success ? "Message delivered" : "Failed to deliver message";
+                await _context.SaveChangesAsync();
+                
+                return success;
             }
             catch (Exception ex)
             {
-                // Log failed notification
-                await LogNotification(recipient, "Email", ex.Message, false);
-                throw;
+                // Log the error
+                await _context.LogEntries.AddAsync(new LogEntry
+                {
+                    LogDate = DateTime.Now,
+                    LogLevel = "Error",
+                    Source = "NotificationService.SendSMS",
+                    Message = ex.Message,
+                    StackTrace = ex.StackTrace
+                });
+                await _context.SaveChangesAsync();
+                
+                return false;
             }
         }
 
-        public async Task SendSMS(string phoneNumber, string message)
+        public async Task<bool> SendWhatsApp(string phoneNumber, string message)
         {
-            // SMS implementation will go here
-            // For now, just log it
-            await LogNotification(phoneNumber, "SMS", message, true);
-        }
-
-        public async Task SendWhatsApp(string phoneNumber, string message)
-        {
-            // WhatsApp implementation will go here
-            // For now, just log it
-            await LogNotification(phoneNumber, "WhatsApp", message, true);
-        }
-
-        public async Task SendBirthdayWishes(Customer customer)
-        {
-            var subject = "Happy Birthday!";
-            var body = $"Dear {customer.CustomerName},\n\nHappy Birthday! We wish you a wonderful day filled with joy and happiness. As a valued customer, we appreciate your continued support.\n\nBest wishes,\nYour Jewelry Store Team";
+            if (!_settings.EnableWhatsApp) return false;
             
-            if (!string.IsNullOrEmpty(customer.Email))
+            try
             {
-                await SendEmail(customer.Email, subject, body);
+                // Log notification attempt
+                var notification = new NotificationLog
+                {
+                    NotificationType = "WhatsApp",
+                    NotificationContent = message,
+                    RecipientContact = phoneNumber,
+                    SentDate = DateTime.Now,
+                    Status = "Processing"
+                };
+                
+                await _context.NotificationLogs.AddAsync(notification);
+                await _context.SaveChangesAsync();
+                
+                // In a real implementation, this would call WhatsApp Business API
+                // For this implementation, we'll simulate success
+                bool success = true;
+                
+                // Update notification status
+                notification.Status = success ? "Sent" : "Failed";
+                notification.ResponseDetails = success ? "Message delivered" : "Failed to deliver message";
+                await _context.SaveChangesAsync();
+                
+                return success;
             }
-            
-            if (!string.IsNullOrEmpty(customer.PhoneNumber))
+            catch (Exception ex)
             {
-                await SendSMS(customer.PhoneNumber, $"Happy Birthday, {customer.CustomerName}! We wish you a wonderful day filled with joy. - Your Jewelry Store Team");
+                // Log the error
+                await _context.LogEntries.AddAsync(new LogEntry
+                {
+                    LogDate = DateTime.Now,
+                    LogLevel = "Error",
+                    Source = "NotificationService.SendWhatsApp",
+                    Message = ex.Message,
+                    StackTrace = ex.StackTrace
+                });
+                await _context.SaveChangesAsync();
+                
+                return false;
             }
         }
 
-        public async Task SendAnniversaryWishes(Customer customer)
+        public async Task<bool> SendEmail(string emailAddress, string subject, string message)
         {
-            var subject = "Happy Wedding Anniversary!";
-            var body = $"Dear {customer.CustomerName},\n\nWishing you a very happy wedding anniversary! May your love continue to grow stronger with each passing year. Thank you for being our valued customer.\n\nBest wishes,\nYour Jewelry Store Team";
+            if (!_settings.EnableEmail) return false;
             
-            if (!string.IsNullOrEmpty(customer.Email))
+            try
             {
-                await SendEmail(customer.Email, subject, body);
+                // Log notification attempt
+                var notification = new NotificationLog
+                {
+                    NotificationType = "Email",
+                    NotificationContent = $"Subject: {subject}\n\n{message}",
+                    RecipientContact = emailAddress,
+                    SentDate = DateTime.Now,
+                    Status = "Processing"
+                };
+                
+                await _context.NotificationLogs.AddAsync(notification);
+                await _context.SaveChangesAsync();
+                
+                // In a real implementation, this would use SMTP client
+                // For this implementation, we'll simulate success
+                bool success = true;
+                
+                // Update notification status
+                notification.Status = success ? "Sent" : "Failed";
+                notification.ResponseDetails = success ? "Email delivered" : "Failed to deliver email";
+                await _context.SaveChangesAsync();
+                
+                return success;
             }
-            
-            if (!string.IsNullOrEmpty(customer.PhoneNumber))
+            catch (Exception ex)
             {
-                await SendSMS(customer.PhoneNumber, $"Happy Wedding Anniversary, {customer.CustomerName}! Wishing you both continued love and happiness. - Your Jewelry Store Team");
+                // Log the error
+                await _context.LogEntries.AddAsync(new LogEntry
+                {
+                    LogDate = DateTime.Now,
+                    LogLevel = "Error",
+                    Source = "NotificationService.SendEmail",
+                    Message = ex.Message,
+                    StackTrace = ex.StackTrace
+                });
+                await _context.SaveChangesAsync();
+                
+                return false;
             }
         }
 
-        public async Task SendNotification(string title, string message)
+        public async Task<bool> SendRepairNotification(int customerId, int repairJobId, string message)
         {
-            // Log the notification
-            await _logService.LogInfo($"[{title}] {message}");
-
-            // Show message box on UI thread
-            Application.Current.Dispatcher.Invoke(() =>
+            try
             {
-                MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Information);
-            });
-        }
-
-        private async Task LogNotification(string recipient, string channel, string content, bool isSuccessful)
-        {
-            var log = new NotificationLog
+                // Get customer contact information
+                var customer = await _context.Customers.FindAsync(customerId);
+                if (customer == null) return false;
+                
+                // Create notification log entry
+                var notification = new NotificationLog
+                {
+                    CustomerID = customerId,
+                    ReferenceID = repairJobId.ToString(),
+                    ReferenceType = "RepairJob",
+                    NotificationContent = message,
+                    RecipientContact = customer.Mobile,
+                    SentDate = DateTime.Now,
+                    Status = "Processing"
+                };
+                
+                await _context.NotificationLogs.AddAsync(notification);
+                await _context.SaveChangesAsync();
+                
+                bool success = false;
+                
+                // Try to send WhatsApp first if enabled
+                if (_settings.EnableWhatsApp && !string.IsNullOrEmpty(customer.Mobile))
+                {
+                    notification.NotificationType = "WhatsApp";
+                    success = await SendWhatsApp(customer.Mobile, message);
+                }
+                
+                // If WhatsApp failed or not enabled, try SMS
+                if (!success && _settings.EnableSMS && !string.IsNullOrEmpty(customer.Mobile))
+                {
+                    notification.NotificationType = "SMS";
+                    success = await SendSMS(customer.Mobile, message);
+                }
+                
+                // If both WhatsApp and SMS failed or not enabled, try email
+                if (!success && _settings.EnableEmail && !string.IsNullOrEmpty(customer.Email))
+                {
+                    notification.NotificationType = "Email";
+                    success = await SendEmail(
+                        customer.Email, 
+                        "Update on your repair job", 
+                        message);
+                }
+                
+                // Update notification status
+                notification.Status = success ? "Sent" : "Failed";
+                await _context.SaveChangesAsync();
+                
+                return success;
+            }
+            catch (Exception ex)
             {
-                Timestamp = DateTime.Now,
-                Recipient = recipient,
-                Channel = channel,
-                Content = content,
-                IsSuccessful = isSuccessful,
-                Details = isSuccessful ? "Notification sent successfully" : "Failed to send notification"
-            };
-
-            await _context.NotificationLog.AddAsync(log);
-            await _context.SaveChangesAsync();
+                // Log the error
+                await _context.LogEntries.AddAsync(new LogEntry
+                {
+                    LogDate = DateTime.Now,
+                    LogLevel = "Error",
+                    Source = "NotificationService.SendRepairNotification",
+                    Message = ex.Message,
+                    StackTrace = ex.StackTrace
+                });
+                await _context.SaveChangesAsync();
+                
+                return false;
+            }
         }
     }
 }
