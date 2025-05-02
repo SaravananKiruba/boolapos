@@ -440,7 +440,7 @@ namespace Page_Navigation_App.Services
                 .ToListAsync();
         }
 
-        public async Task<bool> ReduceStock(int productId, decimal quantity)
+        public async Task<bool> ReduceStock(int productId, decimal quantity, decimal unitPrice = 0, string referenceId = null, string transactionType = "Sale")
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -452,13 +452,25 @@ namespace Page_Navigation_App.Services
                 product.StockQuantity -= quantity;
                 await _context.SaveChangesAsync();
 
+                // Use product's price if not specified
+                if (unitPrice <= 0)
+                {
+                    unitPrice = product.FinalPrice;
+                }
+
+                // Calculate total amount
+                decimal totalAmount = quantity * unitPrice;
+
                 // Add stock ledger entry
                 var ledgerEntry = new StockLedger
                 {
                     ProductID = productId,
                     TransactionDate = DateTime.Now,
                     Quantity = -quantity, // Negative for reduction
-                    TransactionType = "Sale",
+                    UnitPrice = unitPrice,
+                    TotalAmount = totalAmount,
+                    TransactionType = transactionType,
+                    ReferenceID = referenceId,
                     Notes = $"Stock reduced by {quantity} units"
                 };
                 
@@ -475,7 +487,7 @@ namespace Page_Navigation_App.Services
             }
         }
 
-        public async Task<bool> IncreaseStock(int productId, decimal quantity, string referenceId = null, string transactionType = "Purchase")
+        public async Task<bool> IncreaseStock(int productId, decimal quantity, decimal unitPrice = 0, string referenceId = null, string transactionType = "Purchase")
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -487,12 +499,23 @@ namespace Page_Navigation_App.Services
                 product.StockQuantity += quantity;
                 await _context.SaveChangesAsync();
 
+                // Use product's price if not specified
+                if (unitPrice <= 0)
+                {
+                    unitPrice = product.BasePrice;
+                }
+
+                // Calculate total amount
+                decimal totalAmount = quantity * unitPrice;
+
                 // Add stock ledger entry
                 var ledgerEntry = new StockLedger
                 {
                     ProductID = productId,
                     TransactionDate = DateTime.Now,
                     Quantity = quantity, // Positive for addition
+                    UnitPrice = unitPrice,
+                    TotalAmount = totalAmount,
                     TransactionType = transactionType,
                     ReferenceID = referenceId,
                     Notes = $"Stock increased by {quantity} units"

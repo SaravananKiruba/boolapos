@@ -16,7 +16,16 @@ namespace Page_Navigation_App.Model
         public DateTime TransactionDate { get; set; }
         
         [Required]
+        [Column(TypeName = "decimal(10,3)")]
         public decimal Quantity { get; set; }
+        
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal UnitPrice { get; set; }
+        
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal TotalAmount { get; set; }
         
         [Required]
         [StringLength(50)]

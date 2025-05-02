@@ -110,11 +110,19 @@ namespace Page_Navigation_App.Services
             {
                 // Add order
                 order.OrderDate = DateTime.Now;
+                
+                // Generate invoice number if not provided
+                if (string.IsNullOrEmpty(order.InvoiceNumber))
+                {
+                    order.InvoiceNumber = await GenerateInvoiceNumber();
+                }
+                
                 await _context.Orders.AddAsync(order);
                 await _context.SaveChangesAsync();
 
                 decimal totalAmount = 0;
                 decimal hallmarkingCharges = 0;
+                int totalItems = 0;
                 
                 foreach (var detail in details)
                 {
@@ -172,14 +180,21 @@ namespace Page_Navigation_App.Services
                     }
 
                     totalAmount += detail.TotalAmount * detail.Quantity;
+                    totalItems += (int)detail.Quantity;
                     
                     await _context.OrderDetails.AddAsync(detail);
                     
-                    // Update stock
-                    await _stockService.ReduceStock(detail.ProductID, detail.Quantity);
+                    // Update stock - Use the enhanced StockService with proper transaction tracking
+                    await _stockService.ReduceStock(
+                        detail.ProductID, 
+                        detail.Quantity, 
+                        detail.UnitPrice, 
+                        order.OrderID.ToString(), 
+                        "Sale");
                 }
 
                 // Update order totals
+                order.TotalItems = totalItems;
                 order.TotalAmount = totalAmount;
                 order.HallmarkingCharges = hallmarkingCharges;
                 order.CGST = Math.Round(totalAmount * 0.015m, 2); // 1.5%
@@ -187,8 +202,25 @@ namespace Page_Navigation_App.Services
                 order.GrandTotal = totalAmount + hallmarkingCharges + order.CGST + order.SGST - order.DiscountAmount;
                 
                 await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
                 
+                // Create finance entry for the sale
+                var financeEntry = new Finance
+                {
+                    TransactionDate = DateTime.Now,
+                    Amount = order.GrandTotal,
+                    Type = "Income",
+                    Category = "Sales",
+                    Description = $"Sale Invoice #{order.InvoiceNumber}",
+                    PaymentMethod = order.PaymentMethod,
+                    ReferenceID = order.OrderID.ToString(),
+                    ReferenceType = "Order",
+                    RecordedBy = "System"
+                };
+                
+                await _context.Finances.AddAsync(financeEntry);
+                await _context.SaveChangesAsync();
+                
+                await transaction.CommitAsync();
                 return order;
             }
             catch

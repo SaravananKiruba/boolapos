@@ -59,6 +59,11 @@ namespace Page_Navigation_App
                 provider.GetRequiredService<AppDbContext>(),
                 provider.GetRequiredService<RateMasterService>()
             ));
+            services.AddScoped<ExchangeService>(provider => new ExchangeService(
+                provider.GetRequiredService<AppDbContext>(),
+                provider.GetRequiredService<StockService>(),
+                provider.GetRequiredService<OrderService>()
+            ));
             services.AddScoped<CategoryService>();
             services.AddScoped<UserService>();
 

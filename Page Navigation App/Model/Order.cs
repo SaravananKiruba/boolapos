@@ -18,17 +18,19 @@ namespace Page_Navigation_App.Model
         [Required]
         public DateTime OrderDate { get; set; }
 
-        [Required]
         [StringLength(20)]
         public string InvoiceNumber { get; set; }
         
         [Required]
         [StringLength(50)]
-        public string OrderType { get; set; } = "Retail"; // Retail, Wholesale, Custom
+        public string Status { get; set; } = "Pending"; // Pending, Completed, Cancelled, etc.
+        
+        [StringLength(50)]
+        public string OrderType { get; set; } = "Retail"; // Retail, Wholesale, Custom, Exchange
 
         [Required]
-        [StringLength(20)]
-        public string PaymentType { get; set; } = "Cash"; // Cash, Card, UPI, EMI, etc.
+        [StringLength(50)]
+        public string PaymentMethod { get; set; } = "Cash"; // Cash, Credit Card, UPI, EMI, etc.
 
         public int? EMIMonths { get; set; }
 
@@ -39,9 +41,12 @@ namespace Page_Navigation_App.Model
         public string GSTNumber { get; set; }
 
         [Required]
+        public int TotalItems { get; set; }
+
+        [Required]
         [Column(TypeName = "decimal(18,2)")]
         [Range(0, 9999999999.99)]
-        public decimal SubTotal { get; set; }
+        public decimal TotalAmount { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
         [Range(0, 9999999999.99)]
@@ -49,16 +54,23 @@ namespace Page_Navigation_App.Model
 
         [Column(TypeName = "decimal(18,2)")]
         [Range(0, 9999999999.99)]
-        public decimal TaxAmount { get; set; }
+        public decimal CGST { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(0, 9999999999.99)]
+        public decimal SGST { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
         [Range(0, 9999999999.99)]
         public decimal GrandTotal { get; set; }
         
-        // For compatibility with existing code
+        // Backward compatibility with old code
         [NotMapped]
-        public decimal TotalAmount { get => GrandTotal; set => GrandTotal = value; }
+        public decimal SubTotal { get => TotalAmount; set => TotalAmount = value; }
+        
+        [NotMapped]
+        public decimal TaxAmount { get => CGST + SGST; set { CGST = value / 2; SGST = value / 2; } }
 
         // Metal Exchange Properties
         public bool HasMetalExchange { get; set; }
