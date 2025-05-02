@@ -13,24 +13,24 @@ namespace Page_Navigation_App.Model
 
         [Required]
         [StringLength(100, MinimumLength = 2)]
-        public string CustomerName { get; set; }
+        public string CustomerName { get; set; } = "Rajesh Kumar";
 
         [Required]
         [StringLength(15)]
         [RegularExpression(@"^\+?[1-9]\d{1,14}$")]
-        public string PhoneNumber { get; set; }
+        public string PhoneNumber { get; set; } = "+919876543210";
 
         [StringLength(200)]
-        public string Address { get; set; }
+        public string Address { get; set; } = "123 Main Street, Bangalore";
 
         [StringLength(100)]
-        public string City { get; set; }
+        public string City { get; set; } = "Bangalore";
 
         [StringLength(20)]
         [RegularExpression(@"^\d{2}[A-Z]{5}\d{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$")]
-        public string GSTNumber { get; set; }
+        public string GSTNumber { get; set; } = "29ABCDE1234F1Z5";
 
-        public DateTime? DateOfBirth { get; set; }
+        public DateTime? DateOfBirth { get; set; } = new DateTime(1985, 6, 15);
 
         public DateTime RegistrationDate { get; set; }
         public int LoyaltyPoints { get; set; }
@@ -40,25 +40,25 @@ namespace Page_Navigation_App.Model
 
         [Column(TypeName = "decimal(18,2)")]
         [Range(0, 9999999999.99)]
-        public decimal CreditLimit { get; set; }
+        public decimal CreditLimit { get; set; } = 100000.00m;
 
         [Required]
         [StringLength(20)]
-        public string? CustomerType { get; set; } // Retail, Wholesale
+        public string CustomerType { get; set; } = "Gold";
 
         [EmailAddress]
         [StringLength(100)]
-        public string Email { get; set; }
+        public string Email { get; set; } = "rajesh.kumar@email.com";
 
         [StringLength(15)]
         [RegularExpression(@"^\+?[1-9]\d{1,14}$")]
-        public string WhatsAppNumber { get; set; }
+        public string WhatsAppNumber { get; set; } = "+919876543210";
 
         [StringLength(500)]
-        public string PreferredDesigns { get; set; }  // Customer's design preferences
+        public string PreferredDesigns { get; set; } = "Traditional designs";
 
         [StringLength(100)]
-        public string PreferredMetalType { get; set; }  // Preferred metal type
+        public string PreferredMetalType { get; set; } = "Gold";
 
         [StringLength(100)]
         public string RingSize { get; set; }  // Customer's ring size for future reference
@@ -83,8 +83,8 @@ namespace Page_Navigation_App.Model
         public string FamilyDetails { get; set; }  // Family details for occasion reminders
 
         // Navigation properties
-        public ICollection<Order> Orders { get; set; }
-        public ICollection<RepairJob> RepairJobs { get; set; }
-        public ICollection<Finance> Payments { get; set; }
+        public virtual ICollection<Order> Orders { get; set; }
+        public virtual ICollection<RepairJob> RepairJobs { get; set; }
+        public virtual ICollection<Finance> Payments { get; set; }
     }
 }

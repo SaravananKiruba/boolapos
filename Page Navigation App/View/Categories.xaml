@@ -18,102 +18,196 @@
         <!-- Category Entry Form -->
         <mah:MetroHeader Header="Category Details">
             <mah:MetroContentControl>
-                <StackPanel>
-                    <TextBox Text="{Binding SelectedCategory.CategoryName}"
-                             Margin="0,5"
-                             mah:TextBoxHelper.Watermark="Category Name"
-                             Style="{StaticResource MahApps.Styles.TextBox}"/>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="550">
+                    <StackPanel>
+                        <TextBox Text="{Binding SelectedCategory.CategoryName, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,5"
+                                 mah:TextBoxHelper.Watermark="Category Name"
+                                 Style="{StaticResource MahApps.Styles.TextBox}"/>
 
-                    <TextBox Text="{Binding SelectedCategory.Description}"
-                             Margin="0,5"
-                             mah:TextBoxHelper.Watermark="Description"
-                             Style="{StaticResource MahApps.Styles.TextBox}"
-                             TextWrapping="Wrap"
-                             AcceptsReturn="True"
-                             Height="60"/>
+                        <TextBox Text="{Binding SelectedCategory.Description, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,5"
+                                 mah:TextBoxHelper.Watermark="Description"
+                                 Style="{StaticResource MahApps.Styles.TextBox}"
+                                 TextWrapping="Wrap"
+                                 AcceptsReturn="True"
+                                 Height="60"/>
+                                 
+                        <TextBlock Text="Making Charges and Wastage" 
+                                  FontWeight="Bold" 
+                                  Margin="0,10,0,5"/>
+                        
+                        <mah:NumericUpDown Value="{Binding SelectedCategory.DefaultMakingCharges}"
+                                          Margin="0,5"
+                                          mah:TextBoxHelper.Watermark="Default Making Charges (%)"
+                                          Style="{StaticResource {x:Type mah:NumericUpDown}}"
+                                          Minimum="0"
+                                          Maximum="100"
+                                          StringFormat="F2"/>
+                                          
+                        <mah:NumericUpDown Value="{Binding SelectedCategory.DefaultWastage}"
+                                          Margin="0,5"
+                                          mah:TextBoxHelper.Watermark="Default Wastage (%)"
+                                          Style="{StaticResource {x:Type mah:NumericUpDown}}"
+                                          Minimum="0"
+                                          Maximum="100"
+                                          StringFormat="F2"/>
+                                          
+                        <mah:ToggleSwitch Header="Active Status"
+                                          IsOn="{Binding SelectedCategory.IsActive}"
+                                          Margin="0,10,0,5"
+                                          OnContent="Active"
+                                          OffContent="Inactive"/>
 
-                    <StackPanel Orientation="Horizontal" 
-                              Margin="0,20,0,0"
-                              HorizontalAlignment="Right">
-                        <Button Content="Clear"
-                                Margin="0,0,10,0"
-                                Style="{StaticResource MahApps.Styles.Button}"
-                                Command="{Binding ClearCommand}"/>
-                        <Button Content="Save"
-                                Style="{StaticResource MahApps.Styles.Button.Accent}"
-                                Command="{Binding AddOrUpdateCommand}"/>
+                        <StackPanel Orientation="Horizontal" 
+                                  Margin="0,20,0,0"
+                                  HorizontalAlignment="Right">
+                            <Button Content="Clear"
+                                    Margin="0,0,10,0"
+                                    Style="{StaticResource MahApps.Styles.Button}"
+                                    Command="{Binding ClearCategoryCommand}"/>
+                            <Button Content="Save"
+                                    Style="{StaticResource MahApps.Styles.Button.Accent}"
+                                    Command="{Binding AddCategoryCommand}"
+                                    Margin="0,0,10,0"/>
+                            <Button Content="Update"
+                                    Style="{StaticResource MahApps.Styles.Button.Accent}"
+                                    Command="{Binding UpdateCategoryCommand}"/>
+                        </StackPanel>
+                        
+                        <!-- Subcategory Section -->
+                        <TextBlock Text="Subcategory Details" 
+                                  FontWeight="Bold" 
+                                  Margin="0,30,0,5"/>
+                                  
+                        <TextBox Text="{Binding SelectedSubcategory.SubcategoryName, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,5"
+                                 mah:TextBoxHelper.Watermark="Subcategory Name"
+                                 Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                 
+                        <TextBox Text="{Binding SelectedSubcategory.Description, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,5"
+                                 mah:TextBoxHelper.Watermark="Description"
+                                 Style="{StaticResource MahApps.Styles.TextBox}"
+                                 TextWrapping="Wrap"
+                                 AcceptsReturn="True"
+                                 Height="60"/>
+                                 
+                        <mah:NumericUpDown Value="{Binding SelectedSubcategory.SpecialMakingCharges}"
+                                          Margin="0,5"
+                                          mah:TextBoxHelper.Watermark="Special Making Charges (%)"
+                                          Style="{StaticResource {x:Type mah:NumericUpDown}}"
+                                          Minimum="0"
+                                          Maximum="100"
+                                          StringFormat="F2"/>
+                                          
+                        <mah:NumericUpDown Value="{Binding SelectedSubcategory.SpecialWastage}"
+                                          Margin="0,5"
+                                          mah:TextBoxHelper.Watermark="Special Wastage (%)"
+                                          Style="{StaticResource {x:Type mah:NumericUpDown}}"
+                                          Minimum="0"
+                                          Maximum="100"
+                                          StringFormat="F2"/>
+                                          
+                        <mah:ToggleSwitch Header="Active Status"
+                                          IsOn="{Binding SelectedSubcategory.IsActive}"
+                                          Margin="0,10,0,5"
+                                          OnContent="Active"
+                                          OffContent="Inactive"/>
+                                          
+                        <StackPanel Orientation="Horizontal" 
+                                  Margin="0,20,0,0"
+                                  HorizontalAlignment="Right">
+                            <Button Content="Clear"
+                                    Margin="0,0,10,0"
+                                    Style="{StaticResource MahApps.Styles.Button}"
+                                    Command="{Binding ClearSubcategoryCommand}"/>
+                            <Button Content="Add Subcategory"
+                                    Style="{StaticResource MahApps.Styles.Button.Accent}"
+                                    Command="{Binding AddSubcategoryCommand}"/>
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
+                </ScrollViewer>
             </mah:MetroContentControl>
         </mah:MetroHeader>
 
-        <!-- Categories List -->
+        <!-- Categories and Subcategories Tabs -->
         <mah:MetroHeader Grid.Column="1"
-                        Header="Categories List">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+                        Header="Categories and Subcategories">
+            <TabControl Style="{StaticResource MahApps.Styles.TabControl}">
+                <!-- Categories Tab -->
+                <TabItem Header="Categories">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
 
-                <!-- Search Box -->
-                <TextBox Margin="0,0,0,10"
-                         mah:TextBoxHelper.Watermark="Search categories..."
-                         Style="{StaticResource MahApps.Styles.TextBox}"
-                         Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}">
-                    <TextBox.InputBindings>
-                        <KeyBinding Key="Return" Command="{Binding SearchCommand}"/>
-                    </TextBox.InputBindings>
-                </TextBox>
+                        <DataGrid Grid.Row="1"
+                                  ItemsSource="{Binding Categories}"
+                                  SelectedItem="{Binding SelectedCategory, Mode=TwoWay}"
+                                  AutoGenerateColumns="False"
+                                  Style="{StaticResource MahApps.Styles.DataGrid}"
+                                  GridLinesVisibility="Horizontal"
+                                  SelectionMode="Single"
+                                  IsReadOnly="True">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Name" 
+                                                  Binding="{Binding CategoryName}"
+                                                  Width="*"/>
+                                <DataGridTextColumn Header="Making Charges" 
+                                                  Binding="{Binding DefaultMakingCharges, StringFormat='{}{0:N2}%'}"
+                                                  Width="120"/>
+                                <DataGridTextColumn Header="Wastage" 
+                                                  Binding="{Binding DefaultWastage, StringFormat='{}{0:N2}%'}"
+                                                  Width="120"/>
+                                <DataGridTextColumn Header="Status" 
+                                                  Binding="{Binding IsActive, Converter={StaticResource BooleanToActiveConverter}}"
+                                                  Width="80"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </TabItem>
+                
+                <!-- Subcategories Tab -->
+                <TabItem Header="Subcategories">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
 
-                <DataGrid Grid.Row="1"
-                          ItemsSource="{Binding Categories}"
-                          SelectedItem="{Binding SelectedCategory}"
-                          AutoGenerateColumns="False"
-                          Style="{StaticResource MahApps.Styles.DataGrid}"
-                          GridLinesVisibility="Horizontal"
-                          SelectionMode="Single"
-                          IsReadOnly="True">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Name" 
-                                          Binding="{Binding CategoryName}"
-                                          Width="*"/>
-                        <DataGridTextColumn Header="Description" 
-                                          Binding="{Binding Description}"
-                                          Width="*"/>
-                        <DataGridTextColumn Header="Products" 
-                                          Binding="{Binding Products.Count}"
-                                          Width="100"/>
-                        <DataGridTemplateColumn Width="Auto">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal">
-                                        <Button Style="{StaticResource MahApps.Styles.Button.Circle}"
-                                                Width="32"
-                                                Height="32"
-                                                Margin="0,0,5,0"
-                                                ToolTip="Edit"
-                                                Command="{Binding DataContext.EditCommand, 
-                                                        RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                CommandParameter="{Binding}">
-                                            <iconPacks:PackIconMaterial Kind="Pencil" Width="16" Height="16"/>
-                                        </Button>
-                                        <Button Style="{StaticResource MahApps.Styles.Button.Circle}"
-                                                Width="32"
-                                                Height="32"
-                                                ToolTip="Delete"
-                                                Command="{Binding DataContext.DeleteCommand, 
-                                                        RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                CommandParameter="{Binding}">
-                                            <iconPacks:PackIconMaterial Kind="Delete" Width="16" Height="16"/>
-                                        </Button>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                    </DataGrid.Columns>
-                </DataGrid>
-            </Grid>
+                        <TextBlock Grid.Row="0" 
+                                  Text="{Binding SelectedCategory.CategoryName, StringFormat='Subcategories for: {0}'}"
+                                  FontWeight="Bold"
+                                  Margin="0,0,0,10"/>
+
+                        <DataGrid Grid.Row="1"
+                                  ItemsSource="{Binding Subcategories}"
+                                  SelectedItem="{Binding SelectedSubcategory, Mode=TwoWay}"
+                                  AutoGenerateColumns="False"
+                                  Style="{StaticResource MahApps.Styles.DataGrid}"
+                                  GridLinesVisibility="Horizontal"
+                                  SelectionMode="Single"
+                                  IsReadOnly="True">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Name" 
+                                                  Binding="{Binding SubcategoryName}"
+                                                  Width="*"/>
+                                <DataGridTextColumn Header="Making Charges" 
+                                                  Binding="{Binding SpecialMakingCharges, StringFormat='{}{0:N2}%'}"
+                                                  Width="120"/>
+                                <DataGridTextColumn Header="Wastage" 
+                                                  Binding="{Binding SpecialWastage, StringFormat='{}{0:N2}%'}"
+                                                  Width="120"/>
+                                <DataGridTextColumn Header="Status" 
+                                                  Binding="{Binding IsActive, Converter={StaticResource BooleanToActiveConverter}}"
+                                                  Width="80"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </TabItem>
+            </TabControl>
         </mah:MetroHeader>
     </Grid>
 </UserControl>

@@ -30,7 +30,7 @@ namespace Page_Navigation_App.Services
         {
             var job = await _context.RepairJobs
                 .Include(r => r.Customer)
-                .FirstOrDefaultAsync(r => r.RepairJobID == jobId);
+                .FirstOrDefaultAsync(r => r.RepairID == jobId); // Changed from RepairJobID to RepairID
 
             if (job == null) return null;
 
@@ -68,7 +68,7 @@ namespace Page_Navigation_App.Services
             return await _context.RepairJobs
                 .Where(r => r.Status == "Pending" || r.Status == "In Process")
                 .Include(r => r.Customer)
-                .OrderBy(r => r.PromisedDate)
+                .OrderBy(r => r.ExpectedDeliveryDate) // Changed from PromisedDate to ExpectedDeliveryDate
                 .ToListAsync();
         }
 
@@ -84,8 +84,8 @@ namespace Page_Navigation_App.Services
         {
             var today = DateTime.Now.Date;
             return await _context.RepairJobs
-                .Where(r => r.PromisedDate.HasValue && 
-                           r.PromisedDate.Value.Date == today &&
+                .Where(r => r.ExpectedDeliveryDate.HasValue && 
+                           r.ExpectedDeliveryDate.Value.Date == today &&
                            r.Status != "Delivered")
                 .Include(r => r.Customer)
                 .ToListAsync();
@@ -114,7 +114,7 @@ namespace Page_Navigation_App.Services
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 query = query.Where(r => 
-                    r.ItemDetails.Contains(searchTerm) ||
+                    r.ItemDescription.Contains(searchTerm) || // Changed from ItemDetails to ItemDescription
                     r.Customer.CustomerName.Contains(searchTerm) ||
                     r.Customer.PhoneNumber.Contains(searchTerm));
             }
@@ -151,11 +151,11 @@ namespace Page_Navigation_App.Services
         {
             var job = await _context.RepairJobs
                 .Include(r => r.Customer)
-                .FirstOrDefaultAsync(r => r.RepairJobID == jobId);
+                .FirstOrDefaultAsync(r => r.RepairID == jobId); // Changed from RepairJobID to RepairID
 
             if (job == null) return false;
 
-            string message = $"Update on your repair job: {job.ItemDetails}\nStatus: {job.Status}";
+            string message = $"Update on your repair job: {job.ItemDescription}\nStatus: {job.Status}"; // Changed from ItemDetails to ItemDescription
             if (job.Status == "Delivered")
             {
                 message += $"\nFinal Amount: {job.FinalAmount:C}";
@@ -175,7 +175,7 @@ namespace Page_Navigation_App.Services
         {
             return await _context.RepairJobs
                 .Include(r => r.Customer)
-                .FirstOrDefaultAsync(r => r.RepairJobID == jobId);
+                .FirstOrDefaultAsync(r => r.RepairID == jobId); // Changed from RepairJobID to RepairID
         }
 
         public async Task<IEnumerable<RepairJob>> GetRepairsByDate(DateTime startDate, DateTime endDate)

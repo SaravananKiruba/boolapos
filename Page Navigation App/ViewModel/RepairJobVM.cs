@@ -94,9 +94,9 @@ namespace Page_Navigation_App.ViewModel
             AddOrUpdateCommand = new RelayCommand<object>(_ => UpdateJobStatus(), _ => CanAddOrUpdateRepairJob());
             SearchCommand = new RelayCommand<object>(_ => SearchRepairJobs(), _ => true);
             ClearCommand = new RelayCommand<object>(_ => ClearForm(), _ => true);
-            UploadImageCommand = new RelayCommand<object>(_ => UploadImage(), _ => SelectedJob?.RepairJobID > 0);
-            UpdateStatusCommand = new RelayCommand<object>(param => UpdateStatus(param?.ToString()), _ => SelectedJob?.RepairJobID > 0);
-            SendNotificationCommand = new RelayCommand<object>(_ => SendNotification(), _ => SelectedJob?.RepairJobID > 0);
+            UploadImageCommand = new RelayCommand<object>(_ => UploadImage(), _ => SelectedJob?.RepairID > 0); // Changed from RepairJobID to RepairID
+            UpdateStatusCommand = new RelayCommand<object>(param => UpdateStatus(param?.ToString()), _ => SelectedJob?.RepairID > 0); // Changed from RepairJobID to RepairID
+            SendNotificationCommand = new RelayCommand<object>(_ => SendNotification(), _ => SelectedJob?.RepairID > 0); // Changed from RepairJobID to RepairID
         }
 
         private async void LoadInitialData()
@@ -133,16 +133,16 @@ namespace Page_Navigation_App.ViewModel
 
         private async void UpdateJobStatus()
         {
-            if (SelectedJob.RepairJobID == 0)
+            if (SelectedJob.RepairID == 0)  // Changed from RepairJobID to RepairID
             {
                 await _repairService.CreateRepairJob(SelectedJob);
             }
             else
             {
-                await _repairService.UpdateStatus(SelectedJob.RepairJobID, SelectedJob.Status);
+                await _repairService.UpdateStatus(SelectedJob.RepairID, SelectedJob.Status);  // Changed from RepairJobID to RepairID
                 if (!string.IsNullOrEmpty(SelectedJob.ImagePath))
                 {
-                    await _repairService.UpdateImage(SelectedJob.RepairJobID, SelectedJob.ImagePath);
+                    await _repairService.UpdateImage(SelectedJob.RepairID, SelectedJob.ImagePath);  // Changed from RepairJobID to RepairID
                 }
             }
 
@@ -162,35 +162,35 @@ namespace Page_Navigation_App.ViewModel
 
         private async void UpdateFinalAmount()
         {
-            if (SelectedJob.RepairJobID == 0) return;
+            if (SelectedJob.RepairID == 0) return; // Changed from RepairJobID to RepairID
 
-            await _repairService.UpdateFinalAmount(SelectedJob.RepairJobID, SelectedJob.FinalAmount);
+            await _repairService.UpdateFinalAmount(SelectedJob.RepairID, SelectedJob.FinalAmount); // Changed from RepairJobID to RepairID
             LoadJobs();
         }
 
         private async void SendNotification()
         {
-            if (SelectedJob.RepairJobID == 0) return;
+            if (SelectedJob.RepairID == 0) return; // Changed from RepairJobID to RepairID
 
-            await _repairService.SendStatusUpdateNotification(SelectedJob.RepairJobID);
+            await _repairService.SendStatusUpdateNotification(SelectedJob.RepairID); // Changed from RepairJobID to RepairID
         }
 
         private bool ValidateInputs()
         {
             if (SelectedJob == null) return false;
-            if (string.IsNullOrWhiteSpace(SelectedJob.ItemDetails)) return false;
+            if (string.IsNullOrWhiteSpace(SelectedJob.ItemDescription)) return false; // Changed from ItemDetails to ItemDescription
 
-            return SelectedJob.EstimatedAmount > 0;
+            return SelectedJob.EstimatedCost > 0; // Changed from EstimatedAmount to EstimatedCost
         }
 
         private bool CanAddOrUpdateRepairJob()
         {
-            return !string.IsNullOrEmpty(SelectedJob?.ItemDetails) &&
+            return !string.IsNullOrEmpty(SelectedJob?.ItemDescription) && // Changed from ItemDetails to ItemDescription
                    !string.IsNullOrEmpty(SelectedJob?.MetalType) &&
                    !string.IsNullOrEmpty(SelectedJob?.WorkType) &&
                    SelectedJob?.Customer != null &&
-                   SelectedJob?.Weight > 0 &&
-                   SelectedJob?.EstimatedAmount > 0;
+                   SelectedJob?.ItemWeight > 0 && // Changed from Weight to ItemWeight
+                   SelectedJob?.EstimatedCost > 0; // Changed from EstimatedAmount to EstimatedCost
         }
 
         private void ClearForm()
@@ -213,7 +213,7 @@ namespace Page_Navigation_App.ViewModel
             if (dialog.ShowDialog() == true)
             {
                 string imagePath = dialog.FileName;
-                await _repairService.UpdateImage(SelectedJob.RepairJobID, imagePath);
+                await _repairService.UpdateImage(SelectedJob.RepairID, imagePath); // Changed from RepairJobID to RepairID
                 SelectedJob.ImagePath = imagePath;
             }
         }
@@ -222,7 +222,7 @@ namespace Page_Navigation_App.ViewModel
         {
             if (string.IsNullOrEmpty(newStatus) || SelectedJob == null) return;
 
-            var updatedJob = await _repairService.UpdateStatus(SelectedJob.RepairJobID, newStatus);
+            var updatedJob = await _repairService.UpdateStatus(SelectedJob.RepairID, newStatus); // Changed from RepairJobID to RepairID
             if (updatedJob != null)
             {
                 SelectedJob.Status = updatedJob.Status;

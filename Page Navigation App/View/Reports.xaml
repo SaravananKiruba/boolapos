@@ -7,42 +7,166 @@
              xmlns:local="clr-namespace:Page_Navigation_App.View"
              xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:System="clr-namespace:System;assembly=mscorlib"
+             xmlns:collections="clr-namespace:System.Collections;assembly=mscorlib"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
-        <TextBlock Text="Reports"
-                   FontSize="28"
-                   FontWeight="Bold"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Top"
-                   Margin="0,20,0,0"/>
+             d:DesignHeight="650" d:DesignWidth="900">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
         
-        <!-- Add report interface elements here -->
-        <StackPanel Margin="20,80,20,20">
-            <ComboBox Name="ReportType" 
-                      Style="{StaticResource MahApps.Styles.ComboBox}"
-                      Margin="0,10"
-                      mah:TextBoxHelper.Watermark="Select Report Type">
-                <ComboBoxItem Content="Sales Report"/>
-                <ComboBoxItem Content="Inventory Report"/>
-                <ComboBoxItem Content="Customer Report"/>
-                <ComboBoxItem Content="Financial Report"/>
-            </ComboBox>
+        <!-- Report Controls -->
+        <GroupBox Header="Report Configuration" Grid.Row="0">
+            <Grid Margin="5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <ComboBox Grid.Column="0"
+                          ItemsSource="{Binding ReportTypes}"
+                          SelectedItem="{Binding SelectedReportType}"
+                          Style="{StaticResource MahApps.Styles.ComboBox}"
+                          Margin="0,0,10,0"
+                          mah:TextBoxHelper.Watermark="Select Report Type"/>
+                
+                <mah:DateTimePicker Grid.Column="1"
+                                   SelectedDateTime="{Binding StartDate}"
+                                   Style="{StaticResource {x:Type mah:DateTimePicker}}"
+                                   Margin="0,0,10,0"
+                                   mah:TextBoxHelper.Watermark="Start Date"/>
+                
+                <mah:DateTimePicker Grid.Column="2"
+                                   SelectedDateTime="{Binding EndDate}"
+                                   Style="{StaticResource {x:Type mah:DateTimePicker}}"
+                                   Margin="0,0,10,0"
+                                   mah:TextBoxHelper.Watermark="End Date"/>
+                
+                <Button Grid.Column="3"
+                        Style="{StaticResource MahApps.Styles.Button.Square.Accent}"
+                        Command="{Binding GenerateReportCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="ChartLine" 
+                                                   Margin="0,0,5,0"/>
+                        <TextBlock Text="Generate Report"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </GroupBox>
+        
+        <!-- Report Display -->
+        <Grid Grid.Row="1" Margin="0,10,0,0">
+            <Grid.Style>
+                <Style TargetType="Grid">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsReportGenerated}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
             
-            <mah:DateTimePicker Name="StartDate" 
-                               Style="{StaticResource {x:Type mah:DateTimePicker}}"
-                               Margin="0,10"
-                               mah:TextBoxHelper.Watermark="Start Date"/>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
             
-            <mah:DateTimePicker Name="EndDate" 
-                               Style="{StaticResource {x:Type mah:DateTimePicker}}"
-                               Margin="0,10"
-                               mah:TextBoxHelper.Watermark="End Date"/>
+            <!-- Report Title -->
+            <TextBlock Grid.Row="0" 
+                       Text="{Binding ReportTitle}"
+                       FontSize="20"
+                       FontWeight="Bold"
+                       Margin="0,0,0,10"/>
             
-            <Button Content="Generate Report" 
-                    Margin="0,20"
+            <!-- Report Summary -->
+            <GroupBox Grid.Row="1" Header="Report Summary">
+                <ItemsControl ItemsSource="{Binding ReportSummary}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <TextBlock Grid.Column="0" 
+                                           Text="{Binding Key}" 
+                                           FontWeight="SemiBold"
+                                           Width="150"/>
+                                
+                                <ContentPresenter Grid.Column="1" Content="{Binding Value}">
+                                    <ContentPresenter.Resources>
+                                        <!-- Default template for simple values -->
+                                        <DataTemplate DataType="{x:Type System:String}">
+                                            <TextBlock Text="{Binding}"/>
+                                        </DataTemplate>
+                                        <DataTemplate DataType="{x:Type System:Int32}">
+                                            <TextBlock Text="{Binding}"/>
+                                        </DataTemplate>
+                                        <DataTemplate DataType="{x:Type System:Decimal}">
+                                            <TextBlock Text="{Binding StringFormat='{}{0:C}'}"/>
+                                        </DataTemplate>
+                                        
+                                        <!-- Template for collections -->
+                                        <DataTemplate DataType="{x:Type collections:IEnumerable}">
+                                            <TextBlock Text="(See detailed report below)"/>
+                                        </DataTemplate>
+                                    </ContentPresenter.Resources>
+                                </ContentPresenter>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </GroupBox>
+            
+            <!-- Report Data -->
+            <GroupBox Grid.Row="2" Header="Detailed Report" Margin="0,10,0,0">
+                <DataGrid ItemsSource="{Binding ReportData}"
+                          AutoGenerateColumns="True"
+                          Style="{StaticResource MahApps.Styles.DataGrid}"
+                          GridLinesVisibility="Horizontal"
+                          IsReadOnly="True">
+                </DataGrid>
+            </GroupBox>
+            
+            <!-- Export Button -->
+            <Button Grid.Row="3"
+                    HorizontalAlignment="Right"
+                    Margin="0,10,0,0"
                     Style="{StaticResource MahApps.Styles.Button.Square}"
-                    Command="{Binding GenerateReportCommand}"/>
-        </StackPanel>
+                    Command="{Binding ExportReportCommand}">
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial Kind="Export" 
+                                               Margin="0,0,5,0"/>
+                    <TextBlock Text="Export Report"/>
+                </StackPanel>
+            </Button>
+        </Grid>
+        
+        <!-- Message when no report is generated -->
+        <TextBlock Grid.Row="1" 
+                   Text="Select a report type and click 'Generate Report' to view data" 
+                   HorizontalAlignment="Center" 
+                   VerticalAlignment="Center"
+                   FontSize="16"
+                   Foreground="#777">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Visibility" Value="Visible"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsReportGenerated}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
     </Grid>
 </UserControl>

@@ -26,13 +26,39 @@ namespace Page_Navigation_App.Services
                 .SumAsync(f => f.RemainingAmount ?? 0);
         }
 
-        public IEnumerable<Finance> GetAllTransactions()
+        // Updated to async
+        public async Task<IEnumerable<Finance>> GetAllFinanceRecords()
         {
-            return _context.Finances
+            return await _context.Finances
+                .Include(f => f.Customer)
                 .OrderByDescending(f => f.TransactionDate)
-                .ToList();
+                .ToListAsync();
         }
 
+        // Updated to async
+        public async Task<bool> UpdateFinanceRecord(Finance finance)
+        {
+            try
+            {
+                _context.Finances.Update(finance);
+                await _context.SaveChangesAsync();
+                
+                await _logService.LogAudit(
+                    "FINANCE_UPDATED",
+                    $"Finance record updated: ID {finance.FinanceID}, Amount {finance.Amount}, Type {finance.TransactionType}");
+                    
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await _logService.LogError(
+                    "FINANCE_UPDATE_ERROR",
+                    $"Error updating finance record: {ex.Message}");
+                return false;
+            }
+        }
+
+        // Legacy method - kept for backward compatibility
         public bool UpdateTransaction(Finance transaction)
         {
             try
@@ -47,6 +73,7 @@ namespace Page_Navigation_App.Services
             }
         }
 
+        // Legacy method - kept for backward compatibility
         public bool AddTransaction(Finance transaction)
         {
             try
@@ -62,6 +89,27 @@ namespace Page_Navigation_App.Services
             }
         }
 
+        // Updated to async
+        public async Task<IEnumerable<Finance>> GetTransactionsByType(string type)
+        {
+            return await _context.Finances
+                .Include(f => f.Customer)
+                .Where(f => f.TransactionType == type)
+                .OrderByDescending(f => f.TransactionDate)
+                .ToListAsync();
+        }
+
+        // Updated to async
+        public async Task<IEnumerable<Finance>> GetTransactionsByDateRange(DateTime startDate, DateTime endDate)
+        {
+            return await _context.Finances
+                .Include(f => f.Customer)
+                .Where(f => f.TransactionDate >= startDate && f.TransactionDate <= endDate)
+                .OrderByDescending(f => f.TransactionDate)
+                .ToListAsync();
+        }
+
+        // Legacy methods - kept for backward compatibility
         public IEnumerable<Finance> FilterTransactionsByType(string type)
         {
             return _context.Finances
@@ -80,9 +128,145 @@ namespace Page_Navigation_App.Services
 
         public async Task<Finance> AddFinanceRecord(Finance finance)
         {
-            await _context.Finances.AddAsync(finance);
-            await _context.SaveChangesAsync();
-            return finance;
+            try
+            {
+                // Ensure transaction date is set
+                if (finance.TransactionDate == default)
+                {
+                    finance.TransactionDate = DateTime.Now;
+                }
+                
+                // Add created date and user if not provided
+                if (string.IsNullOrEmpty(finance.CreatedBy))
+                {
+                    finance.CreatedBy = Environment.UserName;
+                }
+                
+                // Set status to Active by default if not provided
+                if (string.IsNullOrEmpty(finance.Status))
+                {
+                    finance.Status = "Active";
+                }
+
+                await _context.Finances.AddAsync(finance);
+                await _context.SaveChangesAsync();
+                
+                await _logService.LogAudit(
+                    "FINANCE_CREATED",
+                    $"Finance record created: Amount {finance.Amount}, Type {finance.TransactionType}");
+                    
+                return finance;
+            }
+            catch (Exception ex)
+            {
+                await _logService.LogError(
+                    "FINANCE_CREATE_ERROR",
+                    $"Error creating finance record: {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<Finance> GetFinanceById(string financeId)
+        {
+            return await _context.Finances
+                .Include(f => f.Customer)
+                .FirstOrDefaultAsync(f => f.FinanceID == financeId);
+        }
+
+        public async Task<Dictionary<string, object>> GetFinancialDashboardData(DateTime? startDate = null, DateTime? endDate = null)
+        {
+            // Default to last 30 days if no date range provided
+            startDate ??= DateTime.Now.AddDays(-30);
+            endDate ??= DateTime.Now;
+
+            var transactions = await _context.Finances
+                .Where(f => f.TransactionDate >= startDate && f.TransactionDate <= endDate)
+                .ToListAsync();
+
+            var income = transactions
+                .Where(t => t.TransactionType == "Income" || t.TransactionType == "Deposit")
+                .Sum(t => t.Amount);
+                
+            var expense = transactions
+                .Where(t => t.TransactionType == "Expense" || t.TransactionType == "Withdrawal" || t.TransactionType == "Refund")
+                .Sum(t => t.Amount);
+            
+            var sales = transactions
+                .Where(t => t.TransactionType == "Income" && t.OrderID.HasValue)
+                .Sum(t => t.Amount);
+                
+            var refunds = transactions
+                .Where(t => t.TransactionType == "Refund")
+                .Sum(t => t.Amount);
+                
+            // Payment method breakdown
+            var paymentMethods = transactions
+                .Where(t => t.TransactionType == "Income")
+                .GroupBy(t => t.PaymentMethod)
+                .Select(g => new
+                {
+                    Method = g.Key,
+                    Total = g.Sum(t => t.Amount),
+                    Count = g.Count()
+                })
+                .ToList();
+                
+            // Daily transactions
+            var dailyTransactions = transactions
+                .GroupBy(t => t.TransactionDate.Date)
+                .Select(g => new
+                {
+                    Date = g.Key,
+                    Income = g.Where(t => t.TransactionType == "Income" || t.TransactionType == "Deposit").Sum(t => t.Amount),
+                    Expense = g.Where(t => t.TransactionType == "Expense" || t.TransactionType == "Withdrawal" || t.TransactionType == "Refund").Sum(t => t.Amount)
+                })
+                .OrderBy(x => x.Date)
+                .ToList();
+
+            return new Dictionary<string, object>
+            {
+                { "TotalIncome", income },
+                { "TotalExpense", expense },
+                { "NetProfit", income - expense },
+                { "TotalSales", sales },
+                { "TotalRefunds", refunds },
+                { "PaymentMethods", paymentMethods },
+                { "DailyTransactions", dailyTransactions }
+            };
+        }
+
+        public async Task<bool> DeleteFinanceRecord(string financeId)
+        {
+            try
+            {
+                var finance = await _context.Finances.FindAsync(financeId);
+                if (finance == null) return false;
+                
+                _context.Finances.Remove(finance);
+                await _context.SaveChangesAsync();
+                
+                await _logService.LogAudit(
+                    "FINANCE_DELETED",
+                    $"Finance record deleted: ID {financeId}");
+                    
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await _logService.LogError(
+                    "FINANCE_DELETE_ERROR",
+                    $"Error deleting finance record: {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task<IEnumerable<Finance>> GetRecentTransactions(int count = 10)
+        {
+            return await _context.Finances
+                .Include(f => f.Customer)
+                .OrderByDescending(f => f.TransactionDate)
+                .Take(count)
+                .ToListAsync();
         }
 
         public async Task<Finance> CreateEMIPlan(
@@ -433,7 +617,7 @@ namespace Page_Navigation_App.Services
                 { "ActiveCustomers", schemeTransactions
                     .Select(t => t.CustomerId)
                     .Distinct()
-                    .Count() }
+                    .Count() } // Added parentheses to call Count() method
             };
         }
 
@@ -452,7 +636,7 @@ namespace Page_Navigation_App.Services
 
             return new Dictionary<string, decimal>
             {
-                ["TotalPlans"] = activePlans.Count,
+                ["TotalPlans"] = activePlans.Count(), // Added parentheses to call Count() method
                 ["TotalOutstanding"] = activePlans.Sum(f => f.RemainingAmount ?? 0),
                 ["AverageEMIAmount"] = activePlans.Any() 
                     ? activePlans.Average(f => f.InstallmentAmount ?? 0) 

@@ -32,6 +32,7 @@ namespace Page_Navigation_App.Data
         public DbSet<EmailSettings> EmailSettings { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }
+        public DbSet<EMI> EMIs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -42,6 +43,20 @@ namespace Page_Navigation_App.Data
                 .HasOne(ur => ur.User)
                 .WithMany()
                 .HasForeignKey(ur => ur.UserID);
+
+            // Configure EMI-Order relationship
+            modelBuilder.Entity<EMI>()
+                .HasOne(e => e.Order)
+                .WithMany()
+                .HasForeignKey(e => e.OrderID)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure EMI-Customer relationship
+            modelBuilder.Entity<EMI>()
+                .HasOne(e => e.Customer)
+                .WithMany()
+                .HasForeignKey(e => e.OrderID)
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

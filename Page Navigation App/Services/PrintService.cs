@@ -91,13 +91,13 @@ namespace Page_Navigation_App.Services
 
             var reportData = new
             {
-                ReceiptNumber = repair.RepairJobID.ToString(),
+                ReceiptNumber = repair.RepairID.ToString(), // Changed from RepairJobID to RepairID
                 CustomerName = repair.Customer?.CustomerName,
                 CustomerPhone = repair.Customer?.PhoneNumber,
                 ReceiptDate = repair.ReceiptDate,
-                ItemDetails = repair.ItemDetails,
+                ItemDetails = repair.ItemDescription, // Changed from ItemDetails to ItemDescription
                 WorkType = repair.WorkType,
-                EstimatedAmount = repair.EstimatedAmount,
+                EstimatedAmount = repair.EstimatedCost, // Changed from EstimatedAmount to EstimatedCost
                 Status = repair.Status
             };
 

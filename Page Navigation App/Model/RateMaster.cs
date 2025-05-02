@@ -21,7 +21,7 @@ namespace Page_Navigation_App.Model
 
         private string _metalType;
         [Required]
-        [StringLength(20)]
+        [StringLength(50)]
         public string MetalType
         {
             get => _metalType;
@@ -113,7 +113,8 @@ namespace Page_Navigation_App.Model
         }
 
         private string _source;
-        [StringLength(20)]
+        [Required]
+        [StringLength(50)]
         public string Source
         {
             get => _source;
@@ -173,6 +174,9 @@ namespace Page_Navigation_App.Model
         }
 
         private decimal _purchaseRate;
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(0.01, 999999999.99)]
         public decimal PurchaseRate
         {
             get => _purchaseRate;
@@ -275,5 +279,10 @@ namespace Page_Navigation_App.Model
                 }
             }
         }
+
+        [NotMapped]
+        public bool IsCurrentRate => IsActive && 
+            EffectiveDate <= DateTime.Now && 
+            (!ValidUntil.HasValue || ValidUntil.Value > DateTime.Now);
     }
 }

@@ -16,20 +16,20 @@ namespace Page_Navigation_App.Model
 
         [Required]
         [StringLength(100)]
-        public string Location { get; set; }
+        public string Location { get; set; } = "Main";
 
         [Required]
         [Column(TypeName = "decimal(10,3)")]
         [Range(0, 9999.999)]
-        public decimal Quantity { get; set; }
+        public decimal Quantity { get; set; } = 1.000m;
 
         [Required]
-        public DateTime LastUpdated { get; set; }
+        public DateTime LastUpdated { get; set; } = DateTime.Now;
 
         public DateTime? LastSold { get; set; }
 
         [Required]
-        public DateTime AddedDate { get; set; }
+        public DateTime AddedDate { get; set; } = DateTime.Now;
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
@@ -63,6 +63,6 @@ namespace Page_Navigation_App.Model
         }
 
         // Navigation property
-        public Product Product { get; set; }
+        public virtual Product Product { get; set; }
     }
 }

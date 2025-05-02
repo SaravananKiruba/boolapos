@@ -63,6 +63,46 @@ namespace Page_Navigation_App.Services
                 .ToListAsync();
         }
 
+        // Get all orders
+        public async Task<IEnumerable<Order>> GetAllOrders()
+        {
+            return await _context.Orders
+                .Include(o => o.Customer)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+        }
+
+        // Get order details
+        public async Task<IEnumerable<OrderDetail>> GetOrderDetails(int orderId)
+        {
+            return await _context.OrderDetails
+                .Include(od => od.Product)
+                .ThenInclude(p => p.Category)
+                .Where(od => od.OrderID == orderId)
+                .ToListAsync();
+        }
+
+        // Update order details
+        public async Task<bool> UpdateOrderDetails(int orderId, List<OrderDetail> details)
+        {
+            // Remove existing details
+            var existingDetails = await _context.OrderDetails
+                .Where(od => od.OrderID == orderId)
+                .ToListAsync();
+            
+            _context.OrderDetails.RemoveRange(existingDetails);
+            
+            // Add new details
+            foreach (var detail in details)
+            {
+                detail.OrderID = orderId;
+                await _context.OrderDetails.AddAsync(detail);
+            }
+            
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
         public async Task<Order> CreateOrder(Order order, List<OrderDetail> details)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -115,92 +155,40 @@ namespace Page_Navigation_App.Services
                     {
                         makingChargePercentage = detail.Product.Category.DefaultMakingCharges;
                     }
-
-                    detail.MakingCharges = (detail.BaseAmount * makingChargePercentage) / 100;
-
-                    // Calculate value addition if any
-                    decimal valueAdditionAmount = 0;
-                    if (detail.Product.ValueAdditionPercentage > 0)
-                    {
-                        valueAdditionAmount = (detail.BaseAmount * detail.Product.ValueAdditionPercentage) / 100;
-                    }
-
-                    // Calculate taxable amount including all components
-                    detail.TaxableAmount = detail.BaseAmount + 
-                                         wastageAmount + 
-                                         detail.MakingCharges + 
-                                         detail.StoneValue +
-                                         valueAdditionAmount;
                     
-                    // Calculate GST based on customer's GST registration
-                    if (!string.IsNullOrEmpty(order.GSTNumber))
-                    {
-                        detail.CGSTAmount = detail.TaxableAmount * 0.015m; // 1.5%
-                        detail.SGSTAmount = detail.TaxableAmount * 0.015m; // 1.5%
-                        detail.IGSTAmount = 0;
-                    }
-                    else
-                    {
-                        detail.IGSTAmount = detail.TaxableAmount * 0.03m; // 3%
-                        detail.CGSTAmount = 0;
-                        detail.SGSTAmount = 0;
-                    }
+                    decimal makingAmount = (detail.BaseAmount * makingChargePercentage) / 100;
 
-                    // Calculate final amount
-                    detail.FinalAmount = detail.TaxableAmount + 
-                                       detail.CGSTAmount + 
-                                       detail.SGSTAmount + 
-                                       detail.IGSTAmount;
+                    // Calculate total
+                    detail.MakingCharges = makingChargePercentage;
+                    detail.WastagePercentage = wastagePercentage;
+                    detail.WastageAmount = wastageAmount;
+                    detail.MakingAmount = makingAmount;
+                    detail.TotalAmount = detail.BaseAmount + makingAmount + wastageAmount + detail.StoneValue;
 
-                    totalAmount += detail.FinalAmount;
-
-                    // Add hallmarking charges if applicable
-                    if (detail.Product.HallmarkNumber != null)
+                    // Add hallmarking charges if applicable (typically per piece)
+                    if (detail.Product.IsHallmarked)
                     {
-                        hallmarkingCharges += metalRate.HallmarkingCharge;
+                        hallmarkingCharges += 45; // ₹45 per piece
                     }
 
+                    totalAmount += detail.TotalAmount * detail.Quantity;
+                    
+                    await _context.OrderDetails.AddAsync(detail);
+                    
                     // Update stock
-                    await _stockService.UpdateStockQuantity(
-                        detail.ProductID,
-                        "Main",
-                        -1 * detail.GrossWeight,
-                        true);
+                    await _stockService.ReduceStock(detail.ProductID, detail.Quantity);
                 }
-
-                // Handle metal exchange
-                if (order.HasMetalExchange && order.ExchangeMetalWeight > 0)
-                {
-                    var exchangeRate = await _rateService.GetCurrentRate(
-                        order.ExchangeMetalType,
-                        order.ExchangeMetalPurity.ToString());
-
-                    if (exchangeRate == null)
-                        throw new InvalidOperationException($"No rate found for exchange metal {order.ExchangeMetalType} {order.ExchangeMetalPurity}");
-
-                    // Use purchase rate for exchange metal
-                    order.ExchangeValue = order.ExchangeMetalWeight * exchangeRate.PurchaseRate;
-                    totalAmount -= order.ExchangeValue;
-                }
-
-                // Add hallmarking charges to total
-                totalAmount += hallmarkingCharges;
 
                 // Update order totals
-                order.SubTotal = totalAmount;
-                order.TaxAmount = details.Sum(d => d.CGSTAmount + d.SGSTAmount + d.IGSTAmount);
-                order.GrandTotal = totalAmount - order.DiscountAmount;
-
-                // Handle EMI
-                if (order.PaymentType == "EMI" && order.EMIMonths > 0)
-                {
-                    order.EMIAmount = Math.Ceiling(order.GrandTotal / order.EMIMonths);
-                }
-
-                await _context.OrderDetails.AddRangeAsync(details);
+                order.TotalAmount = totalAmount;
+                order.HallmarkingCharges = hallmarkingCharges;
+                order.CGST = Math.Round(totalAmount * 0.015m, 2); // 1.5%
+                order.SGST = Math.Round(totalAmount * 0.015m, 2); // 1.5%
+                order.GrandTotal = totalAmount + hallmarkingCharges + order.CGST + order.SGST - order.DiscountAmount;
+                
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
-
+                
                 return order;
             }
             catch
@@ -278,7 +266,7 @@ namespace Page_Navigation_App.Services
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Order>> GetAllOrders()
+        public async Task<IEnumerable<Order>> GetAllOrdersWithDetails()
         {
             return await _context.Orders
                 .Include(o => o.Customer)

@@ -112,9 +112,9 @@ namespace Page_Navigation_App.Services
                 .Select(g => new RepairJob
                 {
                     WorkType = g.Key,
-                    EstimatedAmount = g.Sum(r => r.EstimatedAmount),
+                    EstimatedCost = g.Sum(r => r.EstimatedCost), // Changed to EstimatedCost which is the actual property name
                     FinalAmount = g.Sum(r => r.FinalAmount),
-                    Status = g.Count().ToString() // Using Status field to store count
+                    Notes = g.Count().ToString() // Using Notes instead of Status to store count
                 })
                 .ToListAsync();
         }
