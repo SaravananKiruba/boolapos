@@ -1,4 +1,4 @@
-namespace Tests;
+namespace BoolaPOS.Tests;
 
 [TestClass]
 public class UnitTest1

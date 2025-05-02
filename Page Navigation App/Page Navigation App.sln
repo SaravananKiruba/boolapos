@@ -1,8 +1,10 @@
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoolaPOS", "BoolaPOS.csproj", "{701A0F4D-5633-5248-26B1-CE04F70FF218}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoolaPOS.Tests", "BoolaPOS.Tests\BoolaPOS.Tests.csproj", "{5A319998-1F2A-4D29-ADC8-A97D1569F16E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,6 +16,10 @@ Global
 		{701A0F4D-5633-5248-26B1-CE04F70FF218}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{701A0F4D-5633-5248-26B1-CE04F70FF218}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{701A0F4D-5633-5248-26B1-CE04F70FF218}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A319998-1F2A-4D29-ADC8-A97D1569F16E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A319998-1F2A-4D29-ADC8-A97D1569F16E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A319998-1F2A-4D29-ADC8-A97D1569F16E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A319998-1F2A-4D29-ADC8-A97D1569F16E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
