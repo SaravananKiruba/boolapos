@@ -30,12 +30,12 @@
             </ComboBox>
             
             <mah:DateTimePicker Name="StartDate" 
-                               Style="{StaticResource MahApps.Styles.DateTimePicker}"
+                               Style="{StaticResource {x:Type mah:DateTimePicker}}"
                                Margin="0,10"
                                mah:TextBoxHelper.Watermark="Start Date"/>
             
             <mah:DateTimePicker Name="EndDate" 
-                               Style="{StaticResource MahApps.Styles.DateTimePicker}"
+                               Style="{StaticResource {x:Type mah:DateTimePicker}}"
                                Margin="0,10"
                                mah:TextBoxHelper.Watermark="End Date"/>
             
