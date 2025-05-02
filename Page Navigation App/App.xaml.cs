@@ -39,7 +39,7 @@ namespace Page_Navigation_App
             services.AddScoped<LogService>();
             services.AddScoped<SecurityService>();
             services.AddScoped<ConfigurationService>();
-            services.AddScoped<NotificationService>();
+            services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<ReportService>();
             services.AddScoped<BackupService>(provider => 
                 new BackupService(
@@ -55,15 +55,32 @@ namespace Page_Navigation_App
             services.AddScoped<SupplierService>();
             services.AddScoped<RateMasterService>();
             services.AddScoped<RepairJobService>();
-            services.AddScoped<StockService>();
+            services.AddScoped<StockService>(provider => new StockService(
+                provider.GetRequiredService<AppDbContext>(),
+                provider.GetRequiredService<RateMasterService>()
+            ));
             services.AddScoped<CategoryService>();
             services.AddScoped<UserService>();
+
+            // Add PrintService with all required dependencies
+            services.AddScoped<PrintService>(provider => new PrintService(
+                provider.GetRequiredService<OrderService>(),
+                provider.GetRequiredService<RepairJobService>(),
+                provider.GetRequiredService<RateMasterService>(),
+                provider.GetRequiredService<ProductService>(),
+                provider.GetRequiredService<CustomerService>()
+            ));
 
             // ViewModels - Transient lifetime except for NavigationVM
             services.AddSingleton<NavigationVM>();
             services.AddTransient<HomeVM>();
             services.AddTransient<CustomerVM>();
-            services.AddTransient<ProductVM>();
+            services.AddTransient<ProductVM>(provider => new ProductVM(
+                provider.GetRequiredService<ProductService>(),
+                provider.GetRequiredService<CategoryService>(),
+                provider.GetRequiredService<SupplierService>(),
+                provider.GetRequiredService<RateMasterService>()
+            ));
             services.AddTransient<OrderVM>();
             services.AddTransient<TransactionVM>();
             services.AddTransient<SupplierVM>();

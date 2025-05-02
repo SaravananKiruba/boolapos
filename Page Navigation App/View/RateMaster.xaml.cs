@@ -11,10 +11,10 @@ namespace Page_Navigation_App.View
             InitializeComponent();
         }
 
-        public RateMaster(RateMasterService rateService)
+        public RateMaster(RateMasterService rateService, INotificationService notificationService, ProductService productService)
         {
             InitializeComponent();
-            DataContext = new RateMasterVM(rateService);
+            DataContext = new RateMasterVM(rateService, notificationService, productService);
         }
     }
 }

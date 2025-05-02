@@ -5,12 +5,15 @@ using Page_Navigation_App.Model;
 using Page_Navigation_App.Services;
 using Page_Navigation_App.Utilities;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Page_Navigation_App.ViewModel
 {
     public class RateMasterVM : ViewModelBase
     {
         private readonly RateMasterService _rateService;
+        private readonly INotificationService _notificationService;
+        private readonly ProductService _productService;
 
         public ICommand AddOrUpdateCommand { get; }
         public ICommand ClearCommand { get; }
@@ -18,6 +21,7 @@ namespace Page_Navigation_App.ViewModel
 
         public ObservableCollection<RateMaster> Rates { get; set; } = new ObservableCollection<RateMaster>();
         public ObservableCollection<RateMaster> RateHistory { get; set; } = new ObservableCollection<RateMaster>();
+        public ObservableCollection<RateAnalytics> RateAnalytics { get; set; } = new ObservableCollection<RateAnalytics>();
 
         private RateMaster _selectedRate = new RateMaster();
         public RateMaster SelectedRate
@@ -34,16 +38,61 @@ namespace Page_Navigation_App.ViewModel
         private string[] _metalTypes = new[] { "Gold", "Silver", "Platinum" };
         public string[] MetalTypes => _metalTypes;
 
-        private string[] _purities = new[] { "18k", "22k", "24k" };
+        private string[] _purities = new[] 
+        { 
+            "24k", "22k", "18k", "14k",  // Gold
+            "999", "995", "925", "916",   // Silver and Platinum
+            "875", "835" 
+        };
         public string[] Purities => _purities;
 
-        private string[] _sources = new[] { "Market", "Association", "Custom" };
+        private string[] _sources = new[] { "Market", "Association", "MCX", "Bank", "Custom" };
         public string[] Sources => _sources;
 
-        public RateMasterVM(RateMasterService rateService)
+        private decimal _volatilityThreshold = 2.0m;
+        public decimal VolatilityThreshold
+        {
+            get => _volatilityThreshold;
+            set
+            {
+                _volatilityThreshold = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private bool _enableNotifications = true;
+        public bool EnableNotifications
+        {
+            get => _enableNotifications;
+            set
+            {
+                _enableNotifications = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private bool _autoUpdatePrices = true;
+        public bool AutoUpdatePrices
+        {
+            get => _autoUpdatePrices;
+            set
+            {
+                _autoUpdatePrices = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public RateMasterVM(
+            RateMasterService rateService,
+            INotificationService notificationService,
+            ProductService productService)
         {
             _rateService = rateService;
+            _notificationService = notificationService;
+            _productService = productService;
+            
             LoadCurrentRates();
+            LoadRateAnalytics();
 
             AddOrUpdateCommand = new RelayCommand<object>(_ => AddOrUpdateRate(), _ => CanAddOrUpdateRate());
             ClearCommand = new RelayCommand<object>(_ => ClearForm(), _ => true);
@@ -76,34 +125,162 @@ namespace Page_Navigation_App.ViewModel
             }
         }
 
+        private async void LoadRateAnalytics()
+        {
+            RateAnalytics.Clear();
+            var currentRates = await _rateService.GetCurrentRates();
+            
+            foreach (var current in currentRates)
+            {
+                var dayHistory = await _rateService.GetRateHistory(
+                    current.MetalType,
+                    current.Purity,
+                    DateTime.Now.AddDays(-7));
+
+                var oldestRate = dayHistory.OrderBy(r => r.EffectiveDate).FirstOrDefault();
+                var dayOldRate = dayHistory.Where(r => r.EffectiveDate <= DateTime.Now.AddDays(-1))
+                                         .OrderByDescending(r => r.EffectiveDate)
+                                         .FirstOrDefault();
+
+                decimal change24h = 0;
+                decimal change7d = 0;
+
+                if (dayOldRate != null)
+                {
+                    change24h = ((current.Rate - dayOldRate.Rate) / dayOldRate.Rate) * 100;
+                }
+
+                if (oldestRate != null)
+                {
+                    change7d = ((current.Rate - oldestRate.Rate) / oldestRate.Rate) * 100;
+                }
+
+                RateAnalytics.Add(new RateAnalytics
+                {
+                    MetalType = current.MetalType,
+                    Purity = current.Purity,
+                    Change24h = change24h,
+                    Change7d = change7d
+                });
+
+                // Check for volatility alerts
+                if (Math.Abs(change24h) > VolatilityThreshold && EnableNotifications)
+                {
+                    await _notificationService.SendNotification(
+                        "Rate Volatility Alert",
+                        $"{current.MetalType} {current.Purity} rate changed by {change24h:N2}% in last 24h");
+                }
+            }
+        }
+
         private async void AddOrUpdateRate()
         {
-            SelectedRate.EffectiveDate = DateTime.Now;
-            SelectedRate.IsActive = true;
-            SelectedRate.EnteredBy = Environment.UserName;
-            SelectedRate.UpdatedBy = Environment.UserName;
-            
-            if (SelectedRate.ValidUntil == null)
+            try
             {
-                SelectedRate.ValidUntil = DateTime.Now.AddDays(1); // Default 24h validity
-            }
+                SelectedRate.EffectiveDate = DateTime.Now;
+                SelectedRate.IsActive = true;
+                SelectedRate.EnteredBy = Environment.UserName;
+                SelectedRate.UpdatedBy = Environment.UserName;
+                
+                if (SelectedRate.ValidUntil == null)
+                {
+                    SelectedRate.ValidUntil = DateTime.Now.AddDays(1);
+                }
 
-            if (string.IsNullOrEmpty(SelectedRate.Source))
-            {
-                SelectedRate.Source = "Market"; // Default source
-            }
+                if (string.IsNullOrEmpty(SelectedRate.Source))
+                {
+                    SelectedRate.Source = "Market";
+                }
 
-            if (SelectedRate.RateID > 0)
-            {
-                await _rateService.UpdateRate(SelectedRate);
-            }
-            else
-            {
-                await _rateService.AddRate(SelectedRate);
-            }
+                if (SelectedRate.RateID > 0)
+                {
+                    await _rateService.UpdateRate(SelectedRate);
+                }
+                else
+                {
+                    await _rateService.AddRate(SelectedRate);
+                }
 
-            LoadCurrentRates();
-            ClearForm();
+                // Update product prices if enabled
+                if (AutoUpdatePrices)
+                {
+                    await UpdateProductPrices(SelectedRate);
+                }
+
+                LoadCurrentRates();
+                LoadRateAnalytics();
+                ClearForm();
+            }
+            catch (Exception ex)
+            {
+                await _notificationService.SendNotification(
+                    "Error",
+                    $"Failed to save rate: {ex.Message}");
+            }
+        }
+
+        private async Task UpdateProductPrices(RateMaster newRate)
+        {
+            try
+            {
+                var products = await _productService.GetProductsByMetal(
+                    newRate.MetalType,
+                    newRate.Purity);
+
+                foreach (var product in products)
+                {
+                    product.BasePrice = product.NetWeight * newRate.Rate;
+                    
+                    // Recalculate final price with all components
+                    decimal makingCharges = product.MakingCharges;
+                    if (product.Subcategory?.SpecialMakingCharges != null)
+                    {
+                        makingCharges = product.Subcategory.SpecialMakingCharges.Value;
+                    }
+                    else if (product.Category?.DefaultMakingCharges != null)
+                    {
+                        makingCharges = product.Category.DefaultMakingCharges;
+                    }
+
+                    decimal wastagePercentage = product.WastagePercentage;
+                    if (product.Subcategory?.SpecialWastage != null)
+                    {
+                        wastagePercentage = product.Subcategory.SpecialWastage.Value;
+                    }
+                    else if (product.Category?.DefaultWastage != null)
+                    {
+                        wastagePercentage = product.Category.DefaultWastage;
+                    }
+
+                    decimal wastageAmount = (product.BasePrice * wastagePercentage) / 100;
+                    decimal makingAmount = (product.BasePrice * makingCharges) / 100;
+
+                    product.FinalPrice = Math.Round(
+                        product.BasePrice + 
+                        makingAmount + 
+                        product.StoneValue +
+                        wastageAmount +
+                        (product.ValueAdditionPercentage > 0 
+                            ? (product.BasePrice * product.ValueAdditionPercentage) / 100 
+                            : 0), 
+                        2);
+
+                    await _productService.UpdateProduct(product);
+                }
+
+                if (products.Any())
+                {
+                    await _notificationService.SendNotification(
+                        "Price Update",
+                        $"Updated prices for {products.Count()} {newRate.MetalType} {newRate.Purity} products");
+                }
+            }
+            catch (Exception ex)
+            {
+                await _notificationService.SendNotification(
+                    "Error",
+                    $"Failed to update product prices: {ex.Message}");
+            }
         }
 
         private void ClearForm()
@@ -125,5 +302,13 @@ namespace Page_Navigation_App.ViewModel
                    SelectedRate.Rate > 0 &&
                    SelectedRate.ValidUntil > DateTime.Now;
         }
+    }
+
+    public class RateAnalytics
+    {
+        public string MetalType { get; set; }
+        public string Purity { get; set; }
+        public decimal Change24h { get; set; }
+        public decimal Change7d { get; set; }
     }
 }

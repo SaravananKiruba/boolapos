@@ -13,15 +13,21 @@ namespace Page_Navigation_App.Services
         private readonly OrderService _orderService;
         private readonly RepairJobService _repairService;
         private readonly RateMasterService _rateService;
+        private readonly ProductService _productService;
+        private readonly CustomerService _customerService;
 
         public PrintService(
             OrderService orderService,
             RepairJobService repairService,
-            RateMasterService rateService)
+            RateMasterService rateService,
+            ProductService productService,
+            CustomerService customerService)
         {
             _orderService = orderService;
             _repairService = repairService;
             _rateService = rateService;
+            _productService = productService;
+            _customerService = customerService;
         }
 
         public async Task<byte[]> GenerateInvoice(int orderId)
@@ -155,6 +161,125 @@ namespace Page_Navigation_App.Services
             };
 
             report.DataSources.Add(new ReportDataSource("DailyData", new[] { reportData }));
+            return report.Render("PDF");
+        }
+
+        public async Task<byte[]> GenerateHallmarkCertificate(int productId)
+        {
+            var product = await _productService.GetProductById(productId);
+            if (product == null) return null;
+
+            using var report = new LocalReport();
+            report.ReportPath = "HallmarkCertificate.rdlc";
+
+            var reportData = new
+            {
+                CertificateNumber = product.HallmarkNumber,
+                ProductName = product.ProductName,
+                MetalType = product.MetalType,
+                Purity = product.Purity,
+                GrossWeight = product.GrossWeight,
+                NetWeight = product.NetWeight,
+                CertificationDate = DateTime.Now,
+                Design = product.Design,
+                StoneDetails = product.StoneDetails,
+                StoneWeight = product.StoneWeight
+            };
+
+            report.DataSources.Add(new ReportDataSource("HallmarkData", new[] { reportData }));
+            return report.Render("PDF");
+        }
+
+        public async Task<byte[]> GenerateMetalPurchaseReport(DateTime startDate, DateTime endDate)
+        {
+            var orders = await _orderService.GetOrdersByDate(startDate, endDate);
+            using var report = new LocalReport();
+            report.ReportPath = "MetalPurchaseReport.rdlc";
+
+            var metalSummary = orders
+                .SelectMany(o => o.OrderDetails)
+                .GroupBy(od => new { od.Product.MetalType, od.Product.Purity })
+                .Select(g => new
+                {
+                    MetalType = g.Key.MetalType,
+                    Purity = g.Key.Purity,
+                    TotalGrossWeight = g.Sum(od => od.GrossWeight),
+                    TotalNetWeight = g.Sum(od => od.NetWeight),
+                    AverageRate = g.Average(od => od.MetalRate),
+                    TotalValue = g.Sum(od => od.BaseAmount)
+                })
+                .ToList();
+
+            var exchangeMetals = orders
+                .Where(o => o.HasMetalExchange)
+                .GroupBy(o => new { MetalType = o.ExchangeMetalType, Purity = o.ExchangeMetalPurity.ToString() })
+                .Select(g => new
+                {
+                    MetalType = g.Key.MetalType,
+                    Purity = g.Key.Purity,
+                    TotalWeight = g.Sum(o => o.ExchangeMetalWeight),
+                    AverageRate = g.Average(o => o.ExchangeValue / o.ExchangeMetalWeight),
+                    TotalValue = g.Sum(o => o.ExchangeValue)
+                })
+                .ToList();
+
+            report.DataSources.Add(new ReportDataSource("PurchaseData", metalSummary));
+            report.DataSources.Add(new ReportDataSource("ExchangeData", exchangeMetals));
+            return report.Render("PDF");
+        }
+
+        public async Task<byte[]> GenerateGoldSchemeStatement(int customerId)
+        {
+            var customer = await _customerService.GetCustomerById(customerId);
+            if (customer == null || !customer.IsGoldSchemeEnrolled) return null;
+
+            using var report = new LocalReport();
+            report.ReportPath = "GoldSchemeStatement.rdlc";
+
+            var reportData = new
+            {
+                CustomerName = customer.CustomerName,
+                SchemeStartDate = customer.RegistrationDate,
+                TotalPurchases = customer.TotalPurchases,
+                OutstandingAmount = customer.OutstandingAmount,
+                LoyaltyPoints = customer.LoyaltyPoints,
+                // Add more scheme-specific details here
+            };
+
+            report.DataSources.Add(new ReportDataSource("SchemeData", new[] { reportData }));
+            return report.Render("PDF");
+        }
+
+        public async Task<byte[]> GenerateValuationCertificate(int productId)
+        {
+            var product = await _productService.GetProductById(productId);
+            if (product == null) return null;
+
+            using var report = new LocalReport();
+            report.ReportPath = "ValuationCertificate.rdlc";
+
+            var currentRate = await _rateService.GetCurrentRate(product.MetalType, product.Purity);
+
+            var reportData = new
+            {
+                ProductName = product.ProductName,
+                MetalType = product.MetalType,
+                Purity = product.Purity,
+                GrossWeight = product.GrossWeight,
+                NetWeight = product.NetWeight,
+                StoneDetails = product.StoneDetails,
+                StoneWeight = product.StoneWeight,
+                HallmarkNumber = product.HallmarkNumber,
+                CurrentRate = currentRate?.Rate ?? 0,
+                MetalValue = product.NetWeight * (currentRate?.Rate ?? 0),
+                StoneValue = product.StoneValue,
+                MakingCharges = product.MakingCharges,
+                TotalValue = product.FinalPrice,
+                ValuationDate = DateTime.Now,
+                ValidUntil = DateTime.Now.AddMonths(3)
+            };
+
+            report.DataSources.Add(new ReportDataSource("ValuationData", new[] { reportData }));
             return report.Render("PDF");
         }
 

@@ -13,6 +13,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -20,181 +21,217 @@
         </Grid.ColumnDefinitions>
 
         <!-- Rate Entry Form -->
-        <mah:MetroHeader Grid.Column="0"
+        <mah:MetroHeader Grid.Column="1"
                         Header="Metal Rate Entry"
-                        Margin="0,0,20,0">
+                        Margin="0,0,0,20">
             <mah:MetroContentControl>
                 <StackPanel>
-                    <Grid Margin="0,0,0,10">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
+                    <ComboBox Margin="0,5"
+                              ItemsSource="{Binding MetalTypes}"
+                              SelectedItem="{Binding SelectedRate.MetalType}"
+                              mah:TextBoxHelper.Watermark="Metal Type"
+                              Style="{StaticResource MahApps.Styles.ComboBox}"/>
 
-                        <ComboBox Grid.Column="0"
-                                  Margin="0,0,10,0"
-                                  ItemsSource="{Binding MetalTypes}"
-                                  SelectedItem="{Binding SelectedRate.MetalType}"
-                                  mah:TextBoxHelper.Watermark="Metal Type"
-                                  Style="{StaticResource MahApps.Styles.ComboBox}"/>
+                    <ComboBox Margin="0,5"
+                              ItemsSource="{Binding Purities}"
+                              SelectedItem="{Binding SelectedRate.Purity}"
+                              mah:TextBoxHelper.Watermark="Purity"
+                              Style="{StaticResource MahApps.Styles.ComboBox}"/>
 
-                        <ComboBox Grid.Column="1"
-                                  Margin="0,0,10,0"
-                                  ItemsSource="{Binding Purities}"
-                                  SelectedItem="{Binding SelectedRate.Purity}"
-                                  mah:TextBoxHelper.Watermark="Purity"
-                                  Style="{StaticResource MahApps.Styles.ComboBox}"/>
+                    <mah:NumericUpDown Margin="0,5"
+                                      Value="{Binding SelectedRate.Rate}"
+                                      mah:TextBoxHelper.Watermark="Rate (₹/g)"
+                                      StringFormat="N2"
+                                      Minimum="0"/>
 
-                        <mah:NumericUpDown Grid.Column="2"
-                                          Value="{Binding SelectedRate.Rate}"
-                                          mah:TextBoxHelper.Watermark="Rate (per gram)"
-                                          Style="{StaticResource {x:Type mah:NumericUpDown}}"
-                                          StringFormat="N2"
-                                          Minimum="0"/>
-                    </Grid>
+                    <mah:NumericUpDown Margin="0,5"
+                                      Value="{Binding SelectedRate.PurchaseRate}"
+                                      mah:TextBoxHelper.Watermark="Purchase Rate (₹/g)"
+                                      StringFormat="N2"
+                                      Minimum="0"/>
 
-                    <Grid Margin="0,0,0,10">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
+                    <mah:NumericUpDown Margin="0,5"
+                                      Value="{Binding SelectedRate.HallmarkingCharge}"
+                                      mah:TextBoxHelper.Watermark="Hallmarking Charge (₹)"
+                                      StringFormat="N2"
+                                      Minimum="0"/>
 
-                        <mah:NumericUpDown Grid.Column="0"
-                                          Margin="0,0,10,0"
-                                          Value="{Binding SelectedRate.PurchaseRate}"
-                                          mah:TextBoxHelper.Watermark="Purchase Rate"
-                                          Style="{StaticResource {x:Type mah:NumericUpDown}}"
-                                          StringFormat="N2"
-                                          Minimum="0"/>
+                    <ComboBox Margin="0,5"
+                              ItemsSource="{Binding Sources}"
+                              SelectedItem="{Binding SelectedRate.Source}"
+                              mah:TextBoxHelper.Watermark="Rate Source"
+                              Style="{StaticResource MahApps.Styles.ComboBox}"/>
 
-                        <mah:NumericUpDown Grid.Column="1"
-                                          Value="{Binding SelectedRate.SaleRate}"
-                                          mah:TextBoxHelper.Watermark="Sale Rate"
-                                          Style="{StaticResource {x:Type mah:NumericUpDown}}"
-                                          StringFormat="N2"
-                                          Minimum="0"/>
-                    </Grid>
-
-                    <Grid Margin="0,0,0,10">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <ComboBox Grid.Column="0"
-                                  Margin="0,0,10,0"
-                                  ItemsSource="{Binding Sources}"
-                                  SelectedItem="{Binding SelectedRate.Source}"
-                                  mah:TextBoxHelper.Watermark="Rate Source"
-                                  Style="{StaticResource MahApps.Styles.ComboBox}"/>
-
-                        <mah:DateTimePicker Grid.Column="1"
-                                           SelectedDateTime="{Binding SelectedRate.EffectiveDate}"
-                                           Style="{StaticResource {x:Type mah:DateTimePicker}}"
-                                           mah:TextBoxHelper.Watermark="Effective Date"/>
-                    </Grid>
+                    <DatePicker Margin="0,5"
+                               SelectedDate="{Binding SelectedRate.ValidUntil}"
+                               mah:TextBoxHelper.Watermark="Valid Until"/>
 
                     <TextBox Text="{Binding SelectedRate.Notes}"
+                             Margin="0,5"
                              mah:TextBoxHelper.Watermark="Notes"
                              Style="{StaticResource MahApps.Styles.TextBox}"
-                             TextWrapping="Wrap"
-                             AcceptsReturn="True"
                              Height="60"
-                             Margin="0,0,0,10"/>
+                             TextWrapping="Wrap"
+                             AcceptsReturn="True"/>
 
-                    <StackPanel Orientation="Horizontal" 
-                              HorizontalAlignment="Right">
-                        <Button Content="Clear"
-                                Margin="0,0,10,0"
-                                Style="{StaticResource MahApps.Styles.Button}"
-                                Command="{Binding ClearCommand}"/>
-                        
-                        <Button Content="Save"
-                                Style="{StaticResource MahApps.Styles.Button.Square.Accent}"
-                                Command="{Binding AddOrUpdateCommand}"/>
-                    </StackPanel>
+                    <DockPanel Margin="0,10">
+                        <Button DockPanel.Dock="Left"
+                                Command="{Binding AddOrUpdateCommand}"
+                                Style="{StaticResource MahApps.Styles.Button.Square}">
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="ContentSave"
+                                                          Margin="0,0,5,0"/>
+                                <TextBlock Text="Save Rate"/>
+                            </StackPanel>
+                        </Button>
+                        <Button DockPanel.Dock="Right"
+                                Command="{Binding ClearCommand}"
+                                Style="{StaticResource MahApps.Styles.Button.Square}">
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="Refresh"
+                                                          Margin="0,0,5,0"/>
+                                <TextBlock Text="Clear"/>
+                            </StackPanel>
+                        </Button>
+                    </DockPanel>
                 </StackPanel>
             </mah:MetroContentControl>
         </mah:MetroHeader>
 
-        <!-- Current Rates Display -->
-        <mah:MetroHeader Grid.Column="1"
-                        Header="Live Rates">
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <ItemsControl ItemsSource="{Binding Rates}"
-                            Margin="0,10,0,0">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <mah:MetroHeader Margin="0,0,0,10">
-                                <mah:MetroHeader.HeaderTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding MetalType}" FontWeight="Bold"/>
-                                    </DataTemplate>
-                                </mah:MetroHeader.HeaderTemplate>
-                                <Grid Margin="10">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel>
-                                        <TextBlock Text="{Binding Purity}" 
-                                                   Opacity="0.7"/>
-                                        <TextBlock Margin="0,5,0,0">
-                                            <Run Text="₹"/>
-                                            <Run Text="{Binding Rate, StringFormat=N2}"/>
-                                            <Run Text="/g"/>
-                                        </TextBlock>
-                                    </StackPanel>
-                                    <iconPacks:PackIconMaterial Grid.Column="1"
-                                                             Kind="TrendingUp"
-                                                             Width="24"
-                                                             Height="24"
-                                                             VerticalAlignment="Center"
-                                                             Foreground="{StaticResource PrimaryBrush}"/>
-                                </Grid>
-                            </mah:MetroHeader>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
+        <!-- Current Rates Grid -->
+        <mah:MetroHeader Grid.Column="0"
+                        Grid.Row="0"
+                        Grid.RowSpan="2"
+                        Header="Current Metal Rates"
+                        Margin="0,0,20,0">
+            <DataGrid ItemsSource="{Binding Rates}"
+                      SelectedItem="{Binding SelectedRate}"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      Style="{StaticResource MahApps.Styles.DataGrid}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Metal Type"
+                                      Binding="{Binding MetalType}"
+                                      Width="*"/>
+                    <DataGridTextColumn Header="Purity"
+                                      Binding="{Binding Purity}"
+                                      Width="*"/>
+                    <DataGridTextColumn Header="Rate (₹/g)"
+                                      Binding="{Binding Rate, StringFormat=N2}"
+                                      Width="*"/>
+                    <DataGridTextColumn Header="Purchase Rate (₹/g)"
+                                      Binding="{Binding PurchaseRate, StringFormat=N2}"
+                                      Width="*"/>
+                    <DataGridTextColumn Header="Effective From"
+                                      Binding="{Binding EffectiveDate, StringFormat=dd-MMM-yy HH:mm}"
+                                      Width="*"/>
+                    <DataGridTextColumn Header="Valid Until"
+                                      Binding="{Binding ValidUntil, StringFormat=dd-MMM-yy HH:mm}"
+                                      Width="*"/>
+                    <DataGridTextColumn Header="Source"
+                                      Binding="{Binding Source}"
+                                      Width="*"/>
+                </DataGrid.Columns>
+            </DataGrid>
         </mah:MetroHeader>
 
         <!-- Rate History -->
-        <mah:MetroHeader Grid.Row="1"
-                        Grid.Column="0"
-                        Grid.ColumnSpan="2"
+        <mah:MetroHeader Grid.Column="0"
+                        Grid.Row="2"
                         Header="Rate History"
-                        Margin="0,20,0,0">
+                        Margin="0,20,20,0">
             <DataGrid ItemsSource="{Binding RateHistory}"
                       AutoGenerateColumns="False"
+                      IsReadOnly="True"
                       Style="{StaticResource MahApps.Styles.DataGrid}"
-                      GridLinesVisibility="Horizontal"
-                      IsReadOnly="True">
+                      Height="200">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Date" 
-                                      Binding="{Binding EffectiveDate, StringFormat=d}"
-                                      Width="120"/>
-                    <DataGridTextColumn Header="Metal Type" 
+                    <DataGridTextColumn Header="Metal Type"
                                       Binding="{Binding MetalType}"
-                                      Width="120"/>
-                    <DataGridTextColumn Header="Purity" 
+                                      Width="*"/>
+                    <DataGridTextColumn Header="Purity"
                                       Binding="{Binding Purity}"
-                                      Width="100"/>
-                    <DataGridTextColumn Header="Rate" 
+                                      Width="*"/>
+                    <DataGridTextColumn Header="Rate (₹/g)"
                                       Binding="{Binding Rate, StringFormat=N2}"
-                                      Width="100"/>
-                    <DataGridTextColumn Header="Purchase Rate" 
+                                      Width="*"/>
+                    <DataGridTextColumn Header="Purchase Rate (₹/g)"
                                       Binding="{Binding PurchaseRate, StringFormat=N2}"
-                                      Width="120"/>
-                    <DataGridTextColumn Header="Sale Rate" 
-                                      Binding="{Binding SaleRate, StringFormat=N2}"
-                                      Width="120"/>
-                    <DataGridTextColumn Header="Updated By" 
+                                      Width="*"/>
+                    <DataGridTextColumn Header="Effective Date"
+                                      Binding="{Binding EffectiveDate, StringFormat=dd-MMM-yy HH:mm}"
+                                      Width="*"/>
+                    <DataGridTextColumn Header="Source"
+                                      Binding="{Binding Source}"
+                                      Width="*"/>
+                    <DataGridTextColumn Header="Updated By"
                                       Binding="{Binding UpdatedBy}"
                                       Width="*"/>
                 </DataGrid.Columns>
             </DataGrid>
+        </mah:MetroHeader>
+
+        <!-- Rate Analytics -->
+        <mah:MetroHeader Grid.Column="1"
+                        Grid.Row="1"
+                        Grid.RowSpan="2"
+                        Header="Rate Analytics"
+                        Margin="0,20,0,0">
+            <StackPanel>
+                <TextBlock Text="Rate Change Summary"
+                          Style="{StaticResource MahApps.Styles.TextBlock}"
+                          FontWeight="Bold"
+                          Margin="0,10"/>
+                
+                <DataGrid ItemsSource="{Binding RateAnalytics}"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          Style="{StaticResource MahApps.Styles.DataGrid}"
+                          Height="150">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Metal Type"
+                                          Binding="{Binding MetalType}"
+                                          Width="*"/>
+                        <DataGridTextColumn Header="Purity"
+                                          Binding="{Binding Purity}"
+                                          Width="*"/>
+                        <DataGridTextColumn Header="24h Change"
+                                          Binding="{Binding Change24h, StringFormat=N2}"
+                                          Width="*"/>
+                        <DataGridTextColumn Header="7d Change"
+                                          Binding="{Binding Change7d, StringFormat=N2}"
+                                          Width="*"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <TextBlock Text="Volatility Alert Settings"
+                          Style="{StaticResource MahApps.Styles.TextBlock}"
+                          FontWeight="Bold"
+                          Margin="0,20,0,10"/>
+
+                <StackPanel Orientation="Horizontal"
+                          Margin="0,5">
+                    <TextBlock Text="Alert when change exceeds:"
+                             VerticalAlignment="Center"
+                             Margin="0,0,10,0"/>
+                    <mah:NumericUpDown Value="{Binding VolatilityThreshold}"
+                                      StringFormat="N2"
+                                      Minimum="0"
+                                      Maximum="100"
+                                      Width="100"/>
+                    <TextBlock Text="%"
+                             VerticalAlignment="Center"
+                             Margin="5,0"/>
+                </StackPanel>
+
+                <CheckBox Content="Enable rate change notifications"
+                         IsChecked="{Binding EnableNotifications}"
+                         Margin="0,5"/>
+
+                <CheckBox Content="Auto-update product prices on rate change"
+                         IsChecked="{Binding AutoUpdatePrices}"
+                         Margin="0,5"/>
+            </StackPanel>
         </mah:MetroHeader>
     </Grid>
 </UserControl>

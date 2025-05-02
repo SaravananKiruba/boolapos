@@ -7,18 +7,21 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.Net.Mail;
 using System.Net;
+using System.Windows;
 
 namespace Page_Navigation_App.Services
 {
-    public class NotificationService
+    public class NotificationService : INotificationService
     {
         private readonly AppDbContext _context;
         private readonly ConfigurationService _configService;
+        private readonly LogService _logService;
 
-        public NotificationService(AppDbContext context, ConfigurationService configService)
+        public NotificationService(AppDbContext context, ConfigurationService configService, LogService logService)
         {
             _context = context;
             _configService = configService;
+            _logService = logService;
         }
 
         public async Task SendEmail(string recipient, string subject, string body)
@@ -98,6 +101,18 @@ namespace Page_Navigation_App.Services
             {
                 await SendSMS(customer.PhoneNumber, $"Happy Wedding Anniversary, {customer.CustomerName}! Wishing you both continued love and happiness. - Your Jewelry Store Team");
             }
+        }
+
+        public async Task SendNotification(string title, string message)
+        {
+            // Log the notification
+            await _logService.LogInfo($"[{title}] {message}");
+
+            // Show message box on UI thread
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Information);
+            });
         }
 
         private async Task LogNotification(string recipient, string channel, string content, bool isSuccessful)

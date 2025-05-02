@@ -198,5 +198,205 @@ namespace Page_Navigation_App.Services
                 { "RepairCustomers", customers.Count(c => c.RepairJobs.Any()) }
             };
         }
+
+        public async Task<Dictionary<string, decimal>> GetMetalWiseAnalytics(
+            DateTime startDate,
+            DateTime endDate)
+        {
+            var orders = await _context.Orders
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                .Where(o => o.OrderDate >= startDate && o.OrderDate <= endDate)
+                .ToListAsync();
+
+            var result = new Dictionary<string, decimal>();
+
+            // Metal-wise weight sold
+            var metalWeights = orders
+                .SelectMany(o => o.OrderDetails)
+                .GroupBy(od => od.Product.MetalType)
+                .ToDictionary(
+                    g => $"{g.Key}WeightSold",
+                    g => g.Sum(od => od.NetWeight)
+                );
+
+            foreach (var kv in metalWeights)
+            {
+                result[kv.Key] = kv.Value;
+            }
+
+            // Metal-wise revenue
+            var metalRevenue = orders
+                .SelectMany(o => o.OrderDetails)
+                .GroupBy(od => od.Product.MetalType)
+                .ToDictionary(
+                    g => $"{g.Key}Revenue",
+                    g => g.Sum(od => od.FinalAmount)
+                );
+
+            foreach (var kv in metalRevenue)
+            {
+                result[kv.Key] = kv.Value;
+            }
+
+            // Exchange metal received
+            var exchangeMetals = orders
+                .Where(o => o.HasMetalExchange)
+                .GroupBy(o => o.ExchangeMetalType)
+                .ToDictionary(
+                    g => $"{g.Key}ExchangeReceived",
+                    g => g.Sum(o => o.ExchangeMetalWeight)
+                );
+
+            foreach (var kv in exchangeMetals)
+            {
+                result[kv.Key] = kv.Value;
+            }
+
+            return result;
+        }
+
+        public async Task<Dictionary<string, decimal>> GetPurityWiseAnalytics(
+            string metalType,
+            DateTime startDate,
+            DateTime endDate)
+        {
+            var orders = await _context.Orders
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                .Where(o => o.OrderDate >= startDate && 
+                           o.OrderDate <= endDate &&
+                           o.OrderDetails.Any(od => od.Product.MetalType == metalType))
+                .ToListAsync();
+
+            var orderDetails = orders
+                .SelectMany(o => o.OrderDetails)
+                .Where(od => od.Product.MetalType == metalType);
+
+            return orderDetails
+                .GroupBy(od => od.Product.Purity)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Sum(od => od.NetWeight)
+                );
+        }
+
+        public async Task<Dictionary<string, decimal>> GetMakingChargesAnalytics(
+            DateTime startDate,
+            DateTime endDate)
+        {
+            var orders = await _context.Orders
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                        .ThenInclude(p => p.Category)
+                .Where(o => o.OrderDate >= startDate && o.OrderDate <= endDate)
+                .ToListAsync();
+
+            var result = new Dictionary<string, decimal>();
+
+            // Category-wise making charges collected
+            var categoryMakingCharges = orders
+                .SelectMany(o => o.OrderDetails)
+                .GroupBy(od => od.Product.Category.CategoryName)
+                .ToDictionary(
+                    g => $"Making_{g.Key}",
+                    g => g.Sum(od => od.MakingCharges)
+                );
+
+            foreach (var kv in categoryMakingCharges)
+            {
+                result[kv.Key] = kv.Value;
+            }
+
+            // Metal-wise making charges
+            var metalMakingCharges = orders
+                .SelectMany(o => o.OrderDetails)
+                .GroupBy(od => od.Product.MetalType)
+                .ToDictionary(
+                    g => $"Making_{g.Key}",
+                    g => g.Sum(od => od.MakingCharges)
+                );
+
+            foreach (var kv in metalMakingCharges)
+            {
+                result[kv.Key] = kv.Value;
+            }
+
+            return result;
+        }
+
+        public async Task<Dictionary<string, decimal>> GetStoneValueAnalytics(
+            DateTime startDate,
+            DateTime endDate)
+        {
+            var orders = await _context.Orders
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                        .ThenInclude(p => p.Category)
+                .Where(o => o.OrderDate >= startDate && o.OrderDate <= endDate)
+                .ToListAsync();
+
+            var result = new Dictionary<string, decimal>();
+
+            // Category-wise stone values
+            var categoryStoneValues = orders
+                .SelectMany(o => o.OrderDetails)
+                .GroupBy(od => od.Product.Category.CategoryName)
+                .ToDictionary(
+                    g => $"Stones_{g.Key}",
+                    g => g.Sum(od => od.StoneValue)
+                );
+
+            foreach (var kv in categoryStoneValues)
+            {
+                result[kv.Key] = kv.Value;
+            }
+
+            // Total stone weight
+            result["TotalStoneWeight"] = orders
+                .SelectMany(o => o.OrderDetails)
+                .Sum(od => od.Product.StoneWeight);
+
+            // Total stone value
+            result["TotalStoneValue"] = orders
+                .SelectMany(o => o.OrderDetails)
+                .Sum(od => od.StoneValue);
+
+            return result;
+        }
+
+        public async Task<Dictionary<string, decimal>> GetRepairTypeAnalytics(
+            DateTime startDate,
+            DateTime endDate)
+        {
+            var repairs = await _context.RepairJobs
+                .Where(r => r.ReceiptDate >= startDate && r.ReceiptDate <= endDate)
+                .ToListAsync();
+
+            // Group by work type
+            var byWorkType = repairs
+                .GroupBy(r => r.WorkType)
+                .ToDictionary(
+                    g => $"Repairs_{g.Key}",
+                    g => g.Average(r => r.FinalAmount)
+                );
+
+            var result = new Dictionary<string, decimal>();
+
+            // Add work type averages
+            foreach (var kv in byWorkType)
+            {
+                result[kv.Key] = kv.Value;
+            }
+
+            // Add totals
+            result["TotalRepairs"] = repairs.Count;
+            result["TotalRepairAmount"] = repairs.Sum(r => r.FinalAmount);
+            result["AverageRepairAmount"] = repairs.Average(r => r.FinalAmount);
+            result["PendingRepairs"] = repairs.Count(r => r.Status == "Pending");
+            result["CompletedRepairs"] = repairs.Count(r => r.Status == "Completed");
+
+            return result;
+        }
     }
 }

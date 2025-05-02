@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Windows.Input;
+using System.Threading.Tasks;
 using Page_Navigation_App.Model;
 using Page_Navigation_App.Utilities;
 using Page_Navigation_App.Services;
@@ -15,16 +16,22 @@ namespace Page_Navigation_App.ViewModel
         private readonly ProductService _productService;
         private readonly CategoryService _categoryService;
         private readonly SupplierService _supplierService;
+        private readonly RateMasterService _rateService;  // Added RateMasterService
 
         public ICommand AddOrUpdateCommand { get; }
         public ICommand ClearCommand { get; }
         public ICommand SearchCommand { get; }
 
-        public ProductVM(ProductService productService, CategoryService categoryService, SupplierService supplierService)
+        public ProductVM(
+            ProductService productService, 
+            CategoryService categoryService, 
+            SupplierService supplierService,
+            RateMasterService rateService)  // Added RateMasterService parameter
         {
             _productService = productService;
             _categoryService = categoryService;
             _supplierService = supplierService;
+            _rateService = rateService;
             
             LoadProducts();
             LoadCategories();
@@ -177,7 +184,13 @@ namespace Page_Navigation_App.ViewModel
                 }
 
                 // Calculate prices in INR
-                decimal currentRate = GetCurrentMetalRate();
+                decimal currentRate = await GetCurrentMetalRate();
+                if (currentRate == 0)
+                {
+                    System.Windows.MessageBox.Show("No current rate found for selected metal type and purity", "Rate Error");
+                    return;
+                }
+
                 SelectedProduct.BasePrice = Math.Round(SelectedProduct.NetWeight * currentRate, 2);
                 
                 // Calculate making charges
@@ -203,15 +216,19 @@ namespace Page_Navigation_App.ViewModel
                 }
 
                 decimal wastageAmount = (SelectedProduct.BasePrice * wastagePercentage) / 100;
+                decimal makingAmount = (SelectedProduct.BasePrice * makingCharges) / 100;
 
-                // Calculate final price in INR
+                // Calculate final price with all components
                 SelectedProduct.FinalPrice = Math.Round(
                     SelectedProduct.BasePrice + 
-                    makingCharges + 
+                    makingAmount + 
                     SelectedProduct.StoneValue +
-                    wastageAmount, 2);
+                    wastageAmount +
+                    (SelectedProduct.ValueAdditionPercentage > 0 
+                        ? (SelectedProduct.BasePrice * SelectedProduct.ValueAdditionPercentage) / 100 
+                        : 0), 
+                    2);
 
-                // Save the product
                 if (SelectedProduct.ProductID > 0)
                 {
                     await _productService.UpdateProduct(SelectedProduct);
@@ -230,10 +247,17 @@ namespace Page_Navigation_App.ViewModel
             }
         }
 
-        private decimal GetCurrentMetalRate()
+        private async Task<decimal> GetCurrentMetalRate()
         {
-            // TODO: Implement actual rate lookup from RateMaster
-            return 1000.00m; // Default rate for testing
+            if (string.IsNullOrEmpty(SelectedProduct.MetalType) || 
+                string.IsNullOrEmpty(SelectedProduct.Purity))
+                return 0;
+
+            var currentRate = await _rateService.GetCurrentRate(
+                SelectedProduct.MetalType,
+                SelectedProduct.Purity);
+
+            return currentRate?.Rate ?? 0;
         }
 
         private void ClearForm()

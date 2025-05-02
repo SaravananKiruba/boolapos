@@ -11,12 +11,12 @@ namespace Page_Navigation_App.Services
     public class CustomerService
     {
         private readonly AppDbContext _context;
-        private readonly NotificationService _notificationService;
+        private readonly INotificationService _notificationService;
         private readonly FinanceService _financeService;
 
         public CustomerService(
             AppDbContext context,
-            NotificationService notificationService,
+            INotificationService notificationService,
             FinanceService financeService)
         {
             _context = context;
@@ -51,6 +51,15 @@ namespace Page_Navigation_App.Services
                 .Include(c => c.Orders)
                 .Include(c => c.RepairJobs)
                 .FirstOrDefaultAsync(c => c.PhoneNumber == phoneNumber);
+        }
+
+        public async Task<Customer> GetCustomerById(int customerId)
+        {
+            return await _context.Customers
+                .Include(c => c.Orders)
+                .Include(c => c.RepairJobs)
+                .Include(c => c.Payments)
+                .FirstOrDefaultAsync(c => c.CustomerID == customerId);
         }
 
         public async Task<IEnumerable<Customer>> SearchCustomers(
@@ -207,12 +216,16 @@ namespace Page_Navigation_App.Services
             };
         }
 
-        public async Task<IEnumerable<Customer>> GetAllCustomers()
+        public async Task<IEnumerable<Customer>> GetAllCustomers(bool includeInactive = false)
         {
-            return await _context.Customers
+            var query = _context.Customers.AsQueryable();
+
+            if (!includeInactive)
+                query = query.Where(c => c.IsActive);
+
+            return await query
                 .Include(c => c.Orders)
                 .Include(c => c.RepairJobs)
-                .Include(c => c.Payments)
                 .OrderBy(c => c.CustomerName)
                 .ToListAsync();
         }

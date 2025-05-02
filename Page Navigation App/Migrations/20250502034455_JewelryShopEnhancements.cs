@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Page_Navigation_App.Migrations
 {
-    public partial class init : Migration
+    public partial class JewelryShopEnhancements : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -88,7 +88,17 @@ namespace Page_Navigation_App.Migrations
                     CreditLimit = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     CustomerType = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
                     Email = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
-                    WhatsAppNumber = table.Column<string>(type: "TEXT", maxLength: 15, nullable: true)
+                    WhatsAppNumber = table.Column<string>(type: "TEXT", maxLength: 15, nullable: true),
+                    PreferredDesigns = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
+                    PreferredMetalType = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    RingSize = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    BangleSize = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    ChainLength = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    TotalPurchases = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    OutstandingAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    IsGoldSchemeEnrolled = table.Column<bool>(type: "INTEGER", nullable: false),
+                    LastPurchaseDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    FamilyDetails = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -188,7 +198,12 @@ namespace Page_Navigation_App.Migrations
                     Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
                     SaleRate = table.Column<decimal>(type: "TEXT", nullable: false),
                     PurchaseRate = table.Column<decimal>(type: "TEXT", nullable: false),
-                    UpdatedBy = table.Column<string>(type: "TEXT", nullable: true)
+                    UpdatedBy = table.Column<string>(type: "TEXT", nullable: true),
+                    ExchangeRate = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    HallmarkingCharge = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    DefaultGst = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
+                    MarketSource = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    IsSpecialRate = table.Column<bool>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -374,7 +389,20 @@ namespace Page_Navigation_App.Migrations
                     ImagePath = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
                     SMSNotificationSent = table.Column<bool>(type: "INTEGER", nullable: false),
                     WhatsAppNotificationSent = table.Column<bool>(type: "INTEGER", nullable: false),
-                    CompletionDate = table.Column<DateTime>(type: "TEXT", nullable: true)
+                    CompletionDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    AdditionalMetalWeight = table.Column<decimal>(type: "decimal(10,3)", nullable: false),
+                    StoneWeight = table.Column<decimal>(type: "decimal(10,3)", nullable: false),
+                    StoneDetails = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
+                    MetalRate = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    MakingCharges = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Size = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
+                    OldHallmark = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    NewHallmark = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    Purity = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
+                    QualityChecks = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
+                    IsHallmarkRequired = table.Column<bool>(type: "INTEGER", nullable: false),
+                    WorkmanRemarks = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
+                    AssignedTo = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -449,6 +477,14 @@ namespace Page_Navigation_App.Migrations
                     Location = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     IsDeadStock = table.Column<bool>(type: "INTEGER", nullable: false),
                     IsActive = table.Column<bool>(type: "INTEGER", nullable: false),
+                    Design = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    Size = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    StoneWeight = table.Column<decimal>(type: "decimal(10,3)", nullable: false),
+                    StoneDetails = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
+                    HallmarkNumber = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    Collection = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
+                    ValueAdditionPercentage = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
+                    IsCustomOrder = table.Column<bool>(type: "INTEGER", nullable: false),
                     CategoryID = table.Column<int>(type: "INTEGER", nullable: false),
                     SubcategoryID = table.Column<int>(type: "INTEGER", nullable: true),
                     SupplierID = table.Column<int>(type: "INTEGER", nullable: false)
@@ -479,46 +515,69 @@ namespace Page_Navigation_App.Migrations
                 name: "Finances",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    CustomerId = table.Column<int>(type: "INTEGER", nullable: false),
-                    OrderReference = table.Column<int>(type: "INTEGER", nullable: false),
-                    TotalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    RemainingAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    InterestRate = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
-                    NumberOfInstallments = table.Column<int>(type: "INTEGER", nullable: false),
-                    InstallmentAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    StartDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    NextInstallmentDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    LastPaymentDate = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    Status = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
-                    Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
+                    FinanceID = table.Column<string>(type: "TEXT", nullable: false),
                     TransactionDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Amount = table.Column<decimal>(type: "TEXT", nullable: false),
                     TransactionType = table.Column<string>(type: "TEXT", nullable: true),
-                    FinanceID = table.Column<string>(type: "TEXT", nullable: true),
+                    Amount = table.Column<decimal>(type: "TEXT", nullable: false),
                     PaymentMode = table.Column<string>(type: "TEXT", nullable: true),
                     Category = table.Column<string>(type: "TEXT", nullable: true),
+                    Description = table.Column<string>(type: "TEXT", nullable: true),
+                    ReferenceNumber = table.Column<string>(type: "TEXT", nullable: true),
+                    CustomerId = table.Column<int>(type: "INTEGER", nullable: true),
+                    OrderReference = table.Column<int>(type: "INTEGER", nullable: true),
+                    TotalAmount = table.Column<decimal>(type: "TEXT", nullable: true),
+                    RemainingAmount = table.Column<decimal>(type: "TEXT", nullable: true),
+                    InterestRate = table.Column<decimal>(type: "TEXT", nullable: true),
+                    NumberOfInstallments = table.Column<int>(type: "INTEGER", nullable: true),
+                    InstallmentAmount = table.Column<decimal>(type: "TEXT", nullable: true),
+                    StartDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    LastPaymentDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    NextInstallmentDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    Status = table.Column<string>(type: "TEXT", nullable: true),
                     CGSTAmount = table.Column<decimal>(type: "TEXT", nullable: true),
                     SGSTAmount = table.Column<decimal>(type: "TEXT", nullable: true),
                     IGSTAmount = table.Column<decimal>(type: "TEXT", nullable: true),
+                    GSTNumber = table.Column<string>(type: "TEXT", nullable: true),
+                    MetalType = table.Column<string>(type: "TEXT", nullable: true),
+                    MetalPurity = table.Column<string>(type: "TEXT", nullable: true),
+                    MetalWeight = table.Column<decimal>(type: "TEXT", nullable: true),
+                    MetalRate = table.Column<decimal>(type: "TEXT", nullable: true),
+                    SupplierName = table.Column<string>(type: "TEXT", nullable: true),
+                    WastagePercentage = table.Column<decimal>(type: "TEXT", nullable: true),
+                    MakingCharges = table.Column<decimal>(type: "TEXT", nullable: true),
+                    StoneValue = table.Column<decimal>(type: "TEXT", nullable: true),
+                    HallmarkNumber = table.Column<string>(type: "TEXT", nullable: true),
+                    ExchangeMetalWeight = table.Column<decimal>(type: "TEXT", nullable: true),
+                    ExchangeMetalType = table.Column<string>(type: "TEXT", nullable: true),
+                    ExchangeMetalPurity = table.Column<string>(type: "TEXT", nullable: true),
+                    ExchangeValue = table.Column<decimal>(type: "TEXT", nullable: true),
+                    SchemeTargetGrams = table.Column<decimal>(type: "TEXT", nullable: true),
+                    SchemeCollectedGrams = table.Column<decimal>(type: "TEXT", nullable: true),
+                    SchemeMonthlyAmount = table.Column<decimal>(type: "TEXT", nullable: true),
+                    SchemeTenureMonths = table.Column<int>(type: "INTEGER", nullable: true),
+                    SchemeMaturityDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    SchemeStatus = table.Column<string>(type: "TEXT", nullable: true),
+                    SchemeMaturityBonus = table.Column<decimal>(type: "TEXT", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    CreatedBy = table.Column<string>(type: "TEXT", nullable: true),
+                    UpdatedBy = table.Column<string>(type: "TEXT", nullable: true),
+                    OrderID = table.Column<int>(type: "INTEGER", nullable: true),
                     SupplierID = table.Column<int>(type: "INTEGER", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Finances", x => x.Id);
+                    table.PrimaryKey("PK_Finances", x => x.FinanceID);
                     table.ForeignKey(
                         name: "FK_Finances_Customers_CustomerId",
                         column: x => x.CustomerId,
                         principalTable: "Customers",
-                        principalColumn: "CustomerID",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "CustomerID");
                     table.ForeignKey(
-                        name: "FK_Finances_Orders_OrderReference",
-                        column: x => x.OrderReference,
+                        name: "FK_Finances_Orders_OrderID",
+                        column: x => x.OrderID,
                         principalTable: "Orders",
-                        principalColumn: "OrderID",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "OrderID");
                     table.ForeignKey(
                         name: "FK_Finances_Suppliers_SupplierID",
                         column: x => x.SupplierID,
@@ -545,7 +604,16 @@ namespace Page_Navigation_App.Migrations
                     SGSTAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     IGSTAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     FinalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true)
+                    Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
+                    WastagePercentage = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
+                    WastageAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    HallmarkingCharge = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    StoneWeight = table.Column<decimal>(type: "decimal(10,3)", nullable: false),
+                    StoneDetails = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
+                    HallmarkNumber = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    ValueAdditionPercentage = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
+                    ValueAdditionAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Size = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -596,9 +664,9 @@ namespace Page_Navigation_App.Migrations
                 column: "CustomerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Finances_OrderReference",
+                name: "IX_Finances_OrderID",
                 table: "Finances",
-                column: "OrderReference");
+                column: "OrderID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Finances_SupplierID",

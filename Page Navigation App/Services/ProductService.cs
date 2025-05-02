@@ -279,5 +279,16 @@ namespace Page_Navigation_App.Services
                 .OrderBy(p => p.ProductName)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<Product>> GetProductsByMetal(string metalType, string purity)
+        {
+            return await _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Subcategory)
+                .Where(p => p.MetalType == metalType && 
+                           p.Purity == purity && 
+                           p.IsActive)
+                .ToListAsync();
+        }
     }
 }

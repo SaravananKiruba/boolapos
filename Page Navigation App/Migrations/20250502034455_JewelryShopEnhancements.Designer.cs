@@ -11,8 +11,8 @@ using Page_Navigation_App.Data;
 namespace Page_Navigation_App.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250501151559_init")]
-    partial class init
+    [Migration("20250502034455_JewelryShopEnhancements")]
+    partial class JewelryShopEnhancements
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -147,6 +147,14 @@ namespace Page_Navigation_App.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("BangleSize")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ChainLength")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("City")
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
@@ -174,6 +182,10 @@ namespace Page_Navigation_App.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("FamilyDetails")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("GSTNumber")
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
@@ -181,19 +193,43 @@ namespace Page_Navigation_App.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsGoldSchemeEnrolled")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("LastPurchaseDate")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("LoyaltyPoints")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("NotifyRateChanges")
                         .HasColumnType("INTEGER");
 
+                    b.Property<decimal>("OutstandingAmount")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasMaxLength(15)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("PreferredDesigns")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PreferredMetalType")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("RegistrationDate")
                         .HasColumnType("TEXT");
+
+                    b.Property<string>("RingSize")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("TotalPurchases")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("WhatsAppNumber")
                         .HasMaxLength(15)
@@ -232,9 +268,8 @@ namespace Page_Navigation_App.Migrations
 
             modelBuilder.Entity("Page_Navigation_App.Model.Finance", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("FinanceID")
+                        .HasColumnType("TEXT");
 
                     b.Property<decimal>("Amount")
                         .HasColumnType("TEXT");
@@ -245,59 +280,125 @@ namespace Page_Navigation_App.Migrations
                     b.Property<string>("Category")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("CustomerId")
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("CustomerId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("FinanceID")
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ExchangeMetalPurity")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ExchangeMetalType")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("ExchangeMetalWeight")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("ExchangeValue")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("GSTNumber")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("HallmarkNumber")
                         .HasColumnType("TEXT");
 
                     b.Property<decimal?>("IGSTAmount")
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal>("InstallmentAmount")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<decimal?>("InstallmentAmount")
+                        .HasColumnType("TEXT");
 
-                    b.Property<decimal>("InterestRate")
-                        .HasColumnType("decimal(5,2)");
+                    b.Property<decimal?>("InterestRate")
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("LastPaymentDate")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("NextInstallmentDate")
+                    b.Property<decimal?>("MakingCharges")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Notes")
-                        .HasMaxLength(500)
+                    b.Property<string>("MetalPurity")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("NumberOfInstallments")
+                    b.Property<decimal?>("MetalRate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("MetalType")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("MetalWeight")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("NextInstallmentDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("NumberOfInstallments")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("OrderReference")
+                    b.Property<int?>("OrderID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("OrderReference")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("PaymentMode")
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal>("RemainingAmount")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<string>("ReferenceNumber")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("RemainingAmount")
+                        .HasColumnType("TEXT");
 
                     b.Property<decimal?>("SGSTAmount")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("StartDate")
+                    b.Property<decimal?>("SchemeCollectedGrams")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("SchemeMaturityBonus")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("SchemeMaturityDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("SchemeMonthlyAmount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SchemeStatus")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("SchemeTargetGrams")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("SchemeTenureMonths")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("StartDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("StoneValue")
                         .HasColumnType("TEXT");
 
                     b.Property<int?>("SupplierID")
                         .HasColumnType("INTEGER");
 
-                    b.Property<decimal>("TotalAmount")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<string>("SupplierName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("TotalAmount")
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("TransactionDate")
                         .HasColumnType("TEXT");
@@ -305,11 +406,20 @@ namespace Page_Navigation_App.Migrations
                     b.Property<string>("TransactionType")
                         .HasColumnType("TEXT");
 
-                    b.HasKey("Id");
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("WastagePercentage")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("FinanceID");
 
                     b.HasIndex("CustomerId");
 
-                    b.HasIndex("OrderReference");
+                    b.HasIndex("OrderID");
 
                     b.HasIndex("SupplierID");
 
@@ -529,6 +639,13 @@ namespace Page_Navigation_App.Migrations
                     b.Property<decimal>("GrossWeight")
                         .HasColumnType("decimal(10,3)");
 
+                    b.Property<string>("HallmarkNumber")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("HallmarkingCharge")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("IGSTAmount")
                         .HasColumnType("decimal(18,2)");
 
@@ -554,11 +671,34 @@ namespace Page_Navigation_App.Migrations
                     b.Property<decimal>("SGSTAmount")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("Size")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("StoneDetails")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
                     b.Property<decimal>("StoneValue")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<decimal>("StoneWeight")
+                        .HasColumnType("decimal(10,3)");
+
                     b.Property<decimal>("TaxableAmount")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ValueAdditionAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ValueAdditionPercentage")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<decimal>("WastageAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("WastagePercentage")
+                        .HasColumnType("decimal(5,2)");
 
                     b.HasKey("OrderDetailID");
 
@@ -585,8 +725,16 @@ namespace Page_Navigation_App.Migrations
                     b.Property<int>("CategoryID")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Collection")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Description")
                         .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Design")
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("FinalPrice")
@@ -595,7 +743,14 @@ namespace Page_Navigation_App.Migrations
                     b.Property<decimal>("GrossWeight")
                         .HasColumnType("decimal(10,3)");
 
+                    b.Property<string>("HallmarkNumber")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsCustomOrder")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("IsDeadStock")
@@ -628,14 +783,28 @@ namespace Page_Navigation_App.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Size")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("StoneDetails")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
                     b.Property<decimal>("StoneValue")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("StoneWeight")
+                        .HasColumnType("decimal(10,3)");
 
                     b.Property<int?>("SubcategoryID")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("SupplierID")
                         .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("ValueAdditionPercentage")
+                        .HasColumnType("decimal(5,2)");
 
                     b.Property<decimal>("WastagePercentage")
                         .HasColumnType("decimal(5,2)");
@@ -657,6 +826,9 @@ namespace Page_Navigation_App.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<decimal>("DefaultGst")
+                        .HasColumnType("decimal(5,2)");
+
                     b.Property<DateTime>("EffectiveDate")
                         .HasColumnType("TEXT");
 
@@ -665,8 +837,21 @@ namespace Page_Navigation_App.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
+                    b.Property<decimal>("ExchangeRate")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("HallmarkingCharge")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsSpecialRate")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("MarketSource")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("MetalType")
                         .IsRequired()
@@ -712,6 +897,13 @@ namespace Page_Navigation_App.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<decimal>("AdditionalMetalWeight")
+                        .HasColumnType("decimal(10,3)");
+
+                    b.Property<string>("AssignedTo")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime?>("CompletionDate")
                         .HasColumnType("TEXT");
 
@@ -732,6 +924,9 @@ namespace Page_Navigation_App.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsHallmarkRequired")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("ItemDetails")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -742,12 +937,34 @@ namespace Page_Navigation_App.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
+                    b.Property<decimal>("MakingCharges")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("MetalRate")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("MetalType")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("NewHallmark")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("OldHallmark")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime?>("PromisedDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Purity")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("QualityChecks")
+                        .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("ReceiptDate")
@@ -756,10 +973,21 @@ namespace Page_Navigation_App.Migrations
                     b.Property<bool>("SMSNotificationSent")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Size")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
+
+                    b.Property<string>("StoneDetails")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("StoneWeight")
+                        .HasColumnType("decimal(10,3)");
 
                     b.Property<decimal>("Weight")
                         .HasColumnType("decimal(10,3)");
@@ -770,6 +998,10 @@ namespace Page_Navigation_App.Migrations
                     b.Property<string>("WorkType")
                         .IsRequired()
                         .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("WorkmanRemarks")
+                        .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
                     b.HasKey("RepairJobID");
@@ -1121,23 +1353,17 @@ namespace Page_Navigation_App.Migrations
                 {
                     b.HasOne("Page_Navigation_App.Model.Customer", "Customer")
                         .WithMany("Payments")
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CustomerId");
 
-                    b.HasOne("Page_Navigation_App.Model.Order", "Order")
+                    b.HasOne("Page_Navigation_App.Model.Order", null)
                         .WithMany("Payments")
-                        .HasForeignKey("OrderReference")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("OrderID");
 
                     b.HasOne("Page_Navigation_App.Model.Supplier", null)
                         .WithMany("Payments")
                         .HasForeignKey("SupplierID");
 
                     b.Navigation("Customer");
-
-                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("Page_Navigation_App.Model.Order", b =>

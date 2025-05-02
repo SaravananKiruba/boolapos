@@ -74,22 +74,65 @@ namespace Page_Navigation_App.Services
                 await _context.SaveChangesAsync();
 
                 decimal totalAmount = 0;
+                decimal hallmarkingCharges = 0;
+                
                 foreach (var detail in details)
                 {
                     detail.OrderID = order.OrderID;
                     
-                    // Calculate amounts
+                    // Get current metal rate
                     var metalRate = await _rateService.GetCurrentRate(
                         detail.Product.MetalType,
                         detail.Product.Purity);
 
+                    if (metalRate == null)
+                        throw new InvalidOperationException($"No rate found for {detail.Product.MetalType} {detail.Product.Purity}");
+
+                    // Calculate base metal amount
                     detail.MetalRate = metalRate.SaleRate;
                     detail.BaseAmount = detail.NetWeight * detail.MetalRate;
+
+                    // Calculate wastage
+                    decimal wastagePercentage = detail.Product.WastagePercentage;
+                    if (detail.Product.Subcategory?.SpecialWastage != null)
+                    {
+                        wastagePercentage = detail.Product.Subcategory.SpecialWastage.Value;
+                    }
+                    else if (detail.Product.Category?.DefaultWastage != null)
+                    {
+                        wastagePercentage = detail.Product.Category.DefaultWastage;
+                    }
                     
-                    // Add making charges and stone value
-                    detail.TaxableAmount = detail.BaseAmount + detail.MakingCharges + detail.StoneValue;
+                    decimal wastageAmount = (detail.BaseAmount * wastagePercentage) / 100;
+
+                    // Calculate making charges
+                    decimal makingChargePercentage = detail.Product.MakingCharges;
+                    if (detail.Product.Subcategory?.SpecialMakingCharges != null)
+                    {
+                        makingChargePercentage = detail.Product.Subcategory.SpecialMakingCharges.Value;
+                    }
+                    else if (detail.Product.Category?.DefaultMakingCharges != null)
+                    {
+                        makingChargePercentage = detail.Product.Category.DefaultMakingCharges;
+                    }
+
+                    detail.MakingCharges = (detail.BaseAmount * makingChargePercentage) / 100;
+
+                    // Calculate value addition if any
+                    decimal valueAdditionAmount = 0;
+                    if (detail.Product.ValueAdditionPercentage > 0)
+                    {
+                        valueAdditionAmount = (detail.BaseAmount * detail.Product.ValueAdditionPercentage) / 100;
+                    }
+
+                    // Calculate taxable amount including all components
+                    detail.TaxableAmount = detail.BaseAmount + 
+                                         wastageAmount + 
+                                         detail.MakingCharges + 
+                                         detail.StoneValue +
+                                         valueAdditionAmount;
                     
-                    // Calculate GST
+                    // Calculate GST based on customer's GST registration
                     if (!string.IsNullOrEmpty(order.GSTNumber))
                     {
                         detail.CGSTAmount = detail.TaxableAmount * 0.015m; // 1.5%
@@ -103,6 +146,7 @@ namespace Page_Navigation_App.Services
                         detail.SGSTAmount = 0;
                     }
 
+                    // Calculate final amount
                     detail.FinalAmount = detail.TaxableAmount + 
                                        detail.CGSTAmount + 
                                        detail.SGSTAmount + 
@@ -110,10 +154,16 @@ namespace Page_Navigation_App.Services
 
                     totalAmount += detail.FinalAmount;
 
+                    // Add hallmarking charges if applicable
+                    if (detail.Product.HallmarkNumber != null)
+                    {
+                        hallmarkingCharges += metalRate.HallmarkingCharge;
+                    }
+
                     // Update stock
                     await _stockService.UpdateStockQuantity(
                         detail.ProductID,
-                        "Main", // TODO: Make location configurable
+                        "Main",
                         -1 * detail.GrossWeight,
                         true);
                 }
@@ -125,9 +175,16 @@ namespace Page_Navigation_App.Services
                         order.ExchangeMetalType,
                         order.ExchangeMetalPurity.ToString());
 
+                    if (exchangeRate == null)
+                        throw new InvalidOperationException($"No rate found for exchange metal {order.ExchangeMetalType} {order.ExchangeMetalPurity}");
+
+                    // Use purchase rate for exchange metal
                     order.ExchangeValue = order.ExchangeMetalWeight * exchangeRate.PurchaseRate;
                     totalAmount -= order.ExchangeValue;
                 }
+
+                // Add hallmarking charges to total
+                totalAmount += hallmarkingCharges;
 
                 // Update order totals
                 order.SubTotal = totalAmount;

@@ -23,7 +23,7 @@ namespace Page_Navigation_App.Services
         {
             return await _context.Finances
                 .Where(f => f.CustomerId == customerId && f.Status == "Active")
-                .SumAsync(f => f.RemainingAmount);
+                .SumAsync(f => f.RemainingAmount ?? 0);
         }
 
         public IEnumerable<Finance> GetAllTransactions()
@@ -168,7 +168,7 @@ namespace Page_Navigation_App.Services
         {
             return await _context.Finances
                 .Where(f => f.Status == "Active")
-                .SumAsync(f => f.RemainingAmount);
+                .SumAsync(f => f.RemainingAmount ?? 0);
         }
 
         public async Task<IEnumerable<Finance>> GetUpcomingInstallments(DateTime startDate, DateTime endDate)
@@ -207,14 +207,14 @@ namespace Page_Navigation_App.Services
 
             return new Dictionary<string, decimal>
             {
-                ["TotalOutstanding"] = activePlans.Sum(f => f.RemainingAmount),
-                ["TotalEMIPlans"] = activePlans.Count(),  // Changed from Count to Count()
+                ["TotalOutstanding"] = activePlans.Sum(f => f.RemainingAmount ?? 0),
+                ["TotalEMIPlans"] = activePlans.Count,
                 ["AverageEMIAmount"] = activePlans.Any() 
-                    ? activePlans.Average(f => f.InstallmentAmount) 
+                    ? activePlans.Average(f => f.InstallmentAmount ?? 0) 
                     : 0,
                 ["OverdueAmount"] = activePlans
                     .Where(f => f.NextInstallmentDate < DateTime.Now)
-                    .Sum(f => f.InstallmentAmount)
+                    .Sum(f => f.InstallmentAmount ?? 0)
             };
         }
 
@@ -224,9 +224,9 @@ namespace Page_Navigation_App.Services
             if (finance == null)
                 throw new ArgumentException("Finance plan not found");
 
-            var foreClosurePenaltyRate = 2.0m; // 2% foreclosure charges
-            var charges = (finance.RemainingAmount * foreClosurePenaltyRate) / 100;
-            return (finance.RemainingAmount, charges);
+            var remainingAmount = finance.RemainingAmount ?? 0;
+            var charges = CalculateForeclosureCharges(remainingAmount);
+            return (remainingAmount, charges);
         }
 
         public async Task<(decimal amount, int remainingTenure)> CalculateBalanceAfterPrepayment(
@@ -237,8 +237,8 @@ namespace Page_Navigation_App.Services
             if (finance == null)
                 throw new ArgumentException("Finance plan not found");
 
-            var remainingAmount = finance.RemainingAmount - prepaymentAmount;
-            var remainingTenure = (int)Math.Ceiling(remainingAmount / finance.InstallmentAmount);
+            var remainingAmount = (finance.RemainingAmount ?? 0) - prepaymentAmount;
+            var remainingTenure = (int)Math.Ceiling(remainingAmount / (finance.InstallmentAmount ?? 1));
             
             return (remainingAmount, remainingTenure);
         }
@@ -248,6 +248,238 @@ namespace Page_Navigation_App.Services
             var monthlyRate = (interestRate / 12) / 100;
             var totalAmount = remainingPrincipal * (decimal)Math.Pow(1 + (double)monthlyRate, remainingTenure);
             return totalAmount - remainingPrincipal;
+        }
+
+        private decimal CalculateForeclosureCharges(decimal remainingAmount)
+        {
+            const decimal FORECLOSURE_PENALTY_RATE = 2.0m; // 2% foreclosure charges
+            return (remainingAmount * FORECLOSURE_PENALTY_RATE) / 100;
+        }
+
+        public async Task<Dictionary<string, decimal>> GetMetalTradeAnalytics(DateTime startDate, DateTime endDate)
+        {
+            var orders = await _context.Orders
+                .Include(o => o.OrderDetails)
+                .Where(o => o.OrderDate >= startDate && o.OrderDate <= endDate)
+                .ToListAsync();
+
+            var exchangeOrders = orders.Where(o => o.HasMetalExchange);
+
+            var result = new Dictionary<string, decimal>();
+
+            // Calculate metal received through exchanges
+            var exchangeMetals = exchangeOrders
+                .GroupBy(o => new { o.ExchangeMetalType, o.ExchangeMetalPurity })
+                .Select(g => new
+                {
+                    Key = $"{g.Key.ExchangeMetalType}_{g.Key.ExchangeMetalPurity}_Received",
+                    Weight = g.Sum(o => o.ExchangeMetalWeight),
+                    Value = g.Sum(o => o.ExchangeValue)
+                });
+
+            foreach (var metal in exchangeMetals)
+            {
+                result[metal.Key + "_Weight"] = metal.Weight;
+                result[metal.Key + "_Value"] = metal.Value;
+            }
+
+            // Calculate metal sold in sales
+            var salesMetals = orders
+                .SelectMany(o => o.OrderDetails)
+                .GroupBy(od => new { od.Product.MetalType, od.Product.Purity })
+                .Select(g => new
+                {
+                    Key = $"{g.Key.MetalType}_{g.Key.Purity}_Sold",
+                    Weight = g.Sum(od => od.NetWeight),
+                    Value = g.Sum(od => od.BaseAmount)
+                });
+
+            foreach (var metal in salesMetals)
+            {
+                result[metal.Key + "_Weight"] = metal.Weight;
+                result[metal.Key + "_Value"] = metal.Value;
+            }
+
+            return result;
+        }
+
+        public async Task<Finance> RecordMetalPurchase(
+            string metalType,
+            string purity,
+            decimal weight,
+            decimal ratePerGram,
+            string supplier,
+            string invoiceNumber)
+        {
+            var finance = new Finance
+            {
+                TransactionType = "Metal_Purchase",
+                TransactionDate = DateTime.Now,
+                Amount = weight * ratePerGram,
+                PaymentMode = "Bank_Transfer", // Default for metal purchases
+                Category = "Inventory",
+                Description = $"Purchase of {weight}g {metalType} {purity} @ {ratePerGram}/g",
+                ReferenceNumber = invoiceNumber,
+                MetalType = metalType,
+                MetalPurity = purity,
+                MetalWeight = weight,
+                MetalRate = ratePerGram,
+                SupplierName = supplier
+            };
+
+            await _context.Finances.AddAsync(finance);
+            await _context.SaveChangesAsync();
+
+            await _logService.LogAudit(
+                "METAL_PURCHASE",
+                $"Metal purchase recorded: {finance.Description}");
+
+            return finance;
+        }
+
+        public async Task<Dictionary<string, decimal>> GetMetalInventoryValue()
+        {
+            var result = new Dictionary<string, decimal>();
+            
+            // Get current rates
+            var currentRates = await _context.RateMaster
+                .Where(r => r.IsActive)
+                .ToListAsync();
+
+            // Group metal purchases and sales
+            var purchases = await _context.Finances
+                .Where(f => f.TransactionType == "Metal_Purchase")
+                .GroupBy(f => new { f.MetalType, f.MetalPurity })
+                .Select(g => new
+                {
+                    g.Key.MetalType,
+                    g.Key.MetalPurity,
+                    TotalWeight = g.Sum(f => f.MetalWeight),
+                    AverageCost = g.Average(f => f.MetalRate)
+                })
+                .ToListAsync();
+
+            foreach (var purchase in purchases)
+            {
+                var currentRate = currentRates
+                    .FirstOrDefault(r => r.MetalType == purchase.MetalType && 
+                                       r.Purity == purchase.MetalPurity);
+
+                if (currentRate != null)
+                {
+                    result[$"{purchase.MetalType}_{purchase.MetalPurity}_Weight"] = purchase.TotalWeight ?? 0;
+                    result[$"{purchase.MetalType}_{purchase.MetalPurity}_CostValue"] = 
+                        (purchase.TotalWeight ?? 0) * (purchase.AverageCost ?? 0);
+                    result[$"{purchase.MetalType}_{purchase.MetalPurity}_MarketValue"] = 
+                        (purchase.TotalWeight ?? 0) * currentRate.Rate;
+                }
+            }
+
+            return result;
+        }
+
+        public async Task<Finance> RecordGoldSchemePayment(
+            int customerId,
+            decimal amount,
+            string paymentMode,
+            decimal goldRate,
+            decimal goldQuantityGrams)
+        {
+            var finance = new Finance
+            {
+                TransactionType = "Gold_Scheme",
+                TransactionDate = DateTime.Now,
+                CustomerId = customerId,
+                Amount = amount,
+                PaymentMode = paymentMode,
+                Category = "Gold_Scheme_Collection",
+                Description = $"Gold scheme payment for {goldQuantityGrams}g @ {goldRate}/g",
+                MetalType = "Gold",
+                MetalWeight = goldQuantityGrams,
+                MetalRate = goldRate
+            };
+
+            await _context.Finances.AddAsync(finance);
+            await _context.SaveChangesAsync();
+
+            await _logService.LogAudit(
+                "GOLD_SCHEME_PAYMENT",
+                $"Gold scheme payment recorded for customer {customerId}: Amount {amount}, Gold {goldQuantityGrams}g");
+
+            return finance;
+        }
+
+        public async Task<IEnumerable<Finance>> GetCustomerGoldSchemeTransactions(int customerId)
+        {
+            return await _context.Finances
+                .Where(f => f.CustomerId == customerId && 
+                           f.TransactionType == "Gold_Scheme")
+                .OrderByDescending(f => f.TransactionDate)
+                .ToListAsync();
+        }
+
+        public async Task<Dictionary<string, decimal>> GetGoldSchemeAnalytics()
+        {
+            var schemeTransactions = await _context.Finances
+                .Where(f => f.TransactionType == "Gold_Scheme")
+                .ToListAsync();
+
+            return new Dictionary<string, decimal>
+            {
+                { "TotalCollections", schemeTransactions.Sum(t => t.Amount) },
+                { "TotalGoldQuantity", schemeTransactions.Sum(t => t.MetalWeight ?? 0) },
+                { "AverageGoldRate", schemeTransactions.Any() ? 
+                    schemeTransactions.Average(t => t.MetalRate ?? 0) : 0 },
+                { "ActiveCustomers", schemeTransactions
+                    .Select(t => t.CustomerId)
+                    .Distinct()
+                    .Count() }
+            };
+        }
+
+        public async Task<decimal> GetTotalOutstandingDues()
+        {
+            return await _context.Finances
+                .Where(f => f.Status == "Active")
+                .SumAsync(f => f.RemainingAmount ?? 0);
+        }
+
+        public async Task<Dictionary<string, decimal>> GetEMIAnalytics()
+        {
+            var activePlans = await _context.Finances
+                .Where(f => f.TransactionType == "EMI" && f.Status == "Active")
+                .ToListAsync();
+
+            return new Dictionary<string, decimal>
+            {
+                ["TotalPlans"] = activePlans.Count,
+                ["TotalOutstanding"] = activePlans.Sum(f => f.RemainingAmount ?? 0),
+                ["AverageEMIAmount"] = activePlans.Any() 
+                    ? activePlans.Average(f => f.InstallmentAmount ?? 0) 
+                    : 0,
+                ["OverdueAmount"] = activePlans
+                    .Where(f => f.NextInstallmentDate < DateTime.Now)
+                    .Sum(f => f.InstallmentAmount ?? 0)
+            };
+        }
+
+        public async Task<(decimal remainingAmount, decimal charges)> CalculateEMIClosureAmount(int financeId)
+        {
+            var finance = await _context.Finances.FindAsync(financeId);
+            if (finance == null) return (0, 0);
+
+            var charges = CalculateForeclosureCharges(finance.RemainingAmount ?? 0);
+            return (finance.RemainingAmount ?? 0, charges);
+        }
+
+        public async Task<(decimal remainingAmount, int remainingTenure)> GetEMIStatus(int financeId)
+        {
+            var finance = await _context.Finances.FindAsync(financeId);
+            if (finance == null) return (0, 0);
+
+            var remainingAmount = finance.RemainingAmount ?? 0;
+            var remainingTenure = (int)Math.Ceiling(remainingAmount / (finance.InstallmentAmount ?? 1));
+            return (remainingAmount, remainingTenure);
         }
     }
 }
