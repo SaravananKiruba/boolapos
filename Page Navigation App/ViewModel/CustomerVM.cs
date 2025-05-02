@@ -17,20 +17,19 @@ namespace Page_Navigation_App.ViewModel
         public ICommand ClearCommand { get; }
         public ICommand SearchCommand { get; }
 
-        public CustomerVM(CustomerService customerService)
+        public ObservableCollection<string> CustomerTypes { get; set; } = new ObservableCollection<string>
         {
-            _customerService = customerService;
-            LoadCustomers();
-
-            AddOrUpdateCommand = new RelayCommand<object>(_ => AddOrUpdateCustomer(), _ => CanAddOrUpdateCustomer());
-            ClearCommand = new RelayCommand<object>(_ => ClearForm(), _ => true);
-            SearchCommand = new RelayCommand<object>(_ => SearchCustomers(), _ => true);
-        }
+            "Regular",
+            "Gold",
+            "Silver",
+            "Platinum",
+            "Corporate",
+            "Wholesale"
+        };
 
         public ObservableCollection<Customer> Customers { get; set; } = new ObservableCollection<Customer>();
 
         private Customer _selectedCustomer = new Customer();
-
         public Customer SelectedCustomer
         {
             get => _selectedCustomer;
@@ -65,6 +64,19 @@ namespace Page_Navigation_App.ViewModel
             }
         }
 
+        public CustomerVM(CustomerService customerService)
+        {
+            _customerService = customerService;
+            LoadCustomers();
+
+            // Initialize new customer with default type
+            SelectedCustomer.CustomerType = CustomerTypes.First();
+
+            AddOrUpdateCommand = new RelayCommand<object>(_ => AddOrUpdateCustomer(), _ => CanAddOrUpdateCustomer());
+            ClearCommand = new RelayCommand<object>(_ => ClearForm(), _ => true);
+            SearchCommand = new RelayCommand<object>(_ => SearchCustomers(), _ => true);
+        }
+
         private async void LoadCustomers()
         {
             Customers.Clear();
@@ -91,7 +103,8 @@ namespace Page_Navigation_App.ViewModel
                 SelectedCustomer = new Customer
                 {
                     CustomerName = SearchName,
-                    PhoneNumber = SearchPhone
+                    PhoneNumber = SearchPhone,
+                    CustomerType = CustomerTypes.First() // Set default customer type for new customers
                 };
             }
         }
@@ -125,7 +138,10 @@ namespace Page_Navigation_App.ViewModel
 
         private void ClearForm()
         {
-            SelectedCustomer = new Customer();
+            SelectedCustomer = new Customer
+            {
+                CustomerType = CustomerTypes.First() // Set default customer type when clearing form
+            };
             SearchName = string.Empty;
             SearchPhone = string.Empty;
         }
@@ -134,7 +150,8 @@ namespace Page_Navigation_App.ViewModel
         {
             // Ensure required fields are filled before allowing save
             return !string.IsNullOrEmpty(SelectedCustomer.CustomerName) &&
-                   !string.IsNullOrEmpty(SelectedCustomer.PhoneNumber);
+                   !string.IsNullOrEmpty(SelectedCustomer.PhoneNumber) &&
+                   !string.IsNullOrEmpty(SelectedCustomer.CustomerType);
         }
 
         private async void SearchCustomers()

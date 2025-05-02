@@ -18,13 +18,97 @@ namespace Page_Navigation_App.Services
             _context = context;
         }
 
+        // Create
         public async Task<Stock> AddStock(Stock stock)
         {
-            stock.AddedDate = DateTime.Now;
-            stock.LastUpdated = DateTime.Now;
-            await _context.Stocks.AddAsync(stock);
-            await _context.SaveChangesAsync();
-            return stock;
+            try
+            {
+                stock.AddedDate = DateTime.Now;
+                stock.LastUpdated = DateTime.Now;
+                
+                // Validate the product exists
+                var product = await _context.Products.FindAsync(stock.ProductID);
+                if (product == null) return null;
+
+                await _context.Stocks.AddAsync(stock);
+                await _context.SaveChangesAsync();
+                return stock;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        // Read
+        public async Task<Stock> GetStockById(int stockId)
+        {
+            return await _context.Stocks
+                .Include(s => s.Product)
+                .FirstOrDefaultAsync(s => s.StockID == stockId);
+        }
+
+        public async Task<IEnumerable<Stock>> GetAllStocks()
+        {
+            return await _context.Stocks
+                .Include(s => s.Product)
+                .OrderBy(s => s.Product.ProductName)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Stock>> GetStockByProduct(int productId)
+        {
+            return await _context.Stocks
+                .Include(s => s.Product)
+                .Where(s => s.ProductID == productId)
+                .OrderBy(s => s.Location)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Stock>> GetStockByLocation(string location)
+        {
+            return await _context.Stocks
+                .Include(s => s.Product)
+                .Where(s => s.Location == location)
+                .OrderBy(s => s.Product.ProductName)
+                .ToListAsync();
+        }
+
+        // Update
+        public async Task<bool> UpdateStock(Stock stock)
+        {
+            try
+            {
+                var existingStock = await _context.Stocks.FindAsync(stock.StockID);
+                if (existingStock == null) return false;
+
+                stock.LastUpdated = DateTime.Now;
+                _context.Entry(existingStock).CurrentValues.SetValues(stock);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> UpdateStockQuantity(int stockId, decimal newQuantity)
+        {
+            try
+            {
+                var stock = await _context.Stocks.FindAsync(stockId);
+                if (stock == null) return false;
+
+                stock.Quantity = newQuantity;
+                stock.LastUpdated = DateTime.Now;
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public async Task<bool> TransferStock(
@@ -60,8 +144,7 @@ namespace Page_Navigation_App.Services
                         Location = toLocation,
                         Quantity = quantity,
                         AddedDate = DateTime.Now,
-                        LastUpdated = DateTime.Now,
-                        PurchasePrice = sourceStock.PurchasePrice
+                        LastUpdated = DateTime.Now
                     };
                     await _context.Stocks.AddAsync(destinationStock);
                 }
@@ -79,18 +162,36 @@ namespace Page_Navigation_App.Services
             catch
             {
                 await transaction.RollbackAsync();
-                throw;
+                return false;
             }
         }
 
+        // Delete
+        public async Task<bool> DeleteStock(int stockId)
+        {
+            try
+            {
+                var stock = await _context.Stocks.FindAsync(stockId);
+                if (stock == null) return false;
+
+                _context.Stocks.Remove(stock);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        // Additional helper methods
         public async Task<IEnumerable<Stock>> GetDeadStock()
         {
             var cutoffDate = DateTime.Now.AddDays(-DEAD_STOCK_DAYS);
             return await _context.Stocks
                 .Include(s => s.Product)
-                .Where(s => s.AddedDate <= cutoffDate && 
-                           s.LastSold == null &&
-                           s.Quantity > 0)
+                .Where(s => s.LastUpdated <= cutoffDate && s.Quantity > 0)
+                .OrderByDescending(s => s.LastUpdated)
                 .ToListAsync();
         }
 
@@ -99,6 +200,7 @@ namespace Page_Navigation_App.Services
             return await _context.Stocks
                 .Include(s => s.Product)
                 .Where(s => s.Quantity <= threshold)
+                .OrderBy(s => s.Quantity)
                 .ToListAsync();
         }
 
@@ -119,12 +221,10 @@ namespace Page_Navigation_App.Services
 
         public async Task<decimal> GetTotalStockValue()
         {
-            var stocks = await _context.Stocks
+            return await _context.Stocks
                 .Include(s => s.Product)
                 .Where(s => s.Quantity > 0)
-                .ToListAsync();
-
-            return stocks.Sum(s => s.Quantity * s.Product.BasePrice);
+                .SumAsync(s => s.Quantity * s.Product.BasePrice);
         }
 
         public async Task<IEnumerable<Stock>> SearchStock(
@@ -140,8 +240,8 @@ namespace Page_Navigation_App.Services
             {
                 query = query.Where(s => 
                     s.Product.ProductName.Contains(searchTerm) ||
-                    s.Product.Description.Contains(searchTerm) ||
-                    s.Product.Barcode.Contains(searchTerm));
+                    s.Product.Barcode.Contains(searchTerm) ||
+                    s.Location.Contains(searchTerm));
             }
 
             if (!string.IsNullOrWhiteSpace(location))
@@ -154,20 +254,18 @@ namespace Page_Navigation_App.Services
                 var cutoffDate = DateTime.Now.AddDays(-DEAD_STOCK_DAYS);
                 if (isDeadStock.Value)
                 {
-                    query = query.Where(s => 
-                        s.AddedDate <= cutoffDate && 
-                        s.LastSold == null &&
-                        s.Quantity > 0);
+                    query = query.Where(s => s.LastUpdated <= cutoffDate && s.Quantity > 0);
                 }
                 else
                 {
-                    query = query.Where(s => 
-                        s.AddedDate > cutoffDate || 
-                        s.LastSold != null);
+                    query = query.Where(s => s.LastUpdated > cutoffDate || s.Quantity == 0);
                 }
             }
 
-            return await query.ToListAsync();
+            return await query
+                .OrderBy(s => s.Product.ProductName)
+                .ThenBy(s => s.Location)
+                .ToListAsync();
         }
 
         public async Task<bool> UpdateStockQuantity(

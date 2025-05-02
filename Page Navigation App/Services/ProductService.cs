@@ -17,20 +17,41 @@ namespace Page_Navigation_App.Services
             _context = context;
         }
 
+        // Create
         public async Task<Product> AddProduct(Product product)
         {
-            // Generate barcode: MMPPWWWW where:
-            // MM = Metal type code (GO=Gold, SI=Silver, PL=Platinum)
-            // PP = Purity code (18=18k, 22=22k, 24=24k)
-            // WWWW = Random number
-            string metalCode = product.MetalType.Substring(0, 2).ToUpper();
-            string purityCode = product.Purity.Replace("k", "");
-            string randomCode = new Random().Next(1000, 9999).ToString();
-            product.Barcode = $"{metalCode}{purityCode}{randomCode}";
+            try 
+            {
+                // Generate barcode: MMPPWWWW where:
+                // MM = Metal type code (GO=Gold, SI=Silver, PL=Platinum)
+                // PP = Purity code (18=18k, 22=22k, 24=24k)
+                // WWWW = Random number
+                string metalCode = product.MetalType.Substring(0, 2).ToUpper();
+                string purityCode = product.Purity.Replace("k", "");
+                string randomCode = new Random().Next(1000, 9999).ToString();
+                product.Barcode = $"{metalCode}{purityCode}{randomCode}";
 
-            await _context.Products.AddAsync(product);
-            await _context.SaveChangesAsync();
-            return product;
+                product.IsActive = true;
+
+                await _context.Products.AddAsync(product);
+                await _context.SaveChangesAsync();
+                return product;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        // Read
+        public async Task<Product> GetProductById(int id)
+        {
+            return await _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Subcategory)
+                .Include(p => p.Supplier)
+                .Include(p => p.Stocks)
+                .FirstOrDefaultAsync(p => p.ProductID == id);
         }
 
         public async Task<Product> GetProductByBarcode(string barcode)
@@ -38,8 +59,24 @@ namespace Page_Navigation_App.Services
             return await _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Subcategory)
+                .Include(p => p.Supplier)
                 .Include(p => p.Stocks)
                 .FirstOrDefaultAsync(p => p.Barcode == barcode);
+        }
+
+        public async Task<IEnumerable<Product>> GetAllProducts(bool includeInactive = false)
+        {
+            var query = _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Subcategory)
+                .Include(p => p.Supplier)
+                .Include(p => p.Stocks)
+                .AsQueryable();
+
+            if (!includeInactive)
+                query = query.Where(p => p.IsActive);
+
+            return await query.OrderBy(p => p.ProductName).ToListAsync();
         }
 
         public async Task<IEnumerable<Product>> SearchProducts(
@@ -53,6 +90,7 @@ namespace Page_Navigation_App.Services
                 .Include(p => p.Category)
                 .Include(p => p.Subcategory)
                 .Include(p => p.Stocks)
+                .Where(p => p.IsActive)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
@@ -86,32 +124,59 @@ namespace Page_Navigation_App.Services
             return await query.ToListAsync();
         }
 
+        // Update
         public async Task<bool> UpdateProduct(Product product)
         {
-            var existingProduct = await _context.Products.FindAsync(product.ProductID);
-            if (existingProduct == null) return false;
+            try
+            {
+                var existingProduct = await _context.Products.FindAsync(product.ProductID);
+                if (existingProduct == null) return false;
 
-            // Don't update barcode
-            product.Barcode = existingProduct.Barcode;
-
-            _context.Entry(existingProduct).CurrentValues.SetValues(product);
-            await _context.SaveChangesAsync();
-            return true;
+                // Don't update barcode
+                product.Barcode = existingProduct.Barcode;
+                
+                _context.Entry(existingProduct).CurrentValues.SetValues(product);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
+        // Delete (Soft Delete)
+        public async Task<bool> DeleteProduct(int productId)
+        {
+            try
+            {
+                var product = await _context.Products.FindAsync(productId);
+                if (product == null) return false;
+
+                product.IsActive = false;
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        // Additional helper methods
         public async Task<Dictionary<string, decimal>> GetProductValueByCategory()
         {
             var products = await _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Stocks)
-                .Where(p => p.Stocks.Any(s => s.Quantity > 0))
+                .Where(p => p.IsActive && p.Stocks.Any(s => s.Quantity > 0))
                 .ToListAsync();
 
             return products
                 .GroupBy(p => p.Category.CategoryName)
                 .ToDictionary(
                     g => g.Key,
-                    g => g.Sum(p => p.Stocks.Sum(s => s.Quantity) * p.BasePrice)
+                    g => g.Sum(p => p.Stocks.Sum(s => s.Quantity * p.BasePrice))
                 );
         }
 
@@ -119,14 +184,14 @@ namespace Page_Navigation_App.Services
         {
             var products = await _context.Products
                 .Include(p => p.Stocks)
-                .Where(p => p.Stocks.Any(s => s.Quantity > 0))
+                .Where(p => p.IsActive && p.Stocks.Any(s => s.Quantity > 0))
                 .ToListAsync();
 
             return products
                 .GroupBy(p => p.MetalType)
                 .ToDictionary(
                     g => g.Key,
-                    g => g.Sum(p => p.Stocks.Sum(s => s.Quantity) * p.BasePrice)
+                    g => g.Sum(p => p.Stocks.Sum(s => s.Quantity * p.BasePrice))
                 );
         }
 
@@ -138,7 +203,7 @@ namespace Page_Navigation_App.Services
                 .Include(p => p.Category)
                 .Include(p => p.Subcategory)
                 .Include(p => p.Stocks)
-                .Where(p => p.BasePrice >= minPrice && p.BasePrice <= maxPrice)
+                .Where(p => p.BasePrice >= minPrice && p.BasePrice <= maxPrice && p.IsActive)
                 .ToListAsync();
         }
 
@@ -148,7 +213,7 @@ namespace Page_Navigation_App.Services
             bool applyToSubcategories = false)
         {
             var products = await _context.Products
-                .Where(p => p.CategoryID == categoryId)
+                .Where(p => p.CategoryID == categoryId && p.IsActive)
                 .ToListAsync();
 
             foreach (var product in products)
@@ -159,7 +224,7 @@ namespace Page_Navigation_App.Services
             if (applyToSubcategories)
             {
                 var subcategoryProducts = await _context.Products
-                    .Where(p => p.Subcategory.CategoryID == categoryId)
+                    .Where(p => p.Subcategory.CategoryID == categoryId && p.IsActive)
                     .ToListAsync();
 
                 foreach (var product in subcategoryProducts)
@@ -177,7 +242,7 @@ namespace Page_Navigation_App.Services
             bool applyToSubcategories = false)
         {
             var products = await _context.Products
-                .Where(p => p.CategoryID == categoryId)
+                .Where(p => p.CategoryID == categoryId && p.IsActive)
                 .ToListAsync();
 
             foreach (var product in products)
@@ -188,7 +253,7 @@ namespace Page_Navigation_App.Services
             if (applyToSubcategories)
             {
                 var subcategoryProducts = await _context.Products
-                    .Where(p => p.Subcategory.CategoryID == categoryId)
+                    .Where(p => p.Subcategory.CategoryID == categoryId && p.IsActive)
                     .ToListAsync();
 
                 foreach (var product in subcategoryProducts)
@@ -200,16 +265,6 @@ namespace Page_Navigation_App.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<Product>> GetAllProducts()
-        {
-            return await _context.Products
-                .Include(p => p.Category)
-                .Include(p => p.Subcategory)
-                .Include(p => p.Supplier)
-                .OrderBy(p => p.ProductName)
-                .ToListAsync();
-        }
-
         public async Task<IEnumerable<Product>> FilterProducts(string searchTerm)
         {
             return await _context.Products
@@ -217,9 +272,10 @@ namespace Page_Navigation_App.Services
                 .Include(p => p.Subcategory)
                 .Include(p => p.Supplier)
                 .Where(p => 
+                    p.IsActive && (
                     p.ProductName.Contains(searchTerm) ||
                     p.Barcode.Contains(searchTerm) ||
-                    p.Description.Contains(searchTerm))
+                    p.Description.Contains(searchTerm)))
                 .OrderBy(p => p.ProductName)
                 .ToListAsync();
         }
