@@ -35,71 +35,69 @@
                                  Height="60"
                                  Style="{StaticResource MahApps.Styles.TextBox}"/>
 
-                        <!-- Metal Details -->
-                        <TextBlock Text="Metal Details" Style="{StaticResource MahApps.Styles.TextBlock}" FontWeight="Bold" Margin="0,10,0,5"/>
+                        <!-- Metal Type and Purity -->
+                        <TextBlock Text="Metal Information" Style="{StaticResource MahApps.Styles.TextBlock}" FontWeight="Bold" Margin="0,10,0,5"/>
                         <ComboBox ItemsSource="{Binding MetalTypes}"
-                                  SelectedValue="{Binding SelectedProduct.MetalType}"
+                                  SelectedItem="{Binding SelectedProduct.MetalType, UpdateSourceTrigger=PropertyChanged}"
                                   Margin="0,5"
-                                  mah:TextBoxHelper.Watermark="Metal Type"
+                                  mah:TextBoxHelper.Watermark="Select Metal Type"
                                   Style="{StaticResource MahApps.Styles.ComboBox}"/>
 
                         <ComboBox ItemsSource="{Binding Purities}"
-                                  SelectedValue="{Binding SelectedProduct.Purity}"
+                                  SelectedItem="{Binding SelectedProduct.Purity, UpdateSourceTrigger=PropertyChanged}"
                                   Margin="0,5"
-                                  mah:TextBoxHelper.Watermark="Purity"
+                                  mah:TextBoxHelper.Watermark="Select Purity"
                                   Style="{StaticResource MahApps.Styles.ComboBox}"/>
 
-                        <!-- Weight Information -->
-                        <TextBlock Text="Weight Information" Style="{StaticResource MahApps.Styles.TextBlock}" FontWeight="Bold" Margin="0,10,0,5"/>
-                        <TextBox Text="{Binding SelectedProduct.GrossWeight, UpdateSourceTrigger=PropertyChanged}"
+                        <!-- Weights and Prices -->
+                        <TextBlock Text="Weights and Prices (INR)" Style="{StaticResource MahApps.Styles.TextBlock}" FontWeight="Bold" Margin="0,10,0,5"/>
+                        <TextBox Text="{Binding SelectedProduct.GrossWeight, StringFormat=N3, UpdateSourceTrigger=PropertyChanged}"
                                  Margin="0,5"
                                  mah:TextBoxHelper.Watermark="Gross Weight (g)"
                                  Style="{StaticResource MahApps.Styles.TextBox}"/>
 
-                        <TextBox Text="{Binding SelectedProduct.NetWeight, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox Text="{Binding SelectedProduct.NetWeight, StringFormat=N3, UpdateSourceTrigger=PropertyChanged}"
                                  Margin="0,5"
                                  mah:TextBoxHelper.Watermark="Net Weight (g)"
                                  Style="{StaticResource MahApps.Styles.TextBox}"/>
 
-                        <!-- Pricing Information -->
-                        <TextBlock Text="Pricing Details" Style="{StaticResource MahApps.Styles.TextBlock}" FontWeight="Bold" Margin="0,10,0,5"/>
-                        <TextBox Text="{Binding SelectedProduct.BasePrice, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox Text="{Binding SelectedProduct.MakingCharges, StringFormat=N2, UpdateSourceTrigger=PropertyChanged}"
                                  Margin="0,5"
-                                 mah:TextBoxHelper.Watermark="Base Price"
+                                 mah:TextBoxHelper.Watermark="Making Charges (INR)"
                                  Style="{StaticResource MahApps.Styles.TextBox}"/>
 
-                        <TextBox Text="{Binding SelectedProduct.MakingCharges, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox Text="{Binding SelectedProduct.StoneValue, StringFormat=N2, UpdateSourceTrigger=PropertyChanged}"
                                  Margin="0,5"
-                                 mah:TextBoxHelper.Watermark="Making Charges"
+                                 mah:TextBoxHelper.Watermark="Stone Value (INR)"
                                  Style="{StaticResource MahApps.Styles.TextBox}"/>
 
-                        <TextBox Text="{Binding SelectedProduct.StoneValue, UpdateSourceTrigger=PropertyChanged}"
-                                 Margin="0,5"
-                                 mah:TextBoxHelper.Watermark="Stone Value"
-                                 Style="{StaticResource MahApps.Styles.TextBox}"/>
-
-                        <TextBox Text="{Binding SelectedProduct.WastagePercentage, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox Text="{Binding SelectedProduct.WastagePercentage, StringFormat=N2, UpdateSourceTrigger=PropertyChanged}"
                                  Margin="0,5"
                                  mah:TextBoxHelper.Watermark="Wastage %"
                                  Style="{StaticResource MahApps.Styles.TextBox}"/>
 
-                        <TextBox Text="{Binding SelectedProduct.Price, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox Text="{Binding SelectedProduct.FinalPrice, StringFormat='₹ {0:N2}', UpdateSourceTrigger=PropertyChanged}"
                                  Margin="0,5"
-                                 mah:TextBoxHelper.Watermark="Final Price"
+                                 IsReadOnly="True"
+                                 mah:TextBoxHelper.Watermark="Final Price (INR)"
                                  Style="{StaticResource MahApps.Styles.TextBox}"/>
 
                         <!-- Classification -->
                         <TextBlock Text="Classification" Style="{StaticResource MahApps.Styles.TextBlock}" FontWeight="Bold" Margin="0,10,0,5"/>
                         <ComboBox ItemsSource="{Binding Categories}"
-                                  SelectedItem="{Binding SelectedProduct.Category}"
+                                  DisplayMemberPath="CategoryName"
+                                  SelectedValuePath="CategoryID"
+                                  SelectedValue="{Binding SelectedProduct.CategoryID, UpdateSourceTrigger=PropertyChanged}"
                                   Margin="0,5"
-                                  mah:TextBoxHelper.Watermark="Category"
+                                  mah:TextBoxHelper.Watermark="Select Category"
                                   Style="{StaticResource MahApps.Styles.ComboBox}"/>
 
                         <ComboBox ItemsSource="{Binding Subcategories}"
-                                  SelectedItem="{Binding SelectedProduct.Subcategory}"
+                                  DisplayMemberPath="SubcategoryName"
+                                  SelectedValuePath="SubcategoryID"
+                                  SelectedValue="{Binding SelectedProduct.SubcategoryID, UpdateSourceTrigger=PropertyChanged}"
                                   Margin="0,5"
-                                  mah:TextBoxHelper.Watermark="Subcategory"
+                                  mah:TextBoxHelper.Watermark="Select Subcategory"
                                   Style="{StaticResource MahApps.Styles.ComboBox}"/>
 
                         <ComboBox ItemsSource="{Binding Suppliers}"

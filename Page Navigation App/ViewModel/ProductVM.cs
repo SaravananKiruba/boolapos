@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Windows.Input;
@@ -87,16 +88,20 @@ namespace Page_Navigation_App.ViewModel
         private void InitializeCollections()
         {
             MetalTypes.Clear();
-            foreach (var type in new[] { "Gold", "Silver", "Platinum" })
-            {
-                MetalTypes.Add(type);
-            }
-
             Purities.Clear();
-            foreach (var purity in new[] { "14k", "18k", "22k", "24k", "92.5", "95", "99.9" })
-            {
-                Purities.Add(purity);
-            }
+
+            // Initialize metal types
+            MetalTypes.Add("Gold");
+            MetalTypes.Add("Silver");
+            MetalTypes.Add("Platinum");
+
+            // Initialize purities
+            Purities.Add("24k");
+            Purities.Add("22k");
+            Purities.Add("18k");
+            Purities.Add("14k");
+            Purities.Add("92.5"); // For Silver
+            Purities.Add("95.0"); // For Platinum
         }
 
         private async void LoadProducts()
@@ -160,36 +165,69 @@ namespace Page_Navigation_App.ViewModel
 
         private async void AddOrUpdateProduct()
         {
-            // Calculate final price based on components
-            SelectedProduct.BasePrice = SelectedProduct.NetWeight * GetCurrentMetalRate();
-            SelectedProduct.FinalPrice = SelectedProduct.BasePrice + 
-                                       SelectedProduct.MakingCharges + 
-                                       SelectedProduct.StoneValue +
-                                       (SelectedProduct.BasePrice * SelectedProduct.WastagePercentage / 100);
-
-            // Validate the product before saving
-            var validationContext = new ValidationContext(SelectedProduct, null, null);
-            var validationResults = new List<ValidationResult>();
-            bool isValid = Validator.TryValidateObject(SelectedProduct, validationContext, validationResults, true);
-
-            if (!isValid)
+            try
             {
-                string errorMessage = string.Join("\n", validationResults.Select(v => v.ErrorMessage));
-                System.Windows.MessageBox.Show($"Validation Errors:\n{errorMessage}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-                return;
-            }
+                // Validate required fields
+                if (string.IsNullOrEmpty(SelectedProduct.MetalType) ||
+                    string.IsNullOrEmpty(SelectedProduct.Purity) ||
+                    SelectedProduct.CategoryID == 0)
+                {
+                    System.Windows.MessageBox.Show("Please fill in all required fields", "Validation Error");
+                    return;
+                }
 
-            if (SelectedProduct.ProductID > 0)
-            {
-                await _productService.UpdateProduct(SelectedProduct);
-            }
-            else
-            {
-                await _productService.AddProduct(SelectedProduct);
-            }
+                // Calculate prices in INR
+                decimal currentRate = GetCurrentMetalRate();
+                SelectedProduct.BasePrice = Math.Round(SelectedProduct.NetWeight * currentRate, 2);
+                
+                // Calculate making charges
+                decimal makingCharges = SelectedProduct.MakingCharges;
+                if (SelectedProduct.Subcategory?.SpecialMakingCharges != null)
+                {
+                    makingCharges = SelectedProduct.Subcategory.SpecialMakingCharges.Value;
+                }
+                else if (SelectedProduct.Category?.DefaultMakingCharges != null)
+                {
+                    makingCharges = SelectedProduct.Category.DefaultMakingCharges;
+                }
 
-            LoadProducts();
-            ClearForm();
+                // Calculate wastage
+                decimal wastagePercentage = SelectedProduct.WastagePercentage;
+                if (SelectedProduct.Subcategory?.SpecialWastage != null)
+                {
+                    wastagePercentage = SelectedProduct.Subcategory.SpecialWastage.Value;
+                }
+                else if (SelectedProduct.Category?.DefaultWastage != null)
+                {
+                    wastagePercentage = SelectedProduct.Category.DefaultWastage;
+                }
+
+                decimal wastageAmount = (SelectedProduct.BasePrice * wastagePercentage) / 100;
+
+                // Calculate final price in INR
+                SelectedProduct.FinalPrice = Math.Round(
+                    SelectedProduct.BasePrice + 
+                    makingCharges + 
+                    SelectedProduct.StoneValue +
+                    wastageAmount, 2);
+
+                // Save the product
+                if (SelectedProduct.ProductID > 0)
+                {
+                    await _productService.UpdateProduct(SelectedProduct);
+                }
+                else
+                {
+                    await _productService.AddProduct(SelectedProduct);
+                }
+
+                LoadProducts();
+                ClearForm();
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Error saving product: {ex.Message}", "Error");
+            }
         }
 
         private decimal GetCurrentMetalRate()
