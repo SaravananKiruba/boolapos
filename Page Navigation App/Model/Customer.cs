@@ -54,6 +54,34 @@ namespace Page_Navigation_App.Model
         [RegularExpression(@"^\+?[1-9]\d{1,14}$")]
         public string WhatsAppNumber { get; set; }
 
+        [StringLength(500)]
+        public string PreferredDesigns { get; set; }  // Customer's design preferences
+
+        [StringLength(100)]
+        public string PreferredMetalType { get; set; }  // Preferred metal type
+
+        [StringLength(100)]
+        public string RingSize { get; set; }  // Customer's ring size for future reference
+
+        [StringLength(100)]
+        public string BangleSize { get; set; }  // Customer's bangle size
+
+        [StringLength(100)]
+        public string ChainLength { get; set; }  // Preferred chain length
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal TotalPurchases { get; set; }  // Total purchase amount
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal OutstandingAmount { get; set; }  // Current outstanding amount
+
+        public bool IsGoldSchemeEnrolled { get; set; }  // Whether enrolled in gold savings scheme
+
+        public DateTime? LastPurchaseDate { get; set; }  // Date of last purchase
+
+        [StringLength(500)]
+        public string FamilyDetails { get; set; }  // Family details for occasion reminders
+
         // Navigation properties
         public ICollection<Order> Orders { get; set; }
         public ICollection<RepairJob> RepairJobs { get; set; }

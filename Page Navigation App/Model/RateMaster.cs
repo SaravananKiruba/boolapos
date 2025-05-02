@@ -199,5 +199,81 @@ namespace Page_Navigation_App.Model
                 }
             }
         }
+
+        private decimal _exchangeRate;
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(0.01, 999999999.99)]
+        public decimal ExchangeRate
+        {
+            get => _exchangeRate;
+            set
+            {
+                if (_exchangeRate != value)
+                {
+                    _exchangeRate = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private decimal _hallmarkingCharge;
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal HallmarkingCharge
+        {
+            get => _hallmarkingCharge;
+            set
+            {
+                if (_hallmarkingCharge != value)
+                {
+                    _hallmarkingCharge = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private decimal _defaultGst;
+        [Column(TypeName = "decimal(5,2)")]
+        [Range(0, 100)]
+        public decimal DefaultGst
+        {
+            get => _defaultGst;
+            set
+            {
+                if (_defaultGst != value)
+                {
+                    _defaultGst = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private string _marketSource;
+        [StringLength(100)]
+        public string MarketSource
+        {
+            get => _marketSource;
+            set
+            {
+                if (_marketSource != value)
+                {
+                    _marketSource = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private bool _isSpecialRate;
+        public bool IsSpecialRate
+        {
+            get => _isSpecialRate;
+            set
+            {
+                if (_isSpecialRate != value)
+                {
+                    _isSpecialRate = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
     }
 }

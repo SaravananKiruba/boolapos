@@ -72,6 +72,31 @@ namespace Page_Navigation_App.Model
 
         public bool IsActive { get; set; } = true;  // Added IsActive property with default value
 
+        [StringLength(100)]
+        public string Design { get; set; }  // Design number/name
+
+        [StringLength(100)]
+        public string Size { get; set; }  // Ring size, bangle size, etc.
+
+        [Column(TypeName = "decimal(10,3)")]
+        [Range(0, 9999.999)]
+        public decimal StoneWeight { get; set; }  // Weight of stones in carats
+
+        [StringLength(500)]
+        public string StoneDetails { get; set; }  // Details of stones used
+
+        [StringLength(100)]
+        public string HallmarkNumber { get; set; }  // Hallmark certification number
+
+        [StringLength(50)]
+        public string Collection { get; set; }  // Collection or series name
+
+        [Column(TypeName = "decimal(5,2)")]
+        [Range(0, 100)]
+        public decimal ValueAdditionPercentage { get; set; }  // Additional charges percentage
+
+        public bool IsCustomOrder { get; set; }  // Whether this is a custom order piece
+
         [Required]
         [ForeignKey("Category")]
         public int CategoryID { get; set; }

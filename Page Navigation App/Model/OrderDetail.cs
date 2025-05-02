@@ -68,6 +68,34 @@ namespace Page_Navigation_App.Model
         [StringLength(500)]
         public string Notes { get; set; }
 
+        [Column(TypeName = "decimal(5,2)")]
+        [Range(0, 100)]
+        public decimal WastagePercentage { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal WastageAmount { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal HallmarkingCharge { get; set; }
+
+        [Column(TypeName = "decimal(10,3)")]
+        public decimal StoneWeight { get; set; }  // Weight of stones in carats
+
+        [StringLength(500)]
+        public string StoneDetails { get; set; }  // Details of stones used
+
+        [StringLength(100)]
+        public string HallmarkNumber { get; set; }  // Hallmark certification number
+
+        [Column(TypeName = "decimal(5,2)")]
+        public decimal ValueAdditionPercentage { get; set; }  // Additional charges percentage
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal ValueAdditionAmount { get; set; }  // Additional charges amount
+
+        [StringLength(50)]
+        public string Size { get; set; }  // Size if applicable (ring/bangle)
+
         // Navigation properties
         public Order Order { get; set; }
         public Product Product { get; set; }

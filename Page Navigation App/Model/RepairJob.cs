@@ -63,6 +63,47 @@ namespace Page_Navigation_App.Model
         public bool WhatsAppNotificationSent { get; set; }
         public DateTime? CompletionDate { get; set; }
 
+        [Column(TypeName = "decimal(10,3)")]
+        [Range(0, 9999.999)]
+        public decimal AdditionalMetalWeight { get; set; }  // Weight of additional metal used
+
+        [Column(TypeName = "decimal(10,3)")]
+        [Range(0, 9999.999)]
+        public decimal StoneWeight { get; set; }  // Weight of stones if any
+
+        [StringLength(500)]
+        public string StoneDetails { get; set; }  // Details of stones used/replaced
+
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal MetalRate { get; set; }  // Current metal rate when repair started
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal MakingCharges { get; set; }  // Making charges for repair work
+
+        [StringLength(50)]
+        public string Size { get; set; }  // New size if resizing
+
+        [StringLength(100)]
+        public string OldHallmark { get; set; }  // Old hallmark number if any
+
+        [StringLength(100)]
+        public string NewHallmark { get; set; }  // New hallmark number if required
+
+        [StringLength(50)]
+        public string Purity { get; set; }  // Metal purity
+
+        [StringLength(500)]
+        public string QualityChecks { get; set; }  // Quality check notes
+
+        public bool IsHallmarkRequired { get; set; }  // Whether new hallmark is needed
+
+        [StringLength(500)]
+        public string WorkmanRemarks { get; set; }  // Remarks from the workman
+
+        [StringLength(50)]
+        public string AssignedTo { get; set; }  // Workman assigned to the job
+
         // Navigation property
         public virtual Customer Customer { get; set; }
     }
