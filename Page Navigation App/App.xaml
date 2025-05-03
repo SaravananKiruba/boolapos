@@ -70,6 +70,7 @@
             <utilities:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
             <utilities:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
             <utilities:LoginButtonTextConverter x:Key="LoginButtonTextConverter"/>
+            <utilities:LoginStatusTextConverter x:Key="LoginStatusTextConverter"/>
 
             <!-- MahApps Accent Colors -->
             <Color x:Key="MahApps.Colors.AccentBase">#2D98DA</Color>

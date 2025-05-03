@@ -1,12 +1,15 @@
 using System;
+using System.Diagnostics;
 using System.Security;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 using Page_Navigation_App.Utilities;
 using Page_Navigation_App.Services;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows.Threading;
 
 namespace Page_Navigation_App.ViewModel
 {
@@ -15,21 +18,23 @@ namespace Page_Navigation_App.ViewModel
         private readonly AuthenticationService _authService;
         private readonly NavigationVM _navigationVM;
         
-        private string _username;
+        private string _username = "admin"; // Default to admin for easier login
         private bool _isLoggingIn;
         private string _errorMessage;
-        private bool _hasPassword;
-        private bool _loginAttempted;
+        private bool _hasPassword = true; // Set default to true
         
         public string Username
         {
             get => _username;
             set
             {
-                _username = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(CanLoginEnabled));
-                ClearErrorMessage();
+                if (_username != value)
+                {
+                    _username = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(CanLoginEnabled));
+                    ClearErrorMessage();
+                }
             }
         }
         
@@ -38,9 +43,18 @@ namespace Page_Navigation_App.ViewModel
             get => _isLoggingIn;
             set
             {
-                _isLoggingIn = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(CanLoginEnabled));
+                if (_isLoggingIn != value)
+                {
+                    _isLoggingIn = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(CanLoginEnabled));
+                    
+                    // Debug output to verify state changes
+                    Debug.WriteLine($"IsLoggingIn set to: {value}");
+                    
+                    // Force UI update
+                    Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Render, new Action(() => { }));
+                }
             }
         }
         
@@ -49,8 +63,11 @@ namespace Page_Navigation_App.ViewModel
             get => _errorMessage;
             set
             {
-                _errorMessage = value;
-                OnPropertyChanged();
+                if (_errorMessage != value)
+                {
+                    _errorMessage = value;
+                    OnPropertyChanged();
+                }
             }
         }
 
@@ -59,67 +76,58 @@ namespace Page_Navigation_App.ViewModel
             get => _hasPassword;
             set
             {
-                _hasPassword = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(CanLoginEnabled));
-            }
-        }
-
-        public bool LoginAttempted
-        {
-            get => _loginAttempted;
-            set
-            {
-                _loginAttempted = value;
-                OnPropertyChanged();
+                if (_hasPassword != value)
+                {
+                    _hasPassword = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(CanLoginEnabled));
+                }
             }
         }
 
         // Property to enable/disable the login button based on form state
         public bool CanLoginEnabled => !IsLoggingIn && !string.IsNullOrWhiteSpace(Username) && HasPassword;
 
-        public ICommand LoginCommand { get; }
+        public ICommand LoginCommand { get; private set; }
         
         public LoginViewModel(AuthenticationService authService, NavigationVM navigationVM)
         {
             _authService = authService ?? throw new ArgumentNullException(nameof(authService));
             _navigationVM = navigationVM ?? throw new ArgumentNullException(nameof(navigationVM));
             
-            // Initialize default values
-            Username = string.Empty;
-            ErrorMessage = string.Empty;
-            IsLoggingIn = false;
-            HasPassword = false;
-            LoginAttempted = false;
+            // Create direct login command
+            LoginCommand = new SimpleRelayCommand(ExecuteLogin, CanExecuteLogin);
             
-            LoginCommand = new RelayCommand<object>(
-                async param => await LoginAsync(param as SecureString), 
-                param => CanLogin(param as SecureString)
-            );
+            // Initialize with test credentials for easier testing
+            Username = "admin";
+            ErrorMessage = "";
+            IsLoggingIn = false;
         }
         
-        private bool CanLogin(SecureString password)
+        private bool CanExecuteLogin()
         {
-            return !IsLoggingIn && !string.IsNullOrWhiteSpace(Username) && password != null && password.Length > 0;
+            return !IsLoggingIn && !string.IsNullOrWhiteSpace(Username) && HasPassword;
         }
         
-        private async Task LoginAsync(SecureString securePassword)
+        private async void ExecuteLogin()
         {
             try
             {
-                // Set login in progress
+                // Update UI immediately to show we're logging in
                 IsLoggingIn = true;
-                LoginAttempted = true;
-                ErrorMessage = string.Empty;
+                ErrorMessage = "";
+                MessageBox.Show("Login process started...", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
                 
-                // Add a small delay to ensure the UI updates
-                await Task.Delay(200);
+                // Get password from view
+                var passwordBox = FindPasswordBox();
+                if (passwordBox == null)
+                {
+                    ErrorMessage = "Could not access password field";
+                    IsLoggingIn = false;
+                    return;
+                }
                 
-                // Convert SecureString to string for authentication
-                string password = ConvertSecureStringToString(securePassword);
-                
-                // Log the attempt (optional)
-                Console.WriteLine($"Login attempt for user: {Username}");
+                string password = passwordBox.Password;
                 
                 // Attempt authentication
                 var user = await _authService.AuthenticateAsync(Username, password);
@@ -129,23 +137,27 @@ namespace Page_Navigation_App.ViewModel
                     // Successful login
                     _navigationVM.CurrentUser = user.FullName;
                     
-                    // Add a small delay for visual feedback
-                    await Task.Delay(500);
-                    
-                    // Show main window and close login window
-                    Application.Current.MainWindow.Show();
-                    
-                    // Close the login window
-                    CloseLoginWindow();
+                    // Show main window
+                    Application.Current.Dispatcher.Invoke(() => 
+                    {
+                        MessageBox.Show("Login successful!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                        Application.Current.MainWindow.Show();
+                        
+                        // Close the login window
+                        CloseLoginWindow();
+                    });
                 }
                 else
                 {
                     ErrorMessage = "Invalid username or password";
+                    MessageBox.Show("Invalid username or password. Please try again.", "Login Failed", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
             catch (Exception ex)
             {
                 ErrorMessage = $"Login error: {ex.Message}";
+                MessageBox.Show($"Login error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Debug.WriteLine($"Login exception: {ex}");
             }
             finally
             {
@@ -153,28 +165,46 @@ namespace Page_Navigation_App.ViewModel
             }
         }
         
-        private string ConvertSecureStringToString(SecureString secureString)
+        private System.Windows.Controls.PasswordBox FindPasswordBox()
         {
-            if (secureString == null)
-                return string.Empty;
-                
-            IntPtr unmanagedString = IntPtr.Zero;
-            try
+            foreach (Window window in Application.Current.Windows)
             {
-                unmanagedString = System.Runtime.InteropServices.Marshal.SecureStringToGlobalAllocUnicode(secureString);
-                return System.Runtime.InteropServices.Marshal.PtrToStringUni(unmanagedString);
+                if (window.DataContext == this)
+                {
+                    return FindPasswordBoxInWindow(window);
+                }
             }
-            finally
+            return null;
+        }
+
+        private System.Windows.Controls.PasswordBox FindPasswordBoxInWindow(DependencyObject parent)
+        {
+            // Try to cast to a FrameworkElement first to use FindName
+            if (parent is FrameworkElement element)
             {
-                System.Runtime.InteropServices.Marshal.ZeroFreeGlobalAllocUnicode(unmanagedString);
+                var passwordBox = element.FindName("PasswordBox") as System.Windows.Controls.PasswordBox;
+                if (passwordBox != null)
+                    return passwordBox;
             }
+            
+            // Continue with visual tree traversal
+            int childCount = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < childCount; i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                var result = FindPasswordBoxInWindow(child);
+                if (result != null)
+                    return result;
+            }
+            
+            return null;
         }
         
         private void ClearErrorMessage()
         {
             if (!string.IsNullOrEmpty(ErrorMessage))
             {
-                ErrorMessage = string.Empty;
+                ErrorMessage = "";
             }
         }
         
@@ -200,13 +230,13 @@ namespace Page_Navigation_App.ViewModel
         #endregion
     }
 
-    // A simple RelayCommand implementation
-    public class RelayCommand<T> : ICommand
+    // A simpler relay command implementation
+    public class SimpleRelayCommand : ICommand
     {
-        private readonly Action<T> _execute;
-        private readonly Predicate<T> _canExecute;
+        private readonly Action _execute;
+        private readonly Func<bool> _canExecute;
 
-        public RelayCommand(Action<T> execute, Predicate<T> canExecute = null)
+        public SimpleRelayCommand(Action execute, Func<bool> canExecute = null)
         {
             _execute = execute ?? throw new ArgumentNullException(nameof(execute));
             _canExecute = canExecute;
@@ -214,12 +244,12 @@ namespace Page_Navigation_App.ViewModel
 
         public bool CanExecute(object parameter)
         {
-            return _canExecute == null || _canExecute((T)parameter);
+            return _canExecute == null || _canExecute();
         }
 
         public void Execute(object parameter)
         {
-            _execute((T)parameter);
+            _execute();
         }
 
         public event EventHandler CanExecuteChanged

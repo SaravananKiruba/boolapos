@@ -54,6 +54,15 @@
 
             <!-- Login Form -->
             <StackPanel Grid.Row="1" Width="350" Margin="0,0,0,0" VerticalAlignment="Center">
+                <!-- Status Message -->
+                <TextBlock Text="{Binding IsLoggingIn, Converter={StaticResource LoginStatusTextConverter}, ConverterParameter='Please enter your credentials'}"
+                         Foreground="{StaticResource TextSecondaryBrush}"
+                         TextWrapping="Wrap"
+                         TextAlignment="Center"
+                         Margin="0,0,0,20"
+                         FontWeight="Medium"
+                         Visibility="Visible"/>
+
                 <!-- Error Message -->
                 <TextBlock Text="{Binding ErrorMessage}"
                          Foreground="Red"
@@ -101,6 +110,7 @@
                                BorderThickness="0"
                                Background="{StaticResource SurfaceBrush}"
                                Foreground="{StaticResource TextOnSurfaceBrush}"
+                               Password="Admin@123"
                                PasswordChanged="PasswordBox_PasswordChanged"/>
                     <iconPacks:PackIconMaterial Kind="Lock" 
                                            Width="20" 
@@ -110,62 +120,44 @@
                                            Foreground="{StaticResource TextSecondaryBrush}"/>
                 </Grid>
 
-                <!-- Login Button Area -->
-                <Grid>
-                    <!-- Login Button with Visual States -->
-                    <Button Content="{Binding IsLoggingIn, Converter={StaticResource LoginButtonTextConverter}, ConverterParameter='LOGIN'}" 
-                          Command="{Binding LoginCommand}"
-                          CommandParameter="{Binding ElementName=PasswordBox, Path=SecurePassword}"
-                          Style="{StaticResource MahApps.Styles.Button.Flat}"
-                          Height="45"
-                          BorderThickness="0"
-                          Background="{StaticResource PrimaryBrush}"
-                          Foreground="White"
-                          FontSize="16"
-                          FontWeight="Bold"
-                          Margin="0,0,0,15"
-                          Cursor="Hand"
-                          IsEnabled="{Binding CanLoginEnabled}">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="5"/>
-                            </Style>
-                        </Button.Resources>
-                        <Button.Effect>
-                            <DropShadowEffect BlurRadius="5" ShadowDepth="1" Opacity="0.3"/>
-                        </Button.Effect>
-                    </Button>
-                    
-                    <!-- Overlay login indicator when IsLoggingIn is true -->
-                    <StackPanel Orientation="Horizontal" 
-                              HorizontalAlignment="Center" 
-                              Visibility="{Binding IsLoggingIn, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <mah:ProgressRing IsActive="True" 
-                                      Foreground="White" 
-                                      Width="20" 
-                                      Height="20" 
-                                      Margin="0,0,10,0"/>
-                        <TextBlock Text="LOGGING IN..." 
-                               Foreground="White" 
-                               FontSize="16" 
-                               FontWeight="Bold"
-                               VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Grid>
+                <!-- Login Button -->
+                <Button Content="LOGIN" 
+                      Command="{Binding LoginCommand}"
+                      Style="{StaticResource MahApps.Styles.Button.Flat}"
+                      Height="45"
+                      BorderThickness="0"
+                      Background="{StaticResource PrimaryBrush}"
+                      Foreground="White"
+                      FontSize="16"
+                      FontWeight="Bold"
+                      Margin="0,0,0,15"
+                      Cursor="Hand"
+                      IsEnabled="{Binding CanLoginEnabled}">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="5"/>
+                        </Style>
+                    </Button.Resources>
+                    <Button.Effect>
+                        <DropShadowEffect BlurRadius="5" ShadowDepth="1" Opacity="0.3"/>
+                    </Button.Effect>
+                </Button>
                 
-                <!-- Loading indicator -->
+                <!-- Loading Progress Bar -->
                 <ProgressBar IsIndeterminate="True" 
-                           Height="5" 
-                           Margin="0,5,0,0" 
+                           Height="3" 
+                           Margin="0,5,0,5" 
+                           Background="Transparent"
+                           Foreground="{StaticResource PrimaryBrush}"
+                           BorderThickness="0"
                            Visibility="{Binding IsLoggingIn, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                 
-                <!-- Login Status Text -->
-                <TextBlock Text="Please wait, logging in..." 
+                <!-- Debug Info -->
+                <TextBlock Text="Default username: admin / password: Admin@123" 
+                         FontSize="11"
                          Foreground="{StaticResource TextSecondaryBrush}"
-                         FontSize="12"
                          TextAlignment="Center"
-                         Margin="0,5,0,0"
-                         Visibility="{Binding IsLoggingIn, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                         Margin="0,10,0,0"/>
             </StackPanel>
             
             <!-- Footer -->
