@@ -21,6 +21,14 @@ namespace Page_Navigation_App.Model
         [StringLength(20)]
         public string InvoiceNumber { get; set; }
         
+        // Add HUID tracking at invoice level
+        [StringLength(500)]
+        public string HUIDReferences { get; set; }  // Comma-separated list of HUIDs in this invoice
+        
+        // Add TagReferences property for tracking tags on the invoice
+        [StringLength(500)]
+        public string TagReferences { get; set; }  // Comma-separated list of tag numbers
+        
         [Required]
         [StringLength(50)]
         public string Status { get; set; } = "Pending"; // Pending, Completed, Cancelled, etc.
@@ -47,7 +55,17 @@ namespace Page_Navigation_App.Model
 
         [StringLength(20)]
         public string GSTNumber { get; set; }
-
+        
+        // Add GST invoice compliance fields
+        [StringLength(20)]
+        public string HSNCode { get; set; }  // HSN code for jewelry items
+        
+        public bool IsGSTRegisteredCustomer { get; set; } = false;
+        
+        // Add E-way bill support for transport compliance
+        [StringLength(20)]
+        public string EWayBillNumber { get; set; }
+        
         [Required]
         public int TotalItems { get; set; }
 

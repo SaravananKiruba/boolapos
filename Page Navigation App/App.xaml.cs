@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Windows;
 using System;
 using Microsoft.EntityFrameworkCore;
@@ -21,30 +23,38 @@ namespace Page_Navigation_App
             ConfigureServices(serviceCollection);
 
             ServiceProvider = serviceCollection.BuildServiceProvider();
-
-            InitializeComponent();
         }
 
         private void ConfigureServices(IServiceCollection services)
         {
+            // Configure app settings
+            services.Configure<AppSettings>(options => {
+                options.BackupFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Backups");
+                options.EncryptionKey = "JSMS_SecureEncryptionKey_2025";
+                options.EnableAutoBackup = true;
+                options.AutoBackupIntervalHours = 24;
+            });
+
+            // Add logging services
+            services.AddLogging(configure => {
+                // Using a simpler logging configuration without specific providers
+                configure.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Information);
+            });
+
             // Register DbContext with SQLite
             services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlite("Data Source=StockInventory.db"),
                 ServiceLifetime.Scoped);
 
-            // Configure backup path
-            string backupPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Backups");
+            // Authentication Service
+            services.AddScoped<AuthenticationService>();
 
             // Core Services - Scoped lifetime
             services.AddScoped<LogService>();
             services.AddScoped<SecurityService>();
             services.AddScoped<ConfigurationService>();
             services.AddScoped<ReportService>();
-            services.AddScoped<BackupService>(provider => 
-                new BackupService(
-                    provider.GetRequiredService<AppDbContext>(),
-                    backupPath
-                ));
+            services.AddScoped<BackupService>();
 
             // Business Services - Scoped lifetime
             services.AddScoped<CustomerService>();
@@ -54,37 +64,17 @@ namespace Page_Navigation_App
             services.AddScoped<SupplierService>();
             services.AddScoped<RateMasterService>();
             services.AddScoped<RepairJobService>();
-            services.AddScoped<StockService>(provider => new StockService(
-                provider.GetRequiredService<AppDbContext>(),
-                provider.GetRequiredService<RateMasterService>()
-            ));
-            services.AddScoped<ExchangeService>(provider => new ExchangeService(
-                provider.GetRequiredService<AppDbContext>(),
-                provider.GetRequiredService<StockService>(),
-                provider.GetRequiredService<OrderService>()
-            ));
+            services.AddScoped<StockService>();
+            services.AddScoped<ExchangeService>();
             services.AddScoped<CategoryService>();
             services.AddScoped<UserService>();
-
-            // Add PrintService with all required dependencies
-            services.AddScoped<PrintService>(provider => new PrintService(
-                provider.GetRequiredService<OrderService>(),
-                provider.GetRequiredService<RepairJobService>(),
-                provider.GetRequiredService<RateMasterService>(),
-                provider.GetRequiredService<ProductService>(),
-                provider.GetRequiredService<CustomerService>()
-            ));
+            services.AddScoped<PrintService>();
 
             // ViewModels - Transient lifetime except for NavigationVM
             services.AddSingleton<NavigationVM>();
             services.AddTransient<HomeVM>();
             services.AddTransient<CustomerVM>();
-            services.AddTransient<ProductVM>(provider => new ProductVM(
-                provider.GetRequiredService<ProductService>(),
-                provider.GetRequiredService<CategoryService>(),
-                provider.GetRequiredService<SupplierService>(),
-                provider.GetRequiredService<RateMasterService>()
-            ));
+            services.AddTransient<ProductVM>();
             services.AddTransient<OrderVM>();
             services.AddTransient<TransactionVM>();
             services.AddTransient<SupplierVM>();
@@ -95,17 +85,41 @@ namespace Page_Navigation_App
             services.AddTransient<UserVM>();
             services.AddTransient<ReportVM>();
             services.AddTransient<SettingsVM>();
+            
+            // Login ViewModel
+            services.AddTransient<LoginViewModel>();
 
-            // Register MainWindow as Singleton
+            // Register Windows
             services.AddSingleton<MainWindow>();
+            services.AddTransient<LoginWindow>();
         }
 
-        protected override void OnStartup(StartupEventArgs e)
+        protected override async void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
 
+            // Ensure database is created and migrations are applied
+            using (var scope = ServiceProvider.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                await dbContext.Database.MigrateAsync();
+                
+                // Seed default admin user if needed
+                var authService = scope.ServiceProvider.GetRequiredService<AuthenticationService>();
+                await authService.SeedDefaultUserAsync();
+            }
+
+            // Get main window but don't show it yet
             var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
-            mainWindow.Show();
+            
+            // Set main window as the application's main window but hide it
+            MainWindow = mainWindow;
+            mainWindow.Hide();
+            
+            // Show login window
+            var loginViewModel = ServiceProvider.GetRequiredService<LoginViewModel>();
+            var loginWindow = ServiceProvider.GetRequiredService<LoginWindow>();
+            loginWindow.Show();
         }
     }
 }

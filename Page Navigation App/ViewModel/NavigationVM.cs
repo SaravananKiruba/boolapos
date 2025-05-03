@@ -9,6 +9,7 @@ namespace Page_Navigation_App.ViewModel
     {
         private readonly UserService _userService;
         private object _currentView;
+        private string _currentUser;
         
         public object CurrentView
         {
@@ -16,6 +17,16 @@ namespace Page_Navigation_App.ViewModel
             set
             {
                 _currentView = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string CurrentUser
+        {
+            get => _currentUser;
+            set
+            {
+                _currentUser = value;
                 OnPropertyChanged();
             }
         }

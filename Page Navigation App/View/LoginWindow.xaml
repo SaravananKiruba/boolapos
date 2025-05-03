@@ -1,0 +1,147 @@
+<mah:MetroWindow x:Class="Page_Navigation_App.View.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+        xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+        xmlns:local="clr-namespace:Page_Navigation_App.View"
+        mc:Ignorable="d"
+        Title="Boola POS Login" 
+        Height="450" 
+        Width="600"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource BackgroundBrush}"
+        BorderThickness="1"
+        ResizeMode="NoResize"
+        ShowCloseButton="False"
+        ShowMaxRestoreButton="False"
+        ShowMinButton="False"
+        WindowStyle="None">
+
+    <Border Background="{StaticResource BackgroundBrush}" CornerRadius="10" Margin="20">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="15" ShadowDepth="0" Opacity="0.2"/>
+        </Border.Effect>
+        
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <StackPanel Grid.Row="0" Margin="0,30,0,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <iconPacks:PackIconMaterial Kind="StorefrontOutline"
+                                             Width="40"
+                                             Height="40"
+                                             Margin="0 0 15 0"
+                                             Foreground="{StaticResource PrimaryBrush}"/>
+                    <TextBlock Text="Boola POS"
+                             FontSize="32"
+                             FontWeight="SemiBold"
+                             Foreground="{StaticResource TextPrimaryBrush}"
+                             VerticalAlignment="Center"/>
+                </StackPanel>
+                <TextBlock Text="Login to your account"
+                         FontSize="16"
+                         Foreground="{StaticResource TextSecondaryBrush}"
+                         HorizontalAlignment="Center"
+                         Margin="0,10,0,0"/>
+            </StackPanel>
+
+            <!-- Login Form -->
+            <StackPanel Grid.Row="1" Width="350" Margin="0,30,0,0">
+                <!-- Error Message -->
+                <TextBlock Text="{Binding ErrorMessage}"
+                         Foreground="{StaticResource ErrorBrush}"
+                         TextWrapping="Wrap"
+                         TextAlignment="Center"
+                         Margin="0,0,0,20"
+                         Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}"/>
+
+                <!-- Username -->
+                <TextBlock Text="Username" 
+                         Foreground="{StaticResource TextSecondaryBrush}" 
+                         Margin="0,0,0,5"/>
+                <Grid Margin="0,0,0,20">
+                    <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" 
+                           mah:TextBoxHelper.Watermark="Enter your username"
+                           Style="{StaticResource MahApps.Styles.TextBox}"
+                           Height="40"
+                           FontSize="14"
+                           Padding="40,0,10,0"
+                           BorderThickness="0"
+                           Background="{StaticResource SurfaceBrush}"
+                           Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                    <iconPacks:PackIconMaterial Kind="Account" 
+                                           Width="20" 
+                                           Height="20" 
+                                           VerticalAlignment="Center" 
+                                           Margin="10,0,0,0"
+                                           Foreground="{StaticResource TextSecondaryBrush}"/>
+                </Grid>
+
+                <!-- Password -->
+                <TextBlock Text="Password" 
+                         Foreground="{StaticResource TextSecondaryBrush}" 
+                         Margin="0,0,0,5"/>
+                <Grid Margin="0,0,0,30">
+                    <PasswordBox x:Name="PasswordBox"
+                               mah:TextBoxHelper.Watermark="Enter your password"
+                               Style="{StaticResource MahApps.Styles.PasswordBox}"
+                               Height="40"
+                               FontSize="14"
+                               Padding="40,0,10,0"
+                               BorderThickness="0"
+                               Background="{StaticResource SurfaceBrush}"
+                               Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                    <iconPacks:PackIconMaterial Kind="Lock" 
+                                           Width="20" 
+                                           Height="20" 
+                                           VerticalAlignment="Center" 
+                                           Margin="10,0,0,0"
+                                           Foreground="{StaticResource TextSecondaryBrush}"/>
+                </Grid>
+
+                <!-- Login Button -->
+                <Button Content="Login"
+                      Command="{Binding LoginCommand}"
+                      CommandParameter="{Binding ElementName=PasswordBox, Path=SecurePassword}"
+                      Style="{StaticResource MahApps.Styles.Button.Flat}"
+                      Height="45"
+                      BorderThickness="0"
+                      Background="{StaticResource PrimaryBrush}"
+                      Foreground="White"
+                      FontSize="16"
+                      Cursor="Hand">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="5"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </StackPanel>
+
+            <!-- Footer -->
+            <StackPanel Grid.Row="2" Margin="0,0,0,20">
+                <TextBlock Text="© 2025 Boola POS System"
+                         FontSize="12"
+                         Foreground="{StaticResource TextSecondaryBrush}"
+                         HorizontalAlignment="Center"/>
+                <Button Content="Exit"
+                      Click="ExitButton_Click"
+                      Style="{StaticResource MahApps.Styles.Button.Flat}"
+                      Height="30"
+                      Width="80"
+                      Margin="0,10,0,0"
+                      BorderThickness="0"
+                      Background="Transparent"
+                      Foreground="{StaticResource TextSecondaryBrush}"
+                      HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</mah:MetroWindow>

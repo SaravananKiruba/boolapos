@@ -44,6 +44,13 @@ namespace Page_Navigation_App.Model
         [StringLength(20)]
         public string Barcode { get; set; }  // Will be auto-generated
 
+        // Add HUID tracking
+        [StringLength(20)]
+        public string HUID { get; set; }  // Hallmark Unique ID as per BIS regulations
+
+        [StringLength(50)]
+        public string TagNumber { get; set; }  // For physical tag/RFID integration
+
         [StringLength(500)]
         public string Description { get; set; } = "Traditional gold necklace with ruby stone work and antique finish";
 
@@ -83,6 +90,12 @@ namespace Page_Navigation_App.Model
 
         [StringLength(50)]
         public string Collection { get; set; } = "Traditional";
+
+        // Add BIS compliance fields
+        public bool IsBISCertified { get; set; } = false;
+        
+        [StringLength(50)]
+        public string BISStandard { get; set; }  // BIS standard reference number
 
         [Column(TypeName = "decimal(5,2)")]
         [Range(0, 100)]

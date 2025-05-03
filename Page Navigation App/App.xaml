@@ -64,6 +64,7 @@
 
             <!-- Converters -->
             <utilities:ViewModelToTitleConverter x:Key="ViewModelToTitleConverter"/>
+            <utilities:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
 
             <!-- Theme Colors -->
             <Color x:Key="Primary">#FF2D98DA</Color>

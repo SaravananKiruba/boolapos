@@ -32,6 +32,8 @@ namespace Page_Navigation_App.Data
         public DbSet<Role> Roles { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }
         public DbSet<EMI> EMIs { get; set; }
+        // Add ReportData to DbContext
+        public DbSet<ReportData> ReportData { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -56,6 +58,22 @@ namespace Page_Navigation_App.Data
                 .WithMany()
                 .HasForeignKey(e => e.OrderID)
                 .OnDelete(DeleteBehavior.NoAction);
+                
+            // Add indexes for faster querying
+            modelBuilder.Entity<Product>()
+                .HasIndex(p => p.HUID);
+                
+            modelBuilder.Entity<Product>()
+                .HasIndex(p => p.TagNumber);
+                
+            modelBuilder.Entity<Order>()
+                .HasIndex(o => o.OrderDate);
+                
+            modelBuilder.Entity<Customer>()
+                .HasIndex(c => c.PhoneNumber);
+                
+            modelBuilder.Entity<RepairJob>()
+                .HasIndex(r => r.Status);
         }
     }
 }
