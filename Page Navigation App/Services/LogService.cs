@@ -162,23 +162,6 @@ namespace Page_Navigation_App.Services
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<NotificationLog>> GetNotificationLogs(
-            DateTime? startDate = null,
-            DateTime? endDate = null)
-        {
-            var query = _context.NotificationLog.AsQueryable();
-
-            if (startDate.HasValue)
-                query = query.Where(l => l.Timestamp >= startDate.Value);
-
-            if (endDate.HasValue)
-                query = query.Where(l => l.Timestamp <= endDate.Value);
-
-            return await query
-                .OrderByDescending(l => l.Timestamp)
-                .ToListAsync();
-        }
-
         public async Task<bool> ClearOldLogs(int daysToKeep)
         {
             var cutoffDate = DateTime.Now.AddDays(-daysToKeep);

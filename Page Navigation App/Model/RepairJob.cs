@@ -111,10 +111,6 @@ namespace Page_Navigation_App.Model
         
         [StringLength(255)]
         public string ImagePath { get; set; }
-        
-        public bool SMSNotificationSent { get; set; }
-        
-        public bool WhatsAppNotificationSent { get; set; }
 
         // Navigation Property
         public virtual Customer Customer { get; set; }

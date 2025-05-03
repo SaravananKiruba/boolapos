@@ -376,9 +376,8 @@ namespace Page_Navigation_App.Services
 
             foreach (var payment in upcomingPayments)
             {
-                // TODO: Integrate with NotificationService to send reminders
                 await _logService.LogInfo(
-                    $"Payment reminder would be sent to customer {payment.CustomerId} " +
+                    $"Payment reminder check for customer {payment.CustomerId} " +
                     $"for amount {payment.InstallmentAmount} due on {payment.NextInstallmentDate}");
             }
         }

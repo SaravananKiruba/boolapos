@@ -63,14 +63,12 @@ namespace Page_Navigation_App.ViewModel
             "All",
             "System",
             "Security",
-            "Audit",
-            "Notification"
+            "Audit"
         };
 
         public ObservableCollection<LogEntry> SystemLogs { get; } = new ObservableCollection<LogEntry>();
         public ObservableCollection<SecurityLog> SecurityLogs { get; } = new ObservableCollection<SecurityLog>();
         public ObservableCollection<AuditLog> AuditLogs { get; } = new ObservableCollection<AuditLog>();
-        public ObservableCollection<NotificationLog> NotificationLogs { get; } = new ObservableCollection<NotificationLog>();
 
         public ICommand LoadLogsCommand { get; }
 
@@ -79,7 +77,6 @@ namespace Page_Navigation_App.ViewModel
             SystemLogs.Clear();
             SecurityLogs.Clear();
             AuditLogs.Clear();
-            NotificationLogs.Clear();
 
             switch (_selectedLogType)
             {
@@ -101,11 +98,6 @@ namespace Page_Navigation_App.ViewModel
                     foreach (var log in auditLogs)
                         AuditLogs.Add(log);
                     break;
-                case "Notification":
-                    var notificationLogs = await _logService.GetNotificationLogs(_startDate, _endDate);
-                    foreach (var log in notificationLogs)
-                        NotificationLogs.Add(log);
-                    break;
             }
         }
 
@@ -114,9 +106,8 @@ namespace Page_Navigation_App.ViewModel
             var systemLogsTask = _logService.GetSystemLogs(_startDate, _endDate);
             var securityLogsTask = _securityService.GetSecurityLogs(_startDate, _endDate);
             var auditLogsTask = _logService.GetAuditLogs(_startDate, _endDate);
-            var notificationLogsTask = _logService.GetNotificationLogs(_startDate, _endDate);
 
-            await Task.WhenAll(systemLogsTask, securityLogsTask, auditLogsTask, notificationLogsTask);
+            await Task.WhenAll(systemLogsTask, securityLogsTask, auditLogsTask);
 
             foreach (var log in await systemLogsTask)
                 SystemLogs.Add(log);
@@ -124,8 +115,6 @@ namespace Page_Navigation_App.ViewModel
                 SecurityLogs.Add(log);
             foreach (var log in await auditLogsTask)
                 AuditLogs.Add(log);
-            foreach (var log in await notificationLogsTask)
-                NotificationLogs.Add(log);
         }
     }
 }

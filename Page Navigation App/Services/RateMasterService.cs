@@ -34,9 +34,6 @@ namespace Page_Navigation_App.Services
             await _context.RateMaster.AddAsync(rate);
             await _context.SaveChangesAsync();
 
-            // Notify subscribers about rate change
-            await NotifyRateChange(rate);
-
             return rate;
         }
 
@@ -47,9 +44,6 @@ namespace Page_Navigation_App.Services
 
             _context.Entry(existingRate).CurrentValues.SetValues(rate);
             await _context.SaveChangesAsync();
-
-            // Notify subscribers about rate change
-            await NotifyRateChange(rate);
 
             return true;
         }
@@ -92,42 +86,6 @@ namespace Page_Navigation_App.Services
                            r.Purity == purity &&
                            r.IsActive)
                 .FirstOrDefaultAsync();
-        }
-
-        private async Task NotifyRateChange(RateMaster newRate)
-        {
-            // Get Settings
-            var settings = await _context.Settings.FirstOrDefaultAsync();
-            if (settings == null) return;
-
-            // Since we don't have specific SMS/WhatsApp notification settings in our Setting model,
-            // we'll use the generic OrderNotifications setting for now
-            bool sendNotifications = settings.OrderNotifications;
-
-            if (sendNotifications)
-            {
-                var message = $"Rate Update: {newRate.MetalType} {newRate.Purity} - ₹{newRate.Rate:N2}/g";
-                
-                // Get customers who opted for rate notifications
-                var customers = await _context.Customers
-                    .Where(c => c.NotifyRateChanges)
-                    .ToListAsync();
-
-                foreach (var customer in customers)
-                {
-                    if (!string.IsNullOrEmpty(customer.PhoneNumber))
-                    {
-                        // TODO: Implement SMS notification
-                        // await _smsService.SendSMS(customer.PhoneNumber, message);
-                    }
-
-                    if (!string.IsNullOrEmpty(customer.WhatsAppNumber))
-                    {
-                        // TODO: Implement WhatsApp notification
-                        // await _whatsAppService.SendMessage(customer.WhatsAppNumber, message);
-                    }
-                }
-            }
         }
     }
 }
