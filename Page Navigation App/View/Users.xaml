@@ -7,6 +7,7 @@
              xmlns:local="clr-namespace:Page_Navigation_App.View"
              xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:utilities="clr-namespace:Page_Navigation_App.Utilities"
              mc:Ignorable="d" 
              d:DesignHeight="750" d:DesignWidth="1200">
     
@@ -101,7 +102,8 @@
                 <PasswordBox Style="{StaticResource MahApps.Styles.PasswordBox}"
                             Margin="0,5"
                             mah:TextBoxHelper.Watermark="Password"
-                            Password="{Binding Password, UpdateSourceTrigger=PropertyChanged}"/>
+                            utilities:PasswordBoxHelper.Attach="True"
+                            utilities:PasswordBoxHelper.Password="{Binding Password, UpdateSourceTrigger=PropertyChanged}"/>
 
                 <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
                     <Button Style="{StaticResource MahApps.Styles.Button.Square.Accent}"
