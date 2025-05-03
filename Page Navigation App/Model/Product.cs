@@ -82,6 +82,12 @@ namespace Page_Navigation_App.Model
         [Required]
         public bool IsActive { get; set; } = true;
 
+        [Column(TypeName = "int")]
+        public int StockQuantity { get; set; } = 0;
+
+        [Column(TypeName = "int")]
+        public int ReorderLevel { get; set; } = 5;
+
         [StringLength(100)]
         public string Design { get; set; } = "Antique finish with temple work";
 

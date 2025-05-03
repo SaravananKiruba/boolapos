@@ -52,8 +52,9 @@ namespace Page_Navigation_App.Services
             catch (Exception ex)
             {
                 await _logService.LogError(
-                    "FINANCE_UPDATE_ERROR",
-                    $"Error updating finance record: {ex.Message}");
+                    "Error updating finance record",
+                    ex,
+                    "FINANCE_UPDATE_ERROR");
                 return false;
             }
         }
@@ -136,12 +137,6 @@ namespace Page_Navigation_App.Services
                     finance.TransactionDate = DateTime.Now;
                 }
                 
-                // Add created date and user if not provided
-                if (string.IsNullOrEmpty(finance.CreatedBy))
-                {
-                    finance.CreatedBy = Environment.UserName;
-                }
-                
                 // Set status to Active by default if not provided
                 if (string.IsNullOrEmpty(finance.Status))
                 {
@@ -160,8 +155,9 @@ namespace Page_Navigation_App.Services
             catch (Exception ex)
             {
                 await _logService.LogError(
-                    "FINANCE_CREATE_ERROR",
-                    $"Error creating finance record: {ex.Message}");
+                    "Error creating finance record",
+                    ex,
+                    "FINANCE_CREATE_ERROR");
                 throw;
             }
         }
@@ -192,7 +188,7 @@ namespace Page_Navigation_App.Services
                 .Sum(t => t.Amount);
             
             var sales = transactions
-                .Where(t => t.TransactionType == "Income" && t.OrderID.HasValue)
+                .Where(t => t.TransactionType == "Income" && t.OrderReference.HasValue)
                 .Sum(t => t.Amount);
                 
             var refunds = transactions
@@ -202,7 +198,7 @@ namespace Page_Navigation_App.Services
             // Payment method breakdown
             var paymentMethods = transactions
                 .Where(t => t.TransactionType == "Income")
-                .GroupBy(t => t.PaymentMethod)
+                .GroupBy(t => t.PaymentMode)
                 .Select(g => new
                 {
                     Method = g.Key,
@@ -254,8 +250,9 @@ namespace Page_Navigation_App.Services
             catch (Exception ex)
             {
                 await _logService.LogError(
-                    "FINANCE_DELETE_ERROR",
-                    $"Error deleting finance record: {ex.Message}");
+                    "Error deleting finance record",
+                    ex,
+                    "FINANCE_DELETE_ERROR");
                 return false;
             }
         }
@@ -616,7 +613,7 @@ namespace Page_Navigation_App.Services
                 { "ActiveCustomers", schemeTransactions
                     .Select(t => t.CustomerId)
                     .Distinct()
-                    .Count() } // Added parentheses to call Count() method
+                    .Count() }
             };
         }
 
@@ -635,7 +632,7 @@ namespace Page_Navigation_App.Services
 
             return new Dictionary<string, decimal>
             {
-                ["TotalPlans"] = activePlans.Count(), // Added parentheses to call Count() method
+                ["TotalPlans"] = activePlans.Count,
                 ["TotalOutstanding"] = activePlans.Sum(f => f.RemainingAmount ?? 0),
                 ["AverageEMIAmount"] = activePlans.Any() 
                     ? activePlans.Average(f => f.InstallmentAmount ?? 0) 
@@ -682,12 +679,11 @@ namespace Page_Navigation_App.Services
                 {
                     TransactionDate = DateTime.Now,
                     Amount = openingCashBalance,
-                    Type = "System",
+                    TransactionType = "System",
                     Category = "Day Start",
-                    Description = "Opening cash balance",
-                    PaymentMethod = "Cash",
-                    RecordedBy = Environment.UserName,
-                    Notes = notes ?? "Day start operation"
+                    Description = notes ?? "Day start operation",
+                    PaymentMode = "Cash",
+                    ReferenceNumber = Environment.UserName
                 };
                 
                 await _context.Finances.AddAsync(dayStart);
@@ -699,7 +695,10 @@ namespace Page_Navigation_App.Services
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                await _logService.LogError("FinanceService.StartDay", ex.Message, ex.StackTrace);
+                await _logService.LogError(
+                    "Error starting day", 
+                    ex, 
+                    "FinanceService.StartDay");
                 return false;
             }
         }
@@ -712,7 +711,7 @@ namespace Page_Navigation_App.Services
                 // Calculate closing balance
                 var today = DateTime.Now.Date;
                 var dayTransactions = await _context.Finances
-                    .Where(f => f.TransactionDate.Date == today && f.PaymentMethod == "Cash")
+                    .Where(f => f.TransactionDate.Date == today && f.PaymentMode == "Cash")
                     .ToListAsync();
                     
                 if (!dayTransactions.Any(t => t.Category == "Day Start"))
@@ -724,9 +723,9 @@ namespace Page_Navigation_App.Services
                 decimal closingBalance = 0;
                 foreach (var txn in dayTransactions)
                 {
-                    if (txn.Type == "Income" || txn.Type == "System")
+                    if (txn.TransactionType == "Income" || txn.TransactionType == "System")
                         closingBalance += txn.Amount;
-                    else if (txn.Type == "Expense")
+                    else if (txn.TransactionType == "Expense")
                         closingBalance -= txn.Amount;
                 }
                 
@@ -735,12 +734,11 @@ namespace Page_Navigation_App.Services
                 {
                     TransactionDate = DateTime.Now,
                     Amount = closingBalance,
-                    Type = "System",
+                    TransactionType = "System",
                     Category = "Day Close",
-                    Description = "Closing cash balance",
-                    PaymentMethod = "Cash",
-                    RecordedBy = Environment.UserName,
-                    Notes = notes ?? "Day end operation"
+                    Description = notes ?? "Day end operation",
+                    PaymentMode = "Cash",
+                    ReferenceNumber = Environment.UserName
                 };
                 
                 await _context.Finances.AddAsync(dayClose);
@@ -752,7 +750,10 @@ namespace Page_Navigation_App.Services
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                await _logService.LogError("FinanceService.EndDay", ex.Message, ex.StackTrace);
+                await _logService.LogError(
+                    "Error ending day",
+                    ex,
+                    "FinanceService.EndDay");
                 return false;
             }
         }

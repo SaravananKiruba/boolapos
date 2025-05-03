@@ -23,6 +23,14 @@ namespace Page_Navigation_App.Model
         [Required]
         [StringLength(50)]
         public string PaymentMode { get; set; } = "Cash"; // Cash, Card, UPI, Bank_Transfer, etc.
+        
+        // Adding PaymentMethod as alias for PaymentMode for compatibility
+        [NotMapped]
+        public string PaymentMethod 
+        { 
+            get { return PaymentMode; } 
+            set { PaymentMode = value; } 
+        }
 
         [Required]
         [StringLength(50)]
@@ -36,6 +44,14 @@ namespace Page_Navigation_App.Model
 
         // Order reference
         public int? OrderReference { get; set; }
+        
+        // Adding OrderID as alias for OrderReference for compatibility
+        [NotMapped]
+        public int? OrderID 
+        { 
+            get { return OrderReference; } 
+            set { OrderReference = value; } 
+        }
 
         // Customer reference
         public int? CustomerId { get; set; }
@@ -92,6 +108,10 @@ namespace Page_Navigation_App.Model
         public int? NumberOfInstallments { get; set; }
         
         public int? InstallmentNumber { get; set; }
+        
+        // Adding CreatedBy property
+        [StringLength(100)]
+        public string CreatedBy { get; set; }
 
         // Navigation property
         public virtual Customer Customer { get; set; }

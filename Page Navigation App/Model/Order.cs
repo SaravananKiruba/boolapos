@@ -32,6 +32,14 @@ namespace Page_Navigation_App.Model
         [StringLength(50)]
         public string PaymentMethod { get; set; } = "Cash"; // Cash, Credit Card, UPI, EMI, etc.
 
+        // Adding PaymentType as alias for PaymentMethod for compatibility
+        [NotMapped]
+        public string PaymentType 
+        { 
+            get { return PaymentMethod; } 
+            set { PaymentMethod = value; } 
+        }
+
         public int? EMIMonths { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]

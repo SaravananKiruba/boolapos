@@ -57,32 +57,24 @@ namespace Page_Navigation_App.Services
                 // Returned product (negative quantity)
                 var returnDetail = new OrderDetail
                 {
-                    ProductID = returnedProduct.ProductID,
-                    Quantity = -returnedQuantity, // Negative for returned item
-                    UnitPrice = returnedProduct.FinalPrice,
-                    TotalAmount = -returnValue, // Negative amount for returned item
+                    ProductID = returnedProduct.ProductID,                   
                     NetWeight = returnedProduct.NetWeight,
                     GrossWeight = returnedProduct.GrossWeight,
                     MetalRate = returnedProduct.BasePrice,
                     MakingCharges = returnedProduct.MakingCharges,
-                    WastagePercentage = returnedProduct.WastagePercentage,
-                    HSNCode = returnedProduct.HSNCode
+                   
                 };
                 orderDetails.Add(returnDetail);
 
                 // New product
                 var newDetail = new OrderDetail
                 {
-                    ProductID = newProduct.ProductID,
-                    Quantity = newQuantity,
-                    UnitPrice = newProduct.FinalPrice,
-                    TotalAmount = newValue,
+                    ProductID = newProduct.ProductID,                  
                     NetWeight = newProduct.NetWeight,
                     GrossWeight = newProduct.GrossWeight,
                     MetalRate = newProduct.BasePrice,
                     MakingCharges = newProduct.MakingCharges,
-                    WastagePercentage = newProduct.WastagePercentage,
-                    HSNCode = newProduct.HSNCode
+                    
                 };
                 orderDetails.Add(newDetail);
 

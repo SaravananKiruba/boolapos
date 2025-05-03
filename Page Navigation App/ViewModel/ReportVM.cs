@@ -260,7 +260,7 @@ namespace Page_Navigation_App.ViewModel
                 { "Total Products", totalProducts },
                 { "Total Inventory Value", totalValue },
                 { "Metal Types", metalTypes },
-                { "Low Stock Products", lowStockProducts.Count }
+                { "Low Stock Products", lowStockProducts.Count() }
             };
         }
         

@@ -18,6 +18,7 @@ namespace Page_Navigation_App.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<Subcategory> Subcategories { get; set; }
         public DbSet<Stock> Stocks { get; set; }
+        public DbSet<StockLedger> StockLedgers { get; set; }
         public DbSet<Finance> Finances { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
