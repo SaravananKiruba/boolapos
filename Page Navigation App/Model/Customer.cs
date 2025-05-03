@@ -14,11 +14,19 @@ namespace Page_Navigation_App.Model
         [Required]
         [StringLength(100, MinimumLength = 2)]
         public string CustomerName { get; set; } = "Rajesh Kumar";
+        
+        // Add Name alias property
+        [NotMapped]
+        public string Name { get => CustomerName; set => CustomerName = value; }
 
         [Required]
         [StringLength(15)]
         [RegularExpression(@"^\+?[1-9]\d{1,14}$")]
         public string PhoneNumber { get; set; } = "+919876543210";
+        
+        // Add Mobile alias property
+        [NotMapped]
+        public string Mobile { get => PhoneNumber; set => PhoneNumber = value; }
 
         [StringLength(200)]
         public string Address { get; set; } = "123 Main Street, Bangalore";

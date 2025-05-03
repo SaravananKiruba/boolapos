@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Page_Navigation_App.Data;
 using Page_Navigation_App.Model;
@@ -43,7 +44,7 @@ namespace Page_Navigation_App.Services
                     Status = "Exchange",
                     PaymentMethod = "Exchange",
                     TotalItems = 2, // Returned + new item
-                    Notes = notes ?? $"Product exchange: {returnedProduct.Name} for {newProduct.Name}"
+                    Notes = notes ?? $"Product exchange: {returnedProduct.ProductName} for {newProduct.ProductName}"
                 };
 
                 // 2. Calculate values
@@ -99,7 +100,7 @@ namespace Page_Navigation_App.Services
                 exchangeOrder.HasMetalExchange = true;
                 exchangeOrder.ExchangeMetalType = returnedProduct.CategoryID == newProduct.CategoryID ? 
                     returnedProduct.CategoryID.ToString() : "Mixed";
-                exchangeOrder.ExchangeMetalPurity = returnedProduct.PurityLevel;
+                exchangeOrder.ExchangeMetalPurity = returnedProduct.Purity;
                 exchangeOrder.ExchangeMetalWeight = returnedProduct.NetWeight * returnedQuantity;
                 exchangeOrder.ExchangeValue = returnValue;
 
@@ -151,11 +152,12 @@ namespace Page_Navigation_App.Services
 
         public async Task<List<Order>> GetExchangeHistory(int customerId)
         {
+            // Fixed the query by applying Where on Orders first, then including related data
             return await _context.Orders
+                .Where(o => o.CustomerID == customerId && o.Status == "Exchange")
                 .Include(o => o.Customer)
                 .Include(o => o.OrderDetails)
                     .ThenInclude(od => od.Product)
-                .Where(o => o.CustomerID == customerId && o.Status == "Exchange")
                 .OrderByDescending(o => o.OrderDate)
                 .ToListAsync();
         }

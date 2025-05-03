@@ -17,6 +17,10 @@ namespace Page_Navigation_App.Model
         [Required]
         [ForeignKey("Customer")]
         public int CustomerId { get; set; }
+        
+        // Add CustomerID property alias for consistency
+        [NotMapped]
+        public int CustomerID { get => CustomerId; set => CustomerId = value; }
 
         [Required]
         [StringLength(100)]
@@ -33,9 +37,15 @@ namespace Page_Navigation_App.Model
 
         public DateTime? DeliveryDate { get; set; }
         
+        // Add WorkStartDate property
+        public DateTime? WorkStartDate { get; set; }
+        
+        // Add expected delivery date property
+        public DateTime? EstimatedDeliveryDate { get; set; }
+        
         // Add expected delivery date alias
         [NotMapped]
-        public DateTime? PromisedDate { get => ExpectedDeliveryDate; set => ExpectedDeliveryDate = value; }
+        public DateTime? PromisedDate { get => EstimatedDeliveryDate; set => EstimatedDeliveryDate = value; }
 
         [Required]
         [Column(TypeName = "decimal(10,3)")]
@@ -72,6 +82,10 @@ namespace Page_Navigation_App.Model
         [Column(TypeName = "decimal(18,2)")]
         [Range(0.01, 999999999.99)]
         public decimal FinalAmount { get; set; }
+        
+        // Add FinalCost alias
+        [NotMapped]
+        public decimal FinalCost { get => FinalAmount; set => FinalAmount = value; }
 
         [Column(TypeName = "decimal(10,3)")]
         public decimal? AdditionalMetalWeight { get; set; }
@@ -111,6 +125,14 @@ namespace Page_Navigation_App.Model
         
         [StringLength(255)]
         public string ImagePath { get; set; }
+        
+        // Add ItemPhotoUrl property
+        [StringLength(255)]
+        public string ItemPhotoUrl { get => ImagePath; set => ImagePath = value; }
+        
+        // Add PaymentMethod property
+        [StringLength(50)]
+        public string PaymentMethod { get; set; } = "Cash";
 
         // Navigation Property
         public virtual Customer Customer { get; set; }

@@ -14,6 +14,10 @@ namespace Page_Navigation_App.Model
         [Required]
         [StringLength(50)]
         public string TransactionType { get; set; } = "Income"; // Income, Expense, EMI, Metal_Purchase, Gold_Scheme
+        
+        // Add Type alias property
+        [NotMapped]
+        public string Type { get => TransactionType; set => TransactionType = value; }
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
@@ -41,6 +45,14 @@ namespace Page_Navigation_App.Model
 
         [StringLength(50)]
         public string ReferenceNumber { get; set; }  // Invoice/Order number reference
+        
+        // Add ReferenceID property alias
+        [NotMapped]
+        public string ReferenceID { get => ReferenceNumber; set => ReferenceNumber = value; }
+        
+        // Add ReferenceType property
+        [StringLength(50)]
+        public string ReferenceType { get; set; }
 
         // Order reference
         public int? OrderReference { get; set; }
@@ -112,6 +124,10 @@ namespace Page_Navigation_App.Model
         // Adding CreatedBy property
         [StringLength(100)]
         public string CreatedBy { get; set; }
+        
+        // Add RecordedBy property alias
+        [NotMapped]
+        public string RecordedBy { get => CreatedBy; set => CreatedBy = value; }
 
         // Navigation property
         public virtual Customer Customer { get; set; }

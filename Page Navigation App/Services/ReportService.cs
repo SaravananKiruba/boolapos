@@ -93,6 +93,120 @@ namespace Page_Navigation_App.Services
             return await query.OrderByDescending(o => o.OrderDate).ToListAsync();
         }
 
+        // Add missing method for SalesAnalytics needed by ExportService
+        public async Task<Dictionary<string, decimal>> GetSalesAnalytics(DateTime startDate, DateTime endDate)
+        {
+            // Get orders in the date range
+            var orders = await _context.Orders
+                .Include(o => o.OrderDetails)
+                .Where(o => o.OrderDate.Date >= startDate.Date && o.OrderDate.Date <= endDate.Date)
+                .ToListAsync();
+
+            // Group by payment method and calculate totals
+            var paymentMethodTotals = orders
+                .GroupBy(o => o.PaymentMethod)
+                .ToDictionary(
+                    g => $"Payment_{g.Key}",
+                    g => g.Sum(o => o.GrandTotal)
+                );
+
+            // Calculate tax totals
+            decimal cgstTotal = orders.Sum(o => o.CGST);
+            decimal sgstTotal = orders.Sum(o => o.SGST);
+            decimal igstTotal = orders.Sum(o => o.IGST);
+
+            // Create complete analytics dictionary
+            var analytics = new Dictionary<string, decimal>
+            {
+                ["Total_Sales"] = orders.Sum(o => o.GrandTotal),
+                ["Total_Orders"] = orders.Count,
+                ["Average_Order_Value"] = orders.Count > 0 ? orders.Sum(o => o.GrandTotal) / orders.Count : 0,
+                ["Total_Discount"] = orders.Sum(o => o.DiscountAmount),
+                ["Total_Tax"] = cgstTotal + sgstTotal + igstTotal,
+                ["CGST"] = cgstTotal,
+                ["SGST"] = sgstTotal,
+                ["IGST"] = igstTotal,
+                ["Hallmarking_Charges"] = orders.Sum(o => o.HallmarkingCharges)
+            };
+
+            // Add payment method totals to analytics
+            foreach (var item in paymentMethodTotals)
+            {
+                analytics[item.Key] = item.Value;
+            }
+
+            return analytics;
+        }
+
+        // Add missing method for FinancialReports needed by ExportService
+        public async Task<Dictionary<string, decimal>> GetFinancialReports(DateTime startDate, DateTime endDate)
+        {
+            // Get orders in the date range for GST calculation
+            var orders = await _context.Orders
+                .Include(o => o.OrderDetails)
+                .Where(o => o.OrderDate.Date >= startDate.Date && o.OrderDate.Date <= endDate.Date)
+                .ToListAsync();
+
+            // Get finance entries in the date range
+            var finances = await _context.Finances
+                .Where(f => f.TransactionDate.Date >= startDate.Date && f.TransactionDate.Date <= endDate.Date)
+                .ToListAsync();
+
+            // Calculate GST collected
+            decimal cgstCollected = orders.Sum(o => o.CGST);
+            decimal sgstCollected = orders.Sum(o => o.SGST);
+            decimal igstCollected = orders.Sum(o => o.IGST);
+
+            // Calculate income and expenses from finance entries
+            decimal totalIncome = finances.Where(f => f.TransactionType == "Income").Sum(f => f.Amount);
+            decimal totalExpenses = finances.Where(f => f.TransactionType == "Expense").Sum(f => f.Amount);
+            decimal netProfit = totalIncome - totalExpenses;
+
+            return new Dictionary<string, decimal>
+            {
+                ["CGST_Collected"] = cgstCollected,
+                ["SGST_Collected"] = sgstCollected,
+                ["IGST_Collected"] = igstCollected,
+                ["Total_GST_Collected"] = cgstCollected + sgstCollected + igstCollected,
+                ["Total_Income"] = totalIncome,
+                ["Total_Expenses"] = totalExpenses,
+                ["Net_Profit"] = netProfit,
+                ["Total_Sales"] = orders.Sum(o => o.GrandTotal),
+                ["Order_Count"] = orders.Count
+            };
+        }
+
+        // Add missing method for RepairAnalytics needed by ExportService
+        public async Task<List<RepairAnalyticsData>> GetRepairAnalytics(DateTime startDate, DateTime endDate)
+        {
+            var repairs = await _context.RepairJobs
+                .Where(r => r.ReceiptDate.Date >= startDate.Date && r.ReceiptDate.Date <= endDate.Date)
+                .ToListAsync();
+
+            // Group by work type
+            var workTypeGroups = repairs
+                .GroupBy(r => r.WorkType)
+                .Select(g => new RepairAnalyticsData
+                {
+                    WorkType = g.Key,
+                    Status = g.Count().ToString(), // Count of repairs in this category
+                    EstimatedAmount = g.Sum(r => r.EstimatedCost),
+                    FinalAmount = g.Sum(r => r.FinalAmount)
+                })
+                .ToList();
+
+            return workTypeGroups;
+        }
+
+        // Custom class for repair analytics reporting
+        public class RepairAnalyticsData
+        {
+            public string WorkType { get; set; }
+            public string Status { get; set; } // Used to store count as string
+            public decimal EstimatedAmount { get; set; }
+            public decimal FinalAmount { get; set; }
+        }
+
         // Customer Purchase History
         public async Task<List<Order>> GetCustomerPurchaseHistory(int customerId)
         {
@@ -122,8 +236,8 @@ namespace Page_Navigation_App.Services
                     TaxableAmount = g.Sum(o => o.TotalAmount),
                     CGST = g.Sum(o => o.CGST),
                     SGST = g.Sum(o => o.SGST),
-                    IGST = g.Sum(o => o.IGST ?? 0),
-                    TotalTax = g.Sum(o => (o.CGST + o.SGST + (o.IGST ?? 0))),
+                    IGST = g.Sum(o => o.IGST),
+                    TotalTax = g.Sum(o => o.CGST + o.SGST + o.IGST),
                     InvoiceCount = g.Count(),
                     TotalInvoiceValue = g.Sum(o => o.GrandTotal)
                 })
@@ -138,7 +252,7 @@ namespace Page_Navigation_App.Services
             public decimal TaxableAmount { get; set; }
             public decimal CGST { get; set; }
             public decimal SGST { get; set; }
-            public decimal IGST { get; set; }
+            public decimal? IGST { get; set; }
             public decimal TotalTax { get; set; }
             public int InvoiceCount { get; set; }
             public decimal TotalInvoiceValue { get; set; }

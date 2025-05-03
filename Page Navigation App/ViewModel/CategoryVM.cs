@@ -89,7 +89,7 @@ namespace Page_Navigation_App.ViewModel
 
             if (!isValid)
             {
-                string errorMessage = string.join("\n", validationResults.Select(v => v.ErrorMessage));
+                string errorMessage = string.Join("\n", validationResults.Select(v => v.ErrorMessage));
                 System.Windows.MessageBox.Show($"Validation Errors:\n{errorMessage}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 return;
             }
@@ -108,7 +108,7 @@ namespace Page_Navigation_App.ViewModel
 
             if (!isValid)
             {
-                string errorMessage = string.join("\n", validationResults.Select(v => v.ErrorMessage));
+                string errorMessage = string.Join("\n", validationResults.Select(v => v.ErrorMessage));
                 System.Windows.MessageBox.Show($"Validation Errors:\n{errorMessage}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 return;
             }
@@ -129,7 +129,7 @@ namespace Page_Navigation_App.ViewModel
 
             if (!isValid)
             {
-                string errorMessage = string.join("\n", validationResults.Select(v => v.ErrorMessage));
+                string errorMessage = string.Join("\n", validationResults.Select(v => v.ErrorMessage));
                 System.Windows.MessageBox.Show($"Validation Errors:\n{errorMessage}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 return;
             }

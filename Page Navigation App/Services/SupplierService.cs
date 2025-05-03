@@ -123,11 +123,11 @@ namespace Page_Navigation_App.Services
                 await _context.Stocks.AddAsync(purchase);
                 await _context.SaveChangesAsync();
                 
-                // Update product stock
+                // Update product stock - Fix decimal to string conversion error
                 await _stockService.IncreaseStock(
                     purchase.ProductID, 
                     purchase.QuantityPurchased, 
-                    purchase.StockID.ToString(),
+                    purchase.PurchaseRate, // Changed from UnitPrice to PurchaseRate
                     "Purchase");
                 
                 await transaction.CommitAsync();
@@ -181,6 +181,87 @@ namespace Page_Navigation_App.Services
                 ["PaidAmount"] = purchases.Where(p => p.PaymentStatus == "Paid").Sum(p => p.TotalAmount),
                 ["PendingAmount"] = purchases.Where(p => p.PaymentStatus == "Pending").Sum(p => p.TotalAmount)
             };
+        }
+
+        // Record purchase transaction for a supplier
+        public async Task<Finance> RecordPurchase(
+            int supplierId, 
+            decimal amount, 
+            string category = "Purchase", 
+            string paymentMode = "Direct",
+            string referenceNumber = null)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var supplier = await _context.Suppliers.FindAsync(supplierId);
+                if (supplier == null) return null;
+
+                var financeEntry = new Finance
+                {
+                    TransactionDate = DateTime.Now,
+                    TransactionType = "Expense",
+                    Amount = amount,
+                    PaymentMode = paymentMode,
+                    Category = category,
+                    Description = $"Purchase from {supplier.Name}",
+                    ReferenceNumber = referenceNumber,
+                    SupplierName = supplier.Name,
+                    Status = "Completed",
+                    CreatedBy = "System"
+                };
+
+                await _context.Finances.AddAsync(financeEntry);
+                await _context.SaveChangesAsync();
+                
+                await transaction.CommitAsync();
+                return financeEntry;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                return null;
+            }
+        }
+
+        // Record payment to a supplier
+        public async Task<Finance> RecordPayment(
+            int supplierId,
+            decimal amount,
+            string paymentMode = "Cash",
+            string referenceNumber = null)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var supplier = await _context.Suppliers.FindAsync(supplierId);
+                if (supplier == null) return null;
+
+                var financeEntry = new Finance
+                {
+                    TransactionDate = DateTime.Now,
+                    TransactionType = "Expense",
+                    Amount = amount,
+                    PaymentMode = paymentMode,
+                    Category = "Supplier Payment",
+                    Description = $"Payment to {supplier.Name}",
+                    ReferenceNumber = referenceNumber,
+                    SupplierName = supplier.Name,
+                    Status = "Completed",
+                    CreatedBy = "System"
+                };
+
+                await _context.Finances.AddAsync(financeEntry);
+                await _context.SaveChangesAsync();
+                
+                await transaction.CommitAsync();
+                return financeEntry;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                return null;
+            }
         }
     }
 }

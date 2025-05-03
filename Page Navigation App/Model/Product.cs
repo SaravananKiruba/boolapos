@@ -14,6 +14,10 @@ namespace Page_Navigation_App.Model
         [StringLength(100)]
         public string ProductName { get; set; } = "Traditional Gold Necklace with Ruby";
 
+        // Add property alias for Name
+        [NotMapped]
+        public string Name { get => ProductName; set => ProductName = value; }
+
         [Required]
         [StringLength(50)]
         public string MetalType { get; set; } = "Gold";
@@ -21,6 +25,10 @@ namespace Page_Navigation_App.Model
         [Required]
         [StringLength(10)]
         public string Purity { get; set; } = "22k";
+
+        // Add property alias for PurityLevel
+        [NotMapped]
+        public string PurityLevel { get => Purity; set => Purity = value; }
 
         [Required]
         [Column(TypeName = "decimal(10,3)")]
@@ -69,6 +77,9 @@ namespace Page_Navigation_App.Model
         public decimal StoneWeight { get; set; } = 2.400m;
 
         public string HallmarkNumber { get; set; }  // Will be assigned after hallmarking
+
+        // Add IsHallmarked property
+        public bool IsHallmarked { get; set; } = false;
 
         [StringLength(50)]
         public string Collection { get; set; } = "Traditional";

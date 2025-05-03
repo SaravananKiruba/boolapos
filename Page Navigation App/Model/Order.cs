@@ -67,18 +67,28 @@ namespace Page_Navigation_App.Model
         [Column(TypeName = "decimal(18,2)")]
         [Range(0, 9999999999.99)]
         public decimal SGST { get; set; }
+        
+        // Add IGST property
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(0, 9999999999.99)]
+        public decimal IGST { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
         [Range(0, 9999999999.99)]
         public decimal GrandTotal { get; set; }
         
+        // Add HallmarkingCharges property
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(0, 9999999999.99)]
+        public decimal HallmarkingCharges { get; set; }
+        
         // Backward compatibility with old code
         [NotMapped]
         public decimal SubTotal { get => TotalAmount; set => TotalAmount = value; }
         
         [NotMapped]
-        public decimal TaxAmount { get => CGST + SGST; set { CGST = value / 2; SGST = value / 2; } }
+        public decimal TaxAmount { get => CGST + SGST + IGST; set { CGST = value / 3; SGST = value / 3; IGST = value / 3; } }
 
         // Metal Exchange Properties
         public bool HasMetalExchange { get; set; }

@@ -58,17 +58,17 @@ namespace Page_Navigation_App.Services
                 throw new Exception($"Order with ID {orderId} not found");
                 
             // Get business info for invoice header
-            var businessInfo = await _context.BusinessInfos.FirstOrDefaultAsync();
+            var businessInfo = await _context.Set<BusinessInfo>().FirstOrDefaultAsync();
             if (businessInfo == null)
                 throw new Exception("Business information not configured");
                 
             // Format order details for the invoice
             var formattedItems = order.OrderDetails.Select(od => new
             {
-                ProductName = od.Product.Name,
-                HSNCode = od.HSNCode,
+                ProductName = od.Product.ProductName,
+                HSNCode = od.HSNCode ?? "7113",  // Default HSN code for jewelry if not specified
                 MetalType = od.Product.MetalType,
-                Purity = od.Product.PurityLevel,
+                Purity = od.Product.Purity,
                 NetWeight = $"{od.NetWeight:F3} g",
                 GrossWeight = $"{od.GrossWeight:F3} g",
                 Quantity = od.Quantity,
@@ -121,11 +121,11 @@ namespace Page_Navigation_App.Services
             var items = (IEnumerable<object>)invoiceData["Items"];
             
             // Header
-            sb.AppendLine($"{businessInfo.Name}".PadCenter(80));
+            sb.AppendLine($"{businessInfo.BusinessName}".PadCenter(80));
             sb.AppendLine($"{businessInfo.Address}, {businessInfo.City}".PadCenter(80));
             sb.AppendLine($"{businessInfo.State} - {businessInfo.PostalCode}".PadCenter(80));
             sb.AppendLine($"Phone: {businessInfo.Phone}, Email: {businessInfo.Email}".PadCenter(80));
-            sb.AppendLine($"GSTIN: {businessInfo.TaxIdentificationNumber}".PadCenter(80));
+            sb.AppendLine($"GSTIN: {businessInfo.TaxId}".PadCenter(80));
             sb.AppendLine(new string('-', 80));
             
             // Invoice details
@@ -136,9 +136,9 @@ namespace Page_Navigation_App.Services
             
             // Customer details
             sb.AppendLine("Customer Details:");
-            sb.AppendLine($"Name: {order.Customer.Name}");
+            sb.AppendLine($"Name: {order.Customer.CustomerName}");
             sb.AppendLine($"Address: {order.Customer.Address}");
-            sb.AppendLine($"Mobile: {order.Customer.Mobile}");
+            sb.AppendLine($"Mobile: {order.Customer.PhoneNumber}");
             if (!string.IsNullOrEmpty(order.Customer.GSTNumber))
                 sb.AppendLine($"GSTIN: {order.Customer.GSTNumber}");
             sb.AppendLine();

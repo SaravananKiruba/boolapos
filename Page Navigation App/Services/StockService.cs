@@ -446,10 +446,10 @@ namespace Page_Navigation_App.Services
             try
             {
                 var product = await _context.Products.FindAsync(productId);
-                if (product == null || product.StockQuantity < quantity) return false;
+                if (product == null || product.StockQuantity < (int)quantity) return false;
 
                 // Update product stock quantity
-                product.StockQuantity -= quantity;
+                product.StockQuantity -= (int)quantity;
                 await _context.SaveChangesAsync();
 
                 // Use product's price if not specified
@@ -496,7 +496,7 @@ namespace Page_Navigation_App.Services
                 if (product == null) return false;
 
                 // Update product stock quantity
-                product.StockQuantity += quantity;
+                product.StockQuantity += (int)quantity;
                 await _context.SaveChangesAsync();
 
                 // Use product's price if not specified

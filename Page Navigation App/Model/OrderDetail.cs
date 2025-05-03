@@ -30,6 +30,21 @@ namespace Page_Navigation_App.Model
         [Required]
         [Column(TypeName = "decimal(18,2)")]
         [Range(0.01, 999999999.99)]
+        public decimal UnitPrice { get; set; }
+
+        [Required]
+        [Column(TypeName = "decimal(10,3)")]
+        [Range(0.001, 9999.999)]
+        public decimal Quantity { get; set; } = 1;
+
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(0.01, 999999999.99)]
+        public decimal TotalAmount { get; set; }
+
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        [Range(0.01, 999999999.99)]
         public decimal MetalRate { get; set; }
 
         [Required]
@@ -41,6 +56,19 @@ namespace Page_Navigation_App.Model
         [Column(TypeName = "decimal(18,2)")]
         [Range(0.01, 999999999.99)]
         public decimal MakingCharges { get; set; }
+
+        // Add MakingAmount property alias
+        [NotMapped]
+        public decimal MakingAmount { get => MakingCharges; set => MakingCharges = value; }
+
+        [Required]
+        [Column(TypeName = "decimal(5,2)")]
+        [Range(0, 100)]
+        public decimal WastagePercentage { get; set; }
+
+        // Add WastageAmount property
+        [NotMapped]
+        public decimal WastageAmount { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
         [Range(0, 999999999.99)]
@@ -59,6 +87,10 @@ namespace Page_Navigation_App.Model
 
         [Column(TypeName = "decimal(18,2)")]
         public decimal IGSTAmount { get; set; }
+
+        // Add HSNCode property
+        [StringLength(50)]
+        public string HSNCode { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]

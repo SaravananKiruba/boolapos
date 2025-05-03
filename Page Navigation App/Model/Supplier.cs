@@ -14,6 +14,10 @@ namespace Page_Navigation_App.Model
         [Required]
         [StringLength(100)]
         public string SupplierName { get; set; } = "Ratanlal Jewellers";
+        
+        // Add Name alias property
+        [NotMapped]
+        public string Name { get => SupplierName; set => SupplierName = value; }
 
         [Required]
         [StringLength(15)]
@@ -23,6 +27,10 @@ namespace Page_Navigation_App.Model
         // Add property alias for compatibility with existing code
         [NotMapped]
         public string ContactNumber { get => PhoneNumber; set => PhoneNumber = value; }
+        
+        // Add Mobile alias property
+        [NotMapped]
+        public string Mobile { get => PhoneNumber; set => PhoneNumber = value; }
 
         [EmailAddress]
         [StringLength(100)]
@@ -64,6 +72,9 @@ namespace Page_Navigation_App.Model
 
         [StringLength(20)]
         public string IFSCCode { get; set; } = "ICIC0001234";
+        
+        // Add RegistrationDate property
+        public DateTime RegistrationDate { get; set; } = DateTime.Now;
 
         // Navigation Properties
         public virtual ICollection<Product> Products { get; set; }

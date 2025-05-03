@@ -59,12 +59,12 @@ namespace Page_Navigation_App.Services
                 query = query.Where(r => r.Status == status);
             }
             
-            if (fromDate.HasValue)
+            if (fromDate != null)
             {
                 query = query.Where(r => r.ReceiptDate >= fromDate.Value);
             }
             
-            if (toDate.HasValue)
+            if (toDate != null)
             {
                 query = query.Where(r => r.ReceiptDate <= toDate.Value);
             }
@@ -172,7 +172,7 @@ namespace Page_Navigation_App.Services
                 
                 repairJob.Status = "Delivered";
                 repairJob.DeliveryDate = DateTime.Now;
-                repairJob.FinalCost = finalCost;
+                repairJob.FinalAmount = finalCost;
                 repairJob.PaymentMethod = paymentMethod;
                 
                 if (!string.IsNullOrEmpty(notes))
@@ -208,13 +208,13 @@ namespace Page_Navigation_App.Services
                 ["InProcessRepairs"] = repairJobs.Count(r => r.Status == "In Process"),
                 ["CompletedRepairs"] = repairJobs.Count(r => r.Status == "Completed" || r.Status == "Delivered"),
                 ["AverageCompletionTime"] = repairJobs
-                    .Where(r => r.CompletionDate.HasValue && r.ReceiptDate.HasValue)
-                    .Select(r => (r.CompletionDate.Value - r.ReceiptDate.Value).TotalDays)
+                    .Where(r => r.CompletionDate != null && r.ReceiptDate != DateTime.MinValue)
+                    .Select(r => (r.CompletionDate.Value - r.ReceiptDate).TotalDays)
                     .DefaultIfEmpty(0)
                     .Average(),
                 ["TotalRevenue"] = repairJobs
-                    .Where(r => r.Status == "Delivered" && r.FinalCost.HasValue)
-                    .Sum(r => r.FinalCost.Value)
+                    .Where(r => r.Status == "Delivered")
+                    .Sum(r => r.FinalAmount)
             };
         }
     }
