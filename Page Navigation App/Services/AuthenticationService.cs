@@ -5,12 +5,43 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Page_Navigation_App.Data;
 using Page_Navigation_App.Model;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Page_Navigation_App.Services
 {
     public class AuthenticationService
     {
         private readonly AppDbContext _context;
+
+        // Demo user list - in a real application, this would come from a database
+        private readonly List<User> _users = new List<User>
+        {
+            new User 
+            { 
+                UserID = 1, 
+                Username = "admin", 
+                PasswordHash = Encoding.UTF8.GetBytes("password"), // Converted to byte[]
+                PasswordSalt = new byte[128], // Added PasswordSalt
+                FullName = "System Administrator",
+                Email = "admin@example.com",
+                IsActive = true,
+                CreatedDate = DateTime.Now
+                // Removed RoleId as it doesn't exist in the model
+            },
+            new User 
+            { 
+                UserID = 2, 
+                Username = "cashier", 
+                PasswordHash = Encoding.UTF8.GetBytes("cashier123"), // Converted to byte[]
+                PasswordSalt = new byte[128], // Added PasswordSalt
+                FullName = "Cashier User",
+                Email = "cashier@example.com",
+                IsActive = true,
+                CreatedDate = DateTime.Now
+                // Removed RoleId as it doesn't exist in the model
+            }
+        };
 
         public AuthenticationService(AppDbContext context)
         {

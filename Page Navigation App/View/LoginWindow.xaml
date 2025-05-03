@@ -106,8 +106,8 @@
                                            Foreground="{StaticResource TextSecondaryBrush}"/>
                 </Grid>
 
-                <!-- Login Button -->
-                <Button Content="Login"
+                <!-- Login Button - Enhanced visibility -->
+                <Button Content="LOGIN" 
                       Command="{Binding LoginCommand}"
                       CommandParameter="{Binding ElementName=PasswordBox, Path=SecurePassword}"
                       Style="{StaticResource MahApps.Styles.Button.Flat}"
@@ -116,32 +116,28 @@
                       Background="{StaticResource PrimaryBrush}"
                       Foreground="White"
                       FontSize="16"
+                      FontWeight="Bold"
+                      Margin="0,0,0,15"
                       Cursor="Hand">
                     <Button.Resources>
                         <Style TargetType="Border">
                             <Setter Property="CornerRadius" Value="5"/>
                         </Style>
                     </Button.Resources>
+                    <Button.Effect>
+                        <DropShadowEffect BlurRadius="5" ShadowDepth="1" Opacity="0.3"/>
+                    </Button.Effect>
                 </Button>
+                
+                <!-- Loading indicator -->
+                <ProgressBar IsIndeterminate="True" 
+                           Height="5" 
+                           Margin="0,5,0,0" 
+                           Visibility="{Binding IsLoggingIn, Converter={StaticResource BooleanToVisibilityConverter}}"/>
             </StackPanel>
+            
 
             <!-- Footer -->
-            <StackPanel Grid.Row="2" Margin="0,0,0,20">
-                <TextBlock Text="© 2025 Boola POS System"
-                         FontSize="12"
-                         Foreground="{StaticResource TextSecondaryBrush}"
-                         HorizontalAlignment="Center"/>
-                <Button Content="Exit"
-                      Click="ExitButton_Click"
-                      Style="{StaticResource MahApps.Styles.Button.Flat}"
-                      Height="30"
-                      Width="80"
-                      Margin="0,10,0,0"
-                      BorderThickness="0"
-                      Background="Transparent"
-                      Foreground="{StaticResource TextSecondaryBrush}"
-                      HorizontalAlignment="Center"/>
-            </StackPanel>
         </Grid>
     </Border>
 </mah:MetroWindow>
