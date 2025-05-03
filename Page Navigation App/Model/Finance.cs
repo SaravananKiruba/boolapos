@@ -54,7 +54,8 @@ namespace Page_Navigation_App.Model
         [StringLength(50)]
         public string ReferenceType { get; set; }
 
-        // Order reference
+        // Order reference - relation to Order
+        [ForeignKey("Order")]
         public int? OrderReference { get; set; }
         
         // Adding OrderID as alias for OrderReference for compatibility
@@ -129,7 +130,8 @@ namespace Page_Navigation_App.Model
         [NotMapped]
         public string RecordedBy { get => CreatedBy; set => CreatedBy = value; }
 
-        // Navigation property
+        // Navigation properties
         public virtual Customer Customer { get; set; }
+        public virtual Order Order { get; set; }
     }
 }
