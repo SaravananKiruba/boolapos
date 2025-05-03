@@ -61,6 +61,7 @@ namespace Page_Navigation_App
             services.AddScoped<ProductService>();
             services.AddScoped<OrderService>();
             services.AddScoped<FinanceService>();
+            services.AddScoped<StockLedgerService>();  // Add this line
             services.AddScoped<SupplierService>();
             services.AddScoped<RateMasterService>();
             services.AddScoped<RepairJobService>();

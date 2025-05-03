@@ -55,19 +55,19 @@ namespace Page_Navigation_App.Services
             if (!includeInactive)
                 query = query.Where(s => s.IsActive);
                 
-            return await query.OrderBy(s => s.Name).ToListAsync();
+            return await query.OrderBy(s => s.SupplierName).ToListAsync();
         }
 
         public async Task<IEnumerable<Supplier>> SearchSuppliers(string searchTerm)
         {
             return await _context.Suppliers
                 .Where(s => s.IsActive && 
-                          (s.Name.Contains(searchTerm) || 
+                          (s.SupplierName.Contains(searchTerm) || 
                            s.ContactPerson.Contains(searchTerm) || 
-                           s.Mobile.Contains(searchTerm) || 
+                           s.PhoneNumber.Contains(searchTerm) || 
                            s.Email.Contains(searchTerm) || 
                            s.GSTNumber.Contains(searchTerm)))
-                .OrderBy(s => s.Name)
+                .OrderBy(s => s.SupplierName)
                 .ToListAsync();
         }
 
@@ -204,9 +204,9 @@ namespace Page_Navigation_App.Services
                     Amount = amount,
                     PaymentMode = paymentMode,
                     Category = category,
-                    Description = $"Purchase from {supplier.Name}",
+                    Description = $"Purchase from {supplier.SupplierName}",
                     ReferenceNumber = referenceNumber,
-                    SupplierName = supplier.Name,
+                    SupplierName = supplier.SupplierName,
                     Status = "Completed",
                     CreatedBy = "System"
                 };
@@ -244,9 +244,9 @@ namespace Page_Navigation_App.Services
                     Amount = amount,
                     PaymentMode = paymentMode,
                     Category = "Supplier Payment",
-                    Description = $"Payment to {supplier.Name}",
+                    Description = $"Payment to {supplier.SupplierName}",
                     ReferenceNumber = referenceNumber,
-                    SupplierName = supplier.Name,
+                    SupplierName = supplier.SupplierName,
                     Status = "Completed",
                     CreatedBy = "System"
                 };
