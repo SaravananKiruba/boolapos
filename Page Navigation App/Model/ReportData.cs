@@ -88,7 +88,7 @@ namespace Page_Navigation_App.Model
         public decimal NetProfit { get; set; }
         
         // Serialized JSON data for detailed report
-        public string ReportData { get; set; }
+        public string DetailedReportData { get; set; }
         
         // Report generation info
         public DateTime GeneratedOn { get; set; } = DateTime.Now;

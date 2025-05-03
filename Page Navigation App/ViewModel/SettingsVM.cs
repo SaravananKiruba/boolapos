@@ -283,7 +283,7 @@ namespace Page_Navigation_App.ViewModel
                     return;
                 }
 
-                await _backupService.CreateBackup(BackupPath);
+                await _backupService.CreateBackupAsync("Manual backup from settings");
                 MessageBox.Show("Database backup completed successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (System.Exception ex)

@@ -249,11 +249,13 @@ namespace Page_Navigation_App.Services
             var backupLog = new AuditLog
             {
                 Action = "Database Backup",
-                Description = $"Backup created: {Path.GetFileName(backupPath)}",
-                Details = comment,
+                EntityName = "Database",
+                Details = $"Backup created: {Path.GetFileName(backupPath)}",
                 Timestamp = DateTime.Now,
-                UserID = 1, // System user
-                IPAddress = "127.0.0.1"
+                UserID = "System",
+                IPAddress = "127.0.0.1",
+                ModifiedAt = DateTime.Now,
+                ModifiedBy = "System"
             };
             
             _context.AuditLogs.Add(backupLog);
