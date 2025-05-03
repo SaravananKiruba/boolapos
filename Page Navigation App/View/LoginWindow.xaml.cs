@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Windows.Controls;
 
 namespace Page_Navigation_App.View
 {
@@ -109,6 +110,15 @@ namespace Page_Navigation_App.View
         private void ExitButton_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();
+        }
+        
+        private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is LoginViewModel viewModel)
+            {
+                // Update the property in ViewModel when password changes
+                viewModel.HasPassword = !string.IsNullOrEmpty(PasswordBox.Password);
+            }
         }
     }
 }

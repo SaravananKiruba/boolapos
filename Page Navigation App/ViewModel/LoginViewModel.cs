@@ -18,6 +18,8 @@ namespace Page_Navigation_App.ViewModel
         private string _username;
         private bool _isLoggingIn;
         private string _errorMessage;
+        private bool _hasPassword;
+        private bool _loginAttempted;
         
         public string Username
         {
@@ -26,6 +28,7 @@ namespace Page_Navigation_App.ViewModel
             {
                 _username = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(CanLoginEnabled));
                 ClearErrorMessage();
             }
         }
@@ -37,6 +40,7 @@ namespace Page_Navigation_App.ViewModel
             {
                 _isLoggingIn = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(CanLoginEnabled));
             }
         }
         
@@ -50,12 +54,43 @@ namespace Page_Navigation_App.ViewModel
             }
         }
 
+        public bool HasPassword
+        {
+            get => _hasPassword;
+            set
+            {
+                _hasPassword = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(CanLoginEnabled));
+            }
+        }
+
+        public bool LoginAttempted
+        {
+            get => _loginAttempted;
+            set
+            {
+                _loginAttempted = value;
+                OnPropertyChanged();
+            }
+        }
+
+        // Property to enable/disable the login button based on form state
+        public bool CanLoginEnabled => !IsLoggingIn && !string.IsNullOrWhiteSpace(Username) && HasPassword;
+
         public ICommand LoginCommand { get; }
         
         public LoginViewModel(AuthenticationService authService, NavigationVM navigationVM)
         {
             _authService = authService ?? throw new ArgumentNullException(nameof(authService));
             _navigationVM = navigationVM ?? throw new ArgumentNullException(nameof(navigationVM));
+            
+            // Initialize default values
+            Username = string.Empty;
+            ErrorMessage = string.Empty;
+            IsLoggingIn = false;
+            HasPassword = false;
+            LoginAttempted = false;
             
             LoginCommand = new RelayCommand<object>(
                 async param => await LoginAsync(param as SecureString), 
@@ -72,18 +107,30 @@ namespace Page_Navigation_App.ViewModel
         {
             try
             {
+                // Set login in progress
                 IsLoggingIn = true;
+                LoginAttempted = true;
                 ErrorMessage = string.Empty;
+                
+                // Add a small delay to ensure the UI updates
+                await Task.Delay(200);
                 
                 // Convert SecureString to string for authentication
                 string password = ConvertSecureStringToString(securePassword);
                 
+                // Log the attempt (optional)
+                Console.WriteLine($"Login attempt for user: {Username}");
+                
+                // Attempt authentication
                 var user = await _authService.AuthenticateAsync(Username, password);
                 
                 if (user != null)
                 {
                     // Successful login
                     _navigationVM.CurrentUser = user.FullName;
+                    
+                    // Add a small delay for visual feedback
+                    await Task.Delay(500);
                     
                     // Show main window and close login window
                     Application.Current.MainWindow.Show();

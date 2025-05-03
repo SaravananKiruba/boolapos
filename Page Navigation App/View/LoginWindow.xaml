@@ -100,7 +100,8 @@
                                Padding="40,0,10,0"
                                BorderThickness="0"
                                Background="{StaticResource SurfaceBrush}"
-                               Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                               Foreground="{StaticResource TextOnSurfaceBrush}"
+                               PasswordChanged="PasswordBox_PasswordChanged"/>
                     <iconPacks:PackIconMaterial Kind="Lock" 
                                            Width="20" 
                                            Height="20" 
@@ -109,35 +110,62 @@
                                            Foreground="{StaticResource TextSecondaryBrush}"/>
                 </Grid>
 
-                <!-- Login Button - Enhanced visibility -->
-                <Button Content="LOGIN" 
-                      Command="{Binding LoginCommand}"
-                      CommandParameter="{Binding ElementName=PasswordBox, Path=SecurePassword}"
-                      Style="{StaticResource MahApps.Styles.Button.Flat}"
-                      Height="45"
-                      BorderThickness="0"
-                      Background="{StaticResource PrimaryBrush}"
-                      Foreground="White"
-                      FontSize="16"
-                      FontWeight="Bold"
-                      Margin="0,0,0,15"
-                      Cursor="Hand"
-                      Visibility="Visible">
-                    <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="5"/>
-                        </Style>
-                    </Button.Resources>
-                    <Button.Effect>
-                        <DropShadowEffect BlurRadius="5" ShadowDepth="1" Opacity="0.3"/>
-                    </Button.Effect>
-                </Button>
+                <!-- Login Button Area -->
+                <Grid>
+                    <!-- Login Button with Visual States -->
+                    <Button Content="{Binding IsLoggingIn, Converter={StaticResource LoginButtonTextConverter}, ConverterParameter='LOGIN'}" 
+                          Command="{Binding LoginCommand}"
+                          CommandParameter="{Binding ElementName=PasswordBox, Path=SecurePassword}"
+                          Style="{StaticResource MahApps.Styles.Button.Flat}"
+                          Height="45"
+                          BorderThickness="0"
+                          Background="{StaticResource PrimaryBrush}"
+                          Foreground="White"
+                          FontSize="16"
+                          FontWeight="Bold"
+                          Margin="0,0,0,15"
+                          Cursor="Hand"
+                          IsEnabled="{Binding CanLoginEnabled}">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="5"/>
+                            </Style>
+                        </Button.Resources>
+                        <Button.Effect>
+                            <DropShadowEffect BlurRadius="5" ShadowDepth="1" Opacity="0.3"/>
+                        </Button.Effect>
+                    </Button>
+                    
+                    <!-- Overlay login indicator when IsLoggingIn is true -->
+                    <StackPanel Orientation="Horizontal" 
+                              HorizontalAlignment="Center" 
+                              Visibility="{Binding IsLoggingIn, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <mah:ProgressRing IsActive="True" 
+                                      Foreground="White" 
+                                      Width="20" 
+                                      Height="20" 
+                                      Margin="0,0,10,0"/>
+                        <TextBlock Text="LOGGING IN..." 
+                               Foreground="White" 
+                               FontSize="16" 
+                               FontWeight="Bold"
+                               VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
                 
                 <!-- Loading indicator -->
                 <ProgressBar IsIndeterminate="True" 
                            Height="5" 
                            Margin="0,5,0,0" 
                            Visibility="{Binding IsLoggingIn, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                
+                <!-- Login Status Text -->
+                <TextBlock Text="Please wait, logging in..." 
+                         Foreground="{StaticResource TextSecondaryBrush}"
+                         FontSize="12"
+                         TextAlignment="Center"
+                         Margin="0,5,0,0"
+                         Visibility="{Binding IsLoggingIn, Converter={StaticResource BooleanToVisibilityConverter}}"/>
             </StackPanel>
             
             <!-- Footer -->

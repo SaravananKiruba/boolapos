@@ -69,6 +69,7 @@
             <utilities:ViewModelToTitleConverter x:Key="ViewModelToTitleConverter"/>
             <utilities:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
             <utilities:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+            <utilities:LoginButtonTextConverter x:Key="LoginButtonTextConverter"/>
 
             <!-- MahApps Accent Colors -->
             <Color x:Key="MahApps.Colors.AccentBase">#2D98DA</Color>
