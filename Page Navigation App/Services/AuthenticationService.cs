@@ -14,35 +14,6 @@ namespace Page_Navigation_App.Services
     {
         private readonly AppDbContext _context;
 
-        // Demo user list - in a real application, this would come from a database
-        private readonly List<User> _users = new List<User>
-        {
-            new User 
-            { 
-                UserID = 1, 
-                Username = "admin", 
-                PasswordHash = Encoding.UTF8.GetBytes("password"), // Converted to byte[]
-                PasswordSalt = new byte[128], // Added PasswordSalt
-                FullName = "System Administrator",
-                Email = "admin@example.com",
-                IsActive = true,
-                CreatedDate = DateTime.Now
-                // Removed RoleId as it doesn't exist in the model
-            },
-            new User 
-            { 
-                UserID = 2, 
-                Username = "cashier", 
-                PasswordHash = Encoding.UTF8.GetBytes("cashier123"), // Converted to byte[]
-                PasswordSalt = new byte[128], // Added PasswordSalt
-                FullName = "Cashier User",
-                Email = "cashier@example.com",
-                IsActive = true,
-                CreatedDate = DateTime.Now
-                // Removed RoleId as it doesn't exist in the model
-            }
-        };
-
         public AuthenticationService(AppDbContext context)
         {
             _context = context;
@@ -53,7 +24,14 @@ namespace Page_Navigation_App.Services
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
                 return null;
 
+            // If database is empty, try to seed first
+            if (!await _context.Users.AnyAsync())
+            {
+                await SeedDefaultUserAsync();
+            }
+
             var user = await _context.Users
+                .Include(u => u.Roles)
                 .FirstOrDefaultAsync(u => u.Username == username && u.IsActive);
 
             if (user == null)
