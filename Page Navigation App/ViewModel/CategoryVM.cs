@@ -151,9 +151,10 @@ namespace Page_Navigation_App.ViewModel
 
         private bool CanAddCategory()
         {
-            return !string.IsNullOrEmpty(SelectedCategory.CategoryName) &&
-                    SelectedCategory.DefaultMakingCharges >= 0 &&
-                    SelectedCategory.DefaultWastage >= 0;
+            return SelectedCategory != null && 
+                   !string.IsNullOrEmpty(SelectedCategory.CategoryName) &&
+                   SelectedCategory.DefaultMakingCharges >= 0 &&
+                   SelectedCategory.DefaultWastage >= 0;
         }
 
         private bool CanUpdateCategory()
