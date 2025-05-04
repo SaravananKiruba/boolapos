@@ -5,8 +5,15 @@ using System.Windows.Data;
 
 namespace Page_Navigation_App.Utilities
 {
+    /// <summary>
+    /// Converts a boolean value to Visible or Collapsed based on the boolean value
+    /// </summary>
     public class BooleanToVisibilityConverter : IValueConverter
     {
+        // Cached singleton instance for better performance
+        private static BooleanToVisibilityConverter _instance;
+        public static BooleanToVisibilityConverter Instance => _instance ??= new BooleanToVisibilityConverter();
+
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is bool boolValue)
@@ -29,7 +36,15 @@ namespace Page_Navigation_App.Utilities
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            if (value is Visibility visibility)
+            {
+                bool reverse = parameter != null && parameter.ToString().Equals("Reverse", StringComparison.OrdinalIgnoreCase);
+                bool isVisible = visibility == Visibility.Visible;
+                
+                return reverse ? !isVisible : isVisible;
+            }
+            
+            return false;
         }
     }
 }

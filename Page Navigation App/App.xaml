@@ -20,9 +20,46 @@
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.Buttons.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.DataGrid.xaml" />
                 
-                <!-- MahApps Theme (Light or Dark) -->
+                <!-- MahApps Theme -->
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Light.Blue.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <!-- Define colors directly to avoid dependency on specific MahApps resource names -->
+            <Color x:Key="BackgroundColor">#2196f3</Color>
+            <Color x:Key="PrimaryColor">#FFFFFF</Color>
+            <Color x:Key="SurfaceColor">#F5F5F5</Color>
+            <Color x:Key="TextPrimaryColor">#333333</Color>
+            <Color x:Key="TextSecondaryColor">#757575</Color>
+            <Color x:Key="TextOnSurfaceColor">#444444</Color>
+            <Color x:Key="ErrorColor">#E53935</Color>
+            
+            <!-- Create brushes from the defined colors -->
+            <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}" />
+            <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}" />
+            <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}" />
+            <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}" />
+            <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}" />
+            <SolidColorBrush x:Key="TextOnSurfaceBrush" Color="{StaticResource TextOnSurfaceColor}" />
+            <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource ErrorColor}" />
+            
+            <!-- Converters -->
+            <utilities:ViewModelToTitleConverter x:Key="ViewModelToTitleConverter" />
+            <utilities:LoginStatusTextConverter x:Key="LoginStatusTextConverter" />
+            <utilities:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+            <utilities:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
+            <utilities:LoginButtonTextConverter x:Key="LoginButtonTextConverter" />
+            <utilities:BooleanToStatusBrushConverter x:Key="BooleanToStatusBrushConverter" />
+            <utilities:BooleanToActiveConverter x:Key="BooleanToActiveConverter" />
+
+            <!-- Define a custom style for NavigationButton (previously defined in local resources) -->
+            <Style x:Key="NavigationButton" TargetType="Button" BasedOn="{StaticResource MahApps.Styles.Button.Flat}">
+                <Setter Property="Height" Value="45" />
+                <Setter Property="Margin" Value="20,5" />
+                <Setter Property="HorizontalAlignment" Value="Stretch" />
+                <Setter Property="HorizontalContentAlignment" Value="Left" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Cursor" Value="Hand" />
+            </Style>
 
             <!-- View-ViewModel Mappings -->
             <DataTemplate DataType="{x:Type vm:HomeVM}">
@@ -64,79 +101,6 @@
             <DataTemplate DataType="{x:Type vm:SettingsVM}">
                 <view:Settings/>
             </DataTemplate>
-
-            <!-- Converters -->
-            <utilities:ViewModelToTitleConverter x:Key="ViewModelToTitleConverter"/>
-            <utilities:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
-            <utilities:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-            <utilities:LoginButtonTextConverter x:Key="LoginButtonTextConverter"/>
-            <utilities:LoginStatusTextConverter x:Key="LoginStatusTextConverter"/>
-
-            <!-- MahApps Accent Colors -->
-            <Color x:Key="MahApps.Colors.AccentBase">#2D98DA</Color>
-            <Color x:Key="MahApps.Colors.Accent">#2D98DA</Color>
-            <Color x:Key="MahApps.Colors.Accent2">#74B9FF</Color>
-            <Color x:Key="MahApps.Colors.Accent3">#2475A2</Color>
-            <Color x:Key="MahApps.Colors.Accent4">#45AAF2</Color>
-            <Color x:Key="MahApps.Colors.Highlight">#74B9FF</Color>
-            <Color x:Key="MahApps.Colors.IdealForeground">White</Color>
-
-            <!-- MahApps Brushes -->
-            <SolidColorBrush x:Key="MahApps.Brushes.AccentBase" Color="{StaticResource MahApps.Colors.AccentBase}"/>
-            <SolidColorBrush x:Key="MahApps.Brushes.Accent" Color="{StaticResource MahApps.Colors.Accent}"/>
-            <SolidColorBrush x:Key="MahApps.Brushes.Accent2" Color="{StaticResource MahApps.Colors.Accent2}"/>
-            <SolidColorBrush x:Key="MahApps.Brushes.Accent3" Color="{StaticResource MahApps.Colors.Accent3}"/>
-            <SolidColorBrush x:Key="MahApps.Brushes.Accent4" Color="{StaticResource MahApps.Colors.Accent4}"/>
-            <SolidColorBrush x:Key="MahApps.Brushes.Highlight" Color="{StaticResource MahApps.Colors.Highlight}"/>
-            <SolidColorBrush x:Key="MahApps.Brushes.IdealForeground" Color="{StaticResource MahApps.Colors.IdealForeground}"/>
-            <SolidColorBrush x:Key="MahApps.Brushes.ThemeBackground" Color="{StaticResource MahApps.Colors.Accent4}"/>
-            <SolidColorBrush x:Key="MahApps.Brushes.Window.Background" Color="{StaticResource MahApps.Colors.Accent4}"/>
-
-            <!-- Application Brushes (utilizing MahApps colors) -->
-            <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource MahApps.Colors.Accent}"/>
-            <SolidColorBrush x:Key="PrimaryLightBrush" Color="{StaticResource MahApps.Colors.Accent2}"/>
-            <SolidColorBrush x:Key="PrimaryDarkBrush" Color="{StaticResource MahApps.Colors.Accent3}"/>
-            <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource MahApps.Colors.Accent4}"/>
-            <SolidColorBrush x:Key="SurfaceBrush" Color="White"/>
-            <SolidColorBrush x:Key="SurfaceSecondaryBrush" Color="#F1F2F6"/>
-            <SolidColorBrush x:Key="TextPrimaryBrush" Color="White"/>
-            <SolidColorBrush x:Key="TextSecondaryBrush" Color="#DFF1FF"/>
-            <SolidColorBrush x:Key="TextOnSurfaceBrush" Color="#2D3436"/>
-            <SolidColorBrush x:Key="SuccessBrush" Color="#26DE81"/>
-            <SolidColorBrush x:Key="WarningBrush" Color="#F1C40F"/>
-            <SolidColorBrush x:Key="ErrorBrush" Color="#EB3B5A"/>
-            <SolidColorBrush x:Key="InfoBrush" Color="#00CEC9"/>
-
-            <!-- Navigation Button Style -->
-            <Style x:Key="NavigationButton" TargetType="{x:Type Button}" BasedOn="{StaticResource MahApps.Styles.Button.Flat}">
-                <Setter Property="Background" Value="Transparent"/>
-                <Setter Property="BorderThickness" Value="0"/>
-                <Setter Property="Height" Value="45"/>
-                <Setter Property="Margin" Value="20,0"/>
-                <Style.Triggers>
-                    <Trigger Property="IsMouseOver" Value="True">
-                        <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
-                        <Setter Property="Foreground" Value="{StaticResource SurfaceBrush}"/>
-                    </Trigger>
-                    <Trigger Property="IsPressed" Value="True">
-                        <Setter Property="Background" Value="{StaticResource PrimaryDarkBrush}"/>
-                        <Setter Property="Foreground" Value="{StaticResource SurfaceBrush}"/>
-                    </Trigger>
-                </Style.Triggers>
-            </Style>
-
-            <!-- MetroWindow Default Style -->
-            <Style TargetType="{x:Type mah:MetroWindow}"
-                   BasedOn="{StaticResource {x:Type mah:MetroWindow}}">
-                <Setter Property="GlowBrush" Value="{StaticResource MahApps.Brushes.Accent}"/>
-                <Setter Property="WindowTransitionsEnabled" Value="False"/>
-                <Setter Property="WindowTitleBrush" Value="{StaticResource SurfaceBrush}"/>
-                <Setter Property="NonActiveGlowBrush" Value="{StaticResource SurfaceBrush}"/>
-                <Setter Property="TitleForeground" Value="{StaticResource MahApps.Brushes.IdealForeground}"/>
-                <Setter Property="Background" Value="{StaticResource MahApps.Brushes.ThemeBackground}"/>
-                <Setter Property="BorderThickness" Value="1"/>
-                <Setter Property="TitleCharacterCasing" Value="Normal"/>
-            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
