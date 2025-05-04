@@ -34,11 +34,10 @@
             <!-- Header -->
             <StackPanel Grid.Row="0" Margin="0,30,0,0">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <iconPacks:PackIconMaterial Kind="StorefrontOutline"
-                                             Width="40"
-                                             Height="40"
-                                             Margin="0 0 15 0"
-                                             Foreground="{StaticResource PrimaryBrush}"/>
+                    <Image Source="/Images/BOOLA LOGO.png" 
+                           Width="70"
+                           Height="70"
+                           Margin="0 0 15 0"/>
                     <TextBlock Text="Boola POS"
                              FontSize="32"
                              FontWeight="SemiBold"

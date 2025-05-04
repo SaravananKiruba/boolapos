@@ -44,11 +44,10 @@
                 <StackPanel Orientation="Horizontal" 
                           HorizontalAlignment="Center" 
                           VerticalAlignment="Center">
-                    <iconPacks:PackIconMaterial Kind="StorefrontOutline"
-                                               Width="32"
-                                               Height="32"
-                                               Margin="0 0 10 0"
-                                               Foreground="{StaticResource PrimaryBrush}"/>
+                    <Image Source="/Images/BOOLA LOGO.png"
+                           Width="40"
+                           Height="40"
+                           Margin="0 0 10 0"/>
                     <TextBlock Text="Boola POS"
                              FontSize="22"
                              FontWeight="SemiBold"
