@@ -6,6 +6,7 @@ using Page_Navigation_App.Model;
 using Page_Navigation_App.Utilities;
 using Page_Navigation_App.Services;
 using System.Collections.Generic;
+using System;
 
 namespace Page_Navigation_App.ViewModel
 {
@@ -16,6 +17,8 @@ namespace Page_Navigation_App.ViewModel
         public ICommand AddOrUpdateCommand { get; }
         public ICommand ClearCommand { get; }
         public ICommand SearchCommand { get; }
+        public ICommand EditCommand { get; }
+        public ICommand DeleteCommand { get; }
 
         public ObservableCollection<string> CustomerTypes { get; set; } = new ObservableCollection<string>
         {
@@ -40,27 +43,16 @@ namespace Page_Navigation_App.ViewModel
             }
         }
 
-        private string _searchName;
-        public string SearchName
+        private string _searchTerm;
+        public string SearchTerm
         {
-            get => _searchName;
+            get => _searchTerm;
             set
             {
-                _searchName = value;
+                _searchTerm = value;
                 OnPropertyChanged();
-                AutoSelectCustomer();
-            }
-        }
-
-        private string _searchPhone;
-        public string SearchPhone
-        {
-            get => _searchPhone;
-            set
-            {
-                _searchPhone = value;
-                OnPropertyChanged();
-                AutoSelectCustomer();
+                // Automatically search when the term changes
+                SearchCustomers();
             }
         }
 
@@ -75,6 +67,8 @@ namespace Page_Navigation_App.ViewModel
             AddOrUpdateCommand = new RelayCommand<object>(_ => AddOrUpdateCustomer(), _ => CanAddOrUpdateCustomer());
             ClearCommand = new RelayCommand<object>(_ => ClearForm(), _ => true);
             SearchCommand = new RelayCommand<object>(_ => SearchCustomers(), _ => true);
+            EditCommand = new RelayCommand<Customer>(customer => EditCustomer(customer), _ => true);
+            DeleteCommand = new RelayCommand<Customer>(customer => DeleteCustomer(customer), _ => true);
         }
 
         private async void LoadCustomers()
@@ -84,28 +78,6 @@ namespace Page_Navigation_App.ViewModel
             foreach (var customer in customers)
             {
                 Customers.Add(customer);
-            }
-        }
-
-        private void AutoSelectCustomer()
-        {
-            var matchedCustomer = Customers.FirstOrDefault(c =>
-                (!string.IsNullOrEmpty(SearchName) && c.CustomerName.Contains(SearchName)) ||
-                (!string.IsNullOrEmpty(SearchPhone) && c.PhoneNumber.Contains(SearchPhone))
-            );
-
-            if (matchedCustomer != null)
-            {
-                SelectedCustomer = matchedCustomer;
-            }
-            else
-            {
-                SelectedCustomer = new Customer
-                {
-                    CustomerName = SearchName,
-                    PhoneNumber = SearchPhone,
-                    CustomerType = CustomerTypes.First() // Set default customer type for new customers
-                };
             }
         }
 
@@ -136,31 +108,109 @@ namespace Page_Navigation_App.ViewModel
             ClearForm();
         }
 
+        private void EditCustomer(Customer customer)
+        {
+            if (customer == null) return;
+            
+            // Create a new Customer object and copy all properties
+            SelectedCustomer = new Customer
+            {
+                CustomerID = customer.CustomerID,
+                CustomerName = customer.CustomerName,
+                PhoneNumber = customer.PhoneNumber,
+                Email = customer.Email,
+                WhatsAppNumber = customer.WhatsAppNumber,
+                Address = customer.Address,
+                City = customer.City,
+                GSTNumber = customer.GSTNumber,
+                CustomerType = customer.CustomerType,
+                DateOfBirth = customer.DateOfBirth,
+                DateOfAnniversary = customer.DateOfAnniversary,
+                RegistrationDate = customer.RegistrationDate,
+                LoyaltyPoints = customer.LoyaltyPoints,
+                CreditLimit = customer.CreditLimit,
+                IsActive = customer.IsActive
+                // NotifyRateChanges property removed as it doesn't exist in the Customer model
+            };
+        }
+
+        private async void DeleteCustomer(Customer customer)
+        {
+            if (customer == null) return;
+
+            var result = System.Windows.MessageBox.Show(
+                $"Are you sure you want to delete {customer.CustomerName}?",
+                "Confirm Delete",
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Question);
+
+            if (result == System.Windows.MessageBoxResult.Yes)
+            {
+                // Here you would implement the delete logic
+                // For now we'll just remove from the collection
+                Customers.Remove(customer);
+                ClearForm();
+            }
+        }
+
         private void ClearForm()
         {
             SelectedCustomer = new Customer
             {
                 CustomerType = CustomerTypes.First() // Set default customer type when clearing form
             };
-            SearchName = string.Empty;
-            SearchPhone = string.Empty;
+            SearchTerm = string.Empty;
         }
 
         private bool CanAddOrUpdateCustomer()
         {
             // Ensure required fields are filled before allowing save
-            return !string.IsNullOrEmpty(SelectedCustomer.CustomerName) &&
-                   !string.IsNullOrEmpty(SelectedCustomer.PhoneNumber) &&
-                   !string.IsNullOrEmpty(SelectedCustomer.CustomerType);
+            return !string.IsNullOrEmpty(SelectedCustomer?.CustomerName) &&
+                   !string.IsNullOrEmpty(SelectedCustomer?.PhoneNumber) &&
+                   !string.IsNullOrEmpty(SelectedCustomer?.CustomerType);
         }
 
         private async void SearchCustomers()
         {
-            Customers.Clear();
-            var customers = await _customerService.FilterCustomers(SearchName);
-            foreach (var customer in customers)
+            try
             {
-                Customers.Add(customer);
+                if (string.IsNullOrEmpty(SearchTerm))
+                {
+                    LoadCustomers();
+                    return;
+                }
+
+                // Search in-memory if we already have customers loaded
+                if (Customers.Count > 0)
+                {
+                    var filteredCustomers = Customers.Where(c => 
+                        c.CustomerName.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+                        c.PhoneNumber.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+                        c.Email?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) == true ||
+                        c.City?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) == true ||
+                        c.CustomerType.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)
+                    ).ToList();
+
+                    Customers.Clear();
+                    foreach (var customer in filteredCustomers)
+                    {
+                        Customers.Add(customer);
+                    }
+                }
+                else
+                {
+                    // If no customers are loaded yet, use the service to filter
+                    Customers.Clear();
+                    var customers = await _customerService.FilterCustomers(SearchTerm);
+                    foreach (var customer in customers)
+                    {
+                        Customers.Add(customer);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Error searching customers: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
     }
