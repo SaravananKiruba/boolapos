@@ -61,6 +61,8 @@ namespace Page_Navigation_App.Services
             var businessInfo = await _context.Set<BusinessInfo>().FirstOrDefaultAsync();
             if (businessInfo == null)
                 throw new Exception("Business information not configured");
+            
+            string currencySymbol = businessInfo.CurrencySymbol ?? "₹";
                 
             // Format order details for the invoice
             var formattedItems = order.OrderDetails.Select(od => new
@@ -72,19 +74,19 @@ namespace Page_Navigation_App.Services
                 NetWeight = $"{od.NetWeight:F3} g",
                 GrossWeight = $"{od.GrossWeight:F3} g",
                 Quantity = od.Quantity,
-                UnitPrice = $"₹{od.UnitPrice:N2}",
-                Amount = $"₹{od.TotalAmount:N2}"
+                UnitPrice = $"{currencySymbol}{od.UnitPrice:N2}",
+                Amount = $"{currencySymbol}{od.TotalAmount:N2}"
             }).ToList();
             
             // Calculate summary values
             var totalNetWeight = order.OrderDetails.Sum(od => od.NetWeight * od.Quantity);
             var totalGrossWeight = order.OrderDetails.Sum(od => od.GrossWeight * od.Quantity);
             
-            // Format currency values with ₹ symbol
-            var formattedTotalAmount = $"₹{order.TotalAmount:N2}";
-            var formattedCGST = $"₹{order.CGST:N2}";
-            var formattedSGST = $"₹{order.SGST:N2}";
-            var formattedGrandTotal = $"₹{order.GrandTotal:N2}";
+            // Format currency values with the appropriate currency symbol
+            var formattedTotalAmount = $"{currencySymbol}{order.TotalAmount:N2}";
+            var formattedCGST = $"{currencySymbol}{order.CGST:N2}";
+            var formattedSGST = $"{currencySymbol}{order.SGST:N2}";
+            var formattedGrandTotal = $"{currencySymbol}{order.GrandTotal:N2}";
             
             return new Dictionary<string, object>
             {
@@ -98,7 +100,7 @@ namespace Page_Navigation_App.Services
                 ["FormattedSGST"] = formattedSGST,
                 ["FormattedGrandTotal"] = formattedGrandTotal,
                 ["InvoiceDate"] = order.OrderDate.ToString("dd-MMM-yyyy"),
-                ["AmountInWords"] = ConvertAmountToWords(order.GrandTotal)
+                ["AmountInWords"] = ConvertAmountToWords(order.GrandTotal, businessInfo.CurrencyCode)
             };
         }
 
@@ -182,7 +184,7 @@ namespace Page_Navigation_App.Services
             return sb.ToString();
         }
 
-        private string ConvertAmountToWords(decimal amount)
+        private string ConvertAmountToWords(decimal amount, string currencyCode = "INR")
         {
             // Simple implementation - in a real system, this would be more comprehensive
             var words = new[]
@@ -235,7 +237,7 @@ namespace Page_Navigation_App.Services
                 result += ConvertTens(rupees);
             }
             
-            result += "Rupees";
+            result += " Rupees";
             
             // Handle paise part
             if (paise > 0)

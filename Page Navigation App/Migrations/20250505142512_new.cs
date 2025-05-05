@@ -46,7 +46,23 @@ namespace Page_Navigation_App.Migrations
                     TaxId = table.Column<string>(type: "TEXT", nullable: true),
                     City = table.Column<string>(type: "TEXT", nullable: true),
                     State = table.Column<string>(type: "TEXT", nullable: true),
-                    PostalCode = table.Column<string>(type: "TEXT", nullable: true)
+                    PostalCode = table.Column<string>(type: "TEXT", nullable: true),
+                    Country = table.Column<string>(type: "TEXT", nullable: true),
+                    AlternatePhone = table.Column<string>(type: "TEXT", nullable: true),
+                    GSTNumber = table.Column<string>(type: "TEXT", nullable: true),
+                    LogoPath = table.Column<string>(type: "TEXT", nullable: true),
+                    InvoicePrefix = table.Column<string>(type: "TEXT", nullable: true),
+                    BankDetails = table.Column<string>(type: "TEXT", nullable: true),
+                    TermsAndConditions = table.Column<string>(type: "TEXT", nullable: true),
+                    UpdatedDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    PhoneNumber = table.Column<string>(type: "TEXT", nullable: true),
+                    TagLine = table.Column<string>(type: "TEXT", nullable: true),
+                    LogoUrl = table.Column<string>(type: "TEXT", nullable: true),
+                    BISRegistrationNumber = table.Column<string>(type: "TEXT", nullable: true),
+                    OwnerName = table.Column<string>(type: "TEXT", nullable: true),
+                    CurrencySymbol = table.Column<string>(type: "TEXT", nullable: true),
+                    CurrencyCode = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -78,6 +94,8 @@ namespace Page_Navigation_App.Migrations
                     CustomerID = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     CustomerName = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    FirstName = table.Column<string>(type: "TEXT", nullable: true),
+                    LastName = table.Column<string>(type: "TEXT", nullable: true),
                     PhoneNumber = table.Column<string>(type: "TEXT", maxLength: 15, nullable: false),
                     Address = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
                     City = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
@@ -117,7 +135,11 @@ namespace Page_Navigation_App.Migrations
                     SmtpPort = table.Column<int>(type: "INTEGER", nullable: false),
                     Username = table.Column<string>(type: "TEXT", nullable: true),
                     Password = table.Column<string>(type: "TEXT", nullable: true),
-                    SenderName = table.Column<string>(type: "TEXT", nullable: true)
+                    SenderName = table.Column<string>(type: "TEXT", nullable: true),
+                    Port = table.Column<int>(type: "INTEGER", nullable: false),
+                    UseSSL = table.Column<bool>(type: "INTEGER", nullable: false),
+                    FromEmail = table.Column<string>(type: "TEXT", nullable: true),
+                    FromName = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -151,6 +173,10 @@ namespace Page_Navigation_App.Migrations
                 {
                     RateID = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
+                    RatePerGram = table.Column<decimal>(type: "TEXT", nullable: false),
+                    MakingChargePercentage = table.Column<decimal>(type: "TEXT", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    RateDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     MetalType = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
                     Purity = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false),
                     Rate = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
@@ -167,7 +193,8 @@ namespace Page_Navigation_App.Migrations
                     HallmarkingCharge = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     DefaultGst = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
                     MarketSource = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
-                    IsSpecialRate = table.Column<bool>(type: "INTEGER", nullable: false)
+                    IsSpecialRate = table.Column<bool>(type: "INTEGER", nullable: false),
+                    Description = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -242,6 +269,10 @@ namespace Page_Navigation_App.Migrations
                 {
                     ID = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
+                    Key = table.Column<string>(type: "TEXT", nullable: true),
+                    Value = table.Column<string>(type: "TEXT", nullable: true),
+                    Description = table.Column<string>(type: "TEXT", nullable: true),
+                    UpdatedDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     LowStockAlerts = table.Column<bool>(type: "INTEGER", nullable: false),
                     PaymentReminders = table.Column<bool>(type: "INTEGER", nullable: false),
                     LowStockThreshold = table.Column<int>(type: "INTEGER", nullable: false),
@@ -502,7 +533,14 @@ namespace Page_Navigation_App.Migrations
                     Size = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
                     CategoryID = table.Column<int>(type: "INTEGER", nullable: false),
                     SubcategoryID = table.Column<int>(type: "INTEGER", nullable: true),
-                    SupplierID = table.Column<int>(type: "INTEGER", nullable: false)
+                    SupplierID = table.Column<int>(type: "INTEGER", nullable: false),
+                    AHCCode = table.Column<string>(type: "TEXT", nullable: true),
+                    JewelType = table.Column<string>(type: "TEXT", nullable: true),
+                    HUIDRegistrationDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    Wastage = table.Column<decimal>(type: "TEXT", nullable: false),
+                    MetalPrice = table.Column<decimal>(type: "TEXT", nullable: false),
+                    MakingCharge = table.Column<decimal>(type: "TEXT", nullable: false),
+                    LastPriceUpdate = table.Column<DateTime>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -533,6 +571,12 @@ namespace Page_Navigation_App.Migrations
                     EMIID = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     OrderID = table.Column<int>(type: "INTEGER", nullable: false),
+                    CustomerID = table.Column<int>(type: "INTEGER", nullable: false),
+                    EMINumber = table.Column<int>(type: "INTEGER", nullable: false),
+                    Amount = table.Column<decimal>(type: "TEXT", nullable: false),
+                    DueDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    PaymentDate = table.Column<DateTime>(type: "TEXT", nullable: true),
                     TotalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     InstallmentAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     InterestRate = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
@@ -578,7 +622,9 @@ namespace Page_Navigation_App.Migrations
                     ReferenceNumber = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
                     ReferenceType = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
                     OrderReference = table.Column<int>(type: "INTEGER", nullable: true),
-                    CustomerId = table.Column<int>(type: "INTEGER", nullable: true),
+                    CustomerID = table.Column<int>(type: "INTEGER", nullable: true),
+                    IsPaymentReceived = table.Column<bool>(type: "INTEGER", nullable: false),
+                    Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
                     Status = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
                     StartDate = table.Column<DateTime>(type: "TEXT", nullable: true),
                     LastPaymentDate = table.Column<DateTime>(type: "TEXT", nullable: true),
@@ -604,8 +650,8 @@ namespace Page_Navigation_App.Migrations
                 {
                     table.PrimaryKey("PK_Finances", x => x.FinanceID);
                     table.ForeignKey(
-                        name: "FK_Finances_Customers_CustomerId",
-                        column: x => x.CustomerId,
+                        name: "FK_Finances_Customers_CustomerID",
+                        column: x => x.CustomerID,
                         principalTable: "Customers",
                         principalColumn: "CustomerID");
                     table.ForeignKey(
@@ -618,6 +664,29 @@ namespace Page_Navigation_App.Migrations
                         column: x => x.SupplierID,
                         principalTable: "Suppliers",
                         principalColumn: "SupplierID");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "HUIDLogs",
+                columns: table => new
+                {
+                    LogID = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    HUID = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
+                    ProductID = table.Column<int>(type: "INTEGER", nullable: false),
+                    ActivityType = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    Description = table.Column<string>(type: "TEXT", maxLength: 500, nullable: false),
+                    ActivityDate = table.Column<DateTime>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_HUIDLogs", x => x.LogID);
+                    table.ForeignKey(
+                        name: "FK_HUIDLogs_Products_ProductID",
+                        column: x => x.ProductID,
+                        principalTable: "Products",
+                        principalColumn: "ProductID",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -645,7 +714,8 @@ namespace Page_Navigation_App.Migrations
                     HSNCode = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
                     FinalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Size = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
-                    Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true)
+                    Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
+                    TotalPrice = table.Column<decimal>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -671,6 +741,9 @@ namespace Page_Navigation_App.Migrations
                     StockLedgerID = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     ProductID = table.Column<int>(type: "INTEGER", nullable: false),
+                    SupplierID = table.Column<int>(type: "INTEGER", nullable: false),
+                    UnitCost = table.Column<decimal>(type: "TEXT", nullable: false),
+                    OrderID = table.Column<int>(type: "INTEGER", nullable: false),
                     TransactionDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     Quantity = table.Column<decimal>(type: "decimal(10,3)", nullable: false),
                     UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
@@ -740,9 +813,9 @@ namespace Page_Navigation_App.Migrations
                 column: "OrderID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Finances_CustomerId",
+                name: "IX_Finances_CustomerID",
                 table: "Finances",
-                column: "CustomerId");
+                column: "CustomerID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Finances_OrderReference",
@@ -753,6 +826,11 @@ namespace Page_Navigation_App.Migrations
                 name: "IX_Finances_SupplierID",
                 table: "Finances",
                 column: "SupplierID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_HUIDLogs_ProductID",
+                table: "HUIDLogs",
+                column: "ProductID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrderDetails_OrderID",
@@ -856,6 +934,9 @@ namespace Page_Navigation_App.Migrations
 
             migrationBuilder.DropTable(
                 name: "Finances");
+
+            migrationBuilder.DropTable(
+                name: "HUIDLogs");
 
             migrationBuilder.DropTable(
                 name: "LogEntries");

@@ -302,13 +302,31 @@ namespace Page_Navigation_App.Services
                     GSTNumber = "27AADCB2230M1ZT",
                     InvoicePrefix = "JSMS",
                     TermsAndConditions = "Standard terms and conditions apply.",
-                    CreatedDate = DateTime.Now
+                    CreatedDate = DateTime.Now,
+                    CurrencySymbol = "₹",
+                    CurrencyCode = "INR"
                 };
                 
                 await _context.BusinessInfo.AddAsync(businessInfo);
                 await _context.SaveChangesAsync();
                 
-                await _logService.LogInformationAsync("Default business information created");
+                // Also ensure currency setting is set to INR
+                await SaveSettingAsync("Currency", "INR");
+                
+                await _logService.LogInformationAsync("Default business information created with INR currency");
+            }
+            else if (string.IsNullOrEmpty(businessInfo.CurrencyCode) || businessInfo.CurrencyCode != "INR")
+            {
+                // Update if currency is not set or is not INR
+                businessInfo.CurrencyCode = "INR";
+                businessInfo.CurrencySymbol = "₹";
+                _context.BusinessInfo.Update(businessInfo);
+                await _context.SaveChangesAsync();
+                
+                // Also ensure currency setting is set to INR
+                await SaveSettingAsync("Currency", "INR");
+                
+                await _logService.LogInformationAsync("Business information updated to use INR currency");
             }
             
             return businessInfo;

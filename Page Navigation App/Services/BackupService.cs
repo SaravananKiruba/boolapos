@@ -31,7 +31,11 @@ namespace Page_Navigation_App.Services
             _logService = logService;
             _securityService = securityService;
             _databasePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "StockInventory.db");
-            _backupFolder = _settings.BackupFolder;
+            
+            // Set a default backup folder path if none is specified in settings
+            _backupFolder = string.IsNullOrWhiteSpace(_settings.BackupFolder) 
+                ? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Backups")
+                : _settings.BackupFolder;
             
             // Ensure backup folder exists
             if (!Directory.Exists(_backupFolder))

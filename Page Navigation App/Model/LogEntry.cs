@@ -18,6 +18,7 @@ namespace Page_Navigation_App.Model
         public string Level { get; set; }  // Info/Warning/Error/Audit
         
         // Property referenced in LogService
+        [NotMapped]
         public string LogLevel { get => Level; set => Level = value; }
 
         [Required]
@@ -31,9 +32,11 @@ namespace Page_Navigation_App.Model
         public string UserID { get; set; }
         
         // Property referenced in LogService
+        [NotMapped]
         public string UserId { get => UserID; set => UserID = value; }
         
         // Property referenced in LogService
+        [NotMapped]
         public string Exception { get => ExceptionDetails; set => ExceptionDetails = value; }
 
         [StringLength(100)]

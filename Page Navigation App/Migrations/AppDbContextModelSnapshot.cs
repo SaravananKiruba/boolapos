@@ -82,16 +82,55 @@ namespace Page_Navigation_App.Migrations
                     b.Property<string>("Address")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("AlternatePhone")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("BISRegistrationNumber")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("BankDetails")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("BusinessName")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("City")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Country")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CurrencyCode")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CurrencySymbol")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Email")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("GSTNumber")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("InvoicePrefix")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LogoPath")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LogoUrl")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("OwnerName")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Phone")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PhoneNumber")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PostalCode")
@@ -100,7 +139,16 @@ namespace Page_Navigation_App.Migrations
                     b.Property<string>("State")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("TagLine")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("TaxId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TermsAndConditions")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdatedDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Website")
@@ -193,6 +241,9 @@ namespace Page_Navigation_App.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("FirstName")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("GSTNumber")
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
@@ -202,6 +253,9 @@ namespace Page_Navigation_App.Migrations
 
                     b.Property<bool>("IsGoldSchemeEnrolled")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("LastName")
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("LastPurchaseDate")
                         .HasColumnType("TEXT");
@@ -252,8 +306,17 @@ namespace Page_Navigation_App.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("FromEmail")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FromName")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Password")
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("Port")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("SenderName")
                         .HasColumnType("TEXT");
@@ -263,6 +326,9 @@ namespace Page_Navigation_App.Migrations
 
                     b.Property<string>("SmtpServer")
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("UseSSL")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Username")
                         .HasColumnType("TEXT");
@@ -276,6 +342,21 @@ namespace Page_Navigation_App.Migrations
                 {
                     b.Property<int>("EMIID")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("CustomerID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("DueDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("EMINumber")
                         .HasColumnType("INTEGER");
 
                     b.Property<decimal>("InstallmentAmount")
@@ -302,6 +383,9 @@ namespace Page_Navigation_App.Migrations
 
                     b.Property<decimal>("PaidAmount")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("PaymentDate")
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("PaymentDay")
                         .HasColumnType("INTEGER");
@@ -352,7 +436,7 @@ namespace Page_Navigation_App.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("CustomerId")
+                    b.Property<int?>("CustomerID")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Description")
@@ -370,6 +454,9 @@ namespace Page_Navigation_App.Migrations
 
                     b.Property<decimal?>("InterestRate")
                         .HasColumnType("decimal(5,2)");
+
+                    b.Property<bool>("IsPaymentReceived")
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime?>("LastPaymentDate")
                         .HasColumnType("TEXT");
@@ -389,6 +476,10 @@ namespace Page_Navigation_App.Migrations
                         .HasColumnType("decimal(10,3)");
 
                     b.Property<DateTime?>("NextInstallmentDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
                     b.Property<int?>("NumberOfInstallments")
@@ -443,13 +534,47 @@ namespace Page_Navigation_App.Migrations
 
                     b.HasKey("FinanceID");
 
-                    b.HasIndex("CustomerId");
+                    b.HasIndex("CustomerID");
 
                     b.HasIndex("OrderReference");
 
                     b.HasIndex("SupplierID");
 
                     b.ToTable("Finances");
+                });
+
+            modelBuilder.Entity("Page_Navigation_App.Model.HUIDLog", b =>
+                {
+                    b.Property<int>("LogID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("ActivityDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ActivityType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("HUID")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ProductID")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("LogID");
+
+                    b.HasIndex("ProductID");
+
+                    b.ToTable("HUIDLogs");
                 });
 
             modelBuilder.Entity("Page_Navigation_App.Model.LogEntry", b =>
@@ -683,6 +808,9 @@ namespace Page_Navigation_App.Migrations
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<decimal>("TotalPrice")
+                        .HasColumnType("TEXT");
+
                     b.Property<decimal>("UnitPrice")
                         .HasColumnType("decimal(18,2)");
 
@@ -703,6 +831,9 @@ namespace Page_Navigation_App.Migrations
                     b.Property<int>("ProductID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("AHCCode")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("BISStandard")
                         .HasMaxLength(50)
@@ -741,6 +872,9 @@ namespace Page_Navigation_App.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime?>("HUIDRegistrationDate")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("HallmarkNumber")
                         .HasColumnType("TEXT");
 
@@ -756,8 +890,20 @@ namespace Page_Navigation_App.Migrations
                     b.Property<bool>("IsHallmarked")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("JewelType")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("LastPriceUpdate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("MakingCharge")
+                        .HasColumnType("TEXT");
+
                     b.Property<decimal>("MakingCharges")
                         .HasColumnType("decimal(5,2)");
+
+                    b.Property<decimal>("MetalPrice")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("MetalType")
                         .IsRequired()
@@ -810,6 +956,9 @@ namespace Page_Navigation_App.Migrations
                     b.Property<decimal>("ValueAdditionPercentage")
                         .HasColumnType("decimal(5,2)");
 
+                    b.Property<decimal>("Wastage")
+                        .HasColumnType("TEXT");
+
                     b.Property<decimal>("WastagePercentage")
                         .HasColumnType("decimal(5,2)");
 
@@ -837,6 +986,10 @@ namespace Page_Navigation_App.Migrations
                     b.Property<decimal>("DefaultGst")
                         .HasColumnType("decimal(5,2)");
 
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("EffectiveDate")
                         .HasColumnType("TEXT");
 
@@ -856,6 +1009,9 @@ namespace Page_Navigation_App.Migrations
 
                     b.Property<bool>("IsSpecialRate")
                         .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("MakingChargePercentage")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("MarketSource")
                         .HasMaxLength(100)
@@ -881,6 +1037,12 @@ namespace Page_Navigation_App.Migrations
                     b.Property<decimal>("Rate")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime>("RateDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("RatePerGram")
+                        .HasColumnType("TEXT");
+
                     b.Property<decimal>("SaleRate")
                         .HasColumnType("TEXT");
 
@@ -890,6 +1052,9 @@ namespace Page_Navigation_App.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("UpdatedBy")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdatedDate")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("ValidUntil")
@@ -1216,6 +1381,12 @@ namespace Page_Navigation_App.Migrations
                     b.Property<bool>("DarkMode")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Key")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Language")
                         .HasColumnType("TEXT");
 
@@ -1227,6 +1398,12 @@ namespace Page_Navigation_App.Migrations
 
                     b.Property<bool>("PaymentReminders")
                         .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("ID");
 
@@ -1304,6 +1481,9 @@ namespace Page_Navigation_App.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("OrderID")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("ProductID")
                         .HasColumnType("INTEGER");
 
@@ -1318,6 +1498,9 @@ namespace Page_Navigation_App.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("SupplierID")
+                        .HasColumnType("INTEGER");
+
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
 
@@ -1327,6 +1510,9 @@ namespace Page_Navigation_App.Migrations
                     b.Property<string>("TransactionType")
                         .IsRequired()
                         .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("UnitCost")
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("UnitPrice")
@@ -1535,7 +1721,7 @@ namespace Page_Navigation_App.Migrations
                 {
                     b.HasOne("Page_Navigation_App.Model.Customer", "Customer")
                         .WithMany("Payments")
-                        .HasForeignKey("CustomerId");
+                        .HasForeignKey("CustomerID");
 
                     b.HasOne("Page_Navigation_App.Model.Order", "Order")
                         .WithMany("Payments")
@@ -1548,6 +1734,17 @@ namespace Page_Navigation_App.Migrations
                     b.Navigation("Customer");
 
                     b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("Page_Navigation_App.Model.HUIDLog", b =>
+                {
+                    b.HasOne("Page_Navigation_App.Model.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("Page_Navigation_App.Model.Order", b =>

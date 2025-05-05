@@ -43,5 +43,12 @@ namespace Page_Navigation_App.Model
         public string LogoUrl { get => LogoPath; set => LogoPath = value; }
         public string BISRegistrationNumber { get; set; }
         public string OwnerName { get; set; }
+        
+        // Currency properties
+        public string CurrencySymbol { get; set; } = "₹";
+        public string CurrencyCode { get; set; } = "INR";
+        
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string FormattedCurrencySymbol => !string.IsNullOrEmpty(CurrencySymbol) ? CurrencySymbol : "₹";
     }
 }

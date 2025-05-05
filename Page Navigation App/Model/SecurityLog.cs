@@ -18,6 +18,7 @@ namespace Page_Navigation_App.Model
         public string UserID { get; set; }
         
         // Property referenced in LogService
+        [NotMapped]
         public string UserId { get => UserID; set => UserID = value; }
 
         [Required]
@@ -29,6 +30,7 @@ namespace Page_Navigation_App.Model
         public string Description { get; set; }
         
         // Property referenced in LogService
+        [NotMapped]
         public string Details { get => Description; set => Description = value; }
 
         [Required]
@@ -39,6 +41,7 @@ namespace Page_Navigation_App.Model
         public string IPAddress { get; set; }
         
         // Property referenced in LogService
+        [NotMapped]
         public string IpAddress { get => IPAddress; set => IPAddress = value; }
 
         [Required]

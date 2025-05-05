@@ -14,7 +14,10 @@ namespace Page_Navigation_App.Model
         public DateTime Date { get; set; }
         
         // Properties referenced in ReportService
+        [NotMapped]
         public DateTime ReportDate { get => Date; set => Date = value; }
+        
+        [NotMapped]
         public object ReportContent { get; set; }
         
         [Required]

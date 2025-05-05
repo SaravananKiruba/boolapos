@@ -29,6 +29,6 @@ namespace Page_Navigation_App.Model
         public int BackupFrequencyDays { get; set; }
         public bool DarkMode { get; set; }
         public string Language { get; set; }
-        public string Currency { get; set; }
+        public string Currency { get; set; } = "INR";
     }
 }
