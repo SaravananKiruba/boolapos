@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Page_Navigation_App.Model
@@ -6,6 +7,14 @@ namespace Page_Navigation_App.Model
     {
         [Key]
         public int ID { get; set; }
+        
+        // Properties referenced in ConfigurationService
+        public string Key { get; set; }
+        public string Value { get; set; }
+        public string Description { get; set; }
+        
+        // Add UpdatedDate property that was referenced but missing
+        public DateTime UpdatedDate { get; set; } = DateTime.Now;
         
         // Business Settings
         public bool LowStockAlerts { get; set; }

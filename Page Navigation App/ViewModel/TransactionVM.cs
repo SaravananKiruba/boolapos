@@ -54,9 +54,9 @@ namespace Page_Navigation_App.ViewModel
             {
                 _selectedTransaction = value;
                 OnPropertyChanged();
-                if (value?.CustomerId > 0)
+                if (value?.CustomerID > 0)
                 {
-                    LoadCustomerOrders(value.CustomerId.Value);
+                    LoadCustomerOrders(value.CustomerID.Value);
                 }
             }
         }
@@ -71,7 +71,7 @@ namespace Page_Navigation_App.ViewModel
                 OnPropertyChanged();
                 if (value != null)
                 {
-                    SelectedTransaction.CustomerId = value.CustomerID;
+                    SelectedTransaction.CustomerID = value.CustomerID;
                     LoadCustomerOrders(value.CustomerID);
                 }
             }
@@ -188,10 +188,10 @@ namespace Page_Navigation_App.ViewModel
             PaymentMethods.Add("Check");
         }
 
-        private async void LoadTransactions()
+        private void LoadTransactions()
         {
             Transactions.Clear();
-            var transactions = await _financeService.GetAllFinanceRecords();
+            var transactions = _financeService.GetAllFinanceRecords();
             foreach (var transaction in transactions)
             {
                 Transactions.Add(transaction);
@@ -234,7 +234,7 @@ namespace Page_Navigation_App.ViewModel
             NetBalance = TotalIncome - TotalExpense;
         }
 
-        private async void AddOrUpdateTransaction()
+        private void AddOrUpdateTransaction()
         {
             // Set default values if not provided
             SelectedTransaction.TransactionDate = SelectedTransaction.TransactionDate == default ? 
@@ -259,11 +259,11 @@ namespace Page_Navigation_App.ViewModel
             {
                 if (!string.IsNullOrEmpty(SelectedTransaction.FinanceID))
                 {
-                    await _financeService.UpdateFinanceRecord(SelectedTransaction);
+                    _financeService.UpdateFinanceRecord(SelectedTransaction);
                 }
                 else
                 {
-                    await _financeService.AddFinanceRecord(SelectedTransaction);
+                    _financeService.AddFinanceRecord(SelectedTransaction);
                 }
 
                 LoadTransactions();
@@ -299,7 +299,7 @@ namespace Page_Navigation_App.ViewModel
                    !string.IsNullOrEmpty(SelectedTransaction.PaymentMethod);
         }
 
-        private async void SearchTransactionsByType()
+        private void SearchTransactionsByType()
         {
             if (string.IsNullOrEmpty(TransactionType))
             {
@@ -308,7 +308,7 @@ namespace Page_Navigation_App.ViewModel
             }
             
             Transactions.Clear();
-            var filteredTransactions = await _financeService.GetTransactionsByType(TransactionType);
+            var filteredTransactions = _financeService.GetTransactionsByType(TransactionType);
             foreach (var transaction in filteredTransactions)
             {
                 Transactions.Add(transaction);
@@ -317,10 +317,10 @@ namespace Page_Navigation_App.ViewModel
             CalculateFinanceSummary();
         }
 
-        private async void SearchTransactionsByDate()
+        private void SearchTransactionsByDate()
         {
             Transactions.Clear();
-            var filteredTransactions = await _financeService.GetTransactionsByDateRange(StartDate, EndDate);
+            var filteredTransactions = _financeService.GetTransactionsByDateRange(StartDate, EndDate);
             foreach (var transaction in filteredTransactions)
             {
                 Transactions.Add(transaction);

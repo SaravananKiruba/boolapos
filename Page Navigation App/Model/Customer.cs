@@ -18,6 +18,10 @@ namespace Page_Navigation_App.Model
         // Add Name alias property
         [NotMapped]
         public string Name { get => CustomerName; set => CustomerName = value; }
+        
+        // Properties referenced in HUIDTrackingService
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
 
         [Required]
         [StringLength(15)]

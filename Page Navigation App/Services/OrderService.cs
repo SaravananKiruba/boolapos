@@ -128,16 +128,17 @@ namespace Page_Navigation_App.Services
                 {
                     detail.OrderID = order.OrderID;
                     
-                    // Get current metal rate
-                    var metalRate = await _rateService.GetCurrentRate(
+                    // Get current metal rate - store the result as a decimal
+                    var metalRate = _rateService.GetCurrentRate(
                         detail.Product.MetalType,
                         detail.Product.Purity);
 
-                    if (metalRate == null)
+                    if (metalRate <= 0)
                         throw new InvalidOperationException($"No rate found for {detail.Product.MetalType} {detail.Product.Purity}");
 
                     // Calculate base metal amount
-                    detail.MetalRate = metalRate.SaleRate;
+                    // metalRate is now a decimal, not an object with SaleRate property
+                    detail.MetalRate = metalRate;
                     detail.BaseAmount = detail.NetWeight * detail.MetalRate;
 
                     // Calculate wastage

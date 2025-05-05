@@ -15,6 +15,9 @@ namespace Page_Navigation_App.Model
 
         [StringLength(50)]
         public string UserID { get; set; }
+        
+        // Property referenced in LogService
+        public string UserId { get => UserID; set => UserID = value; }
 
         [Required]
         [StringLength(100)]
@@ -26,6 +29,9 @@ namespace Page_Navigation_App.Model
 
         [StringLength(50)]
         public string EntityID { get; set; }
+        
+        // Property referenced in LogService
+        public string EntityId { get => EntityID; set => EntityID = value; }
 
         [StringLength(4000)]
         public string OldValues { get; set; }

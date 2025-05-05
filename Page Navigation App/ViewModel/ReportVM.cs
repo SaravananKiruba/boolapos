@@ -294,12 +294,13 @@ namespace Page_Navigation_App.ViewModel
             };
         }
         
-        private async Task GenerateFinancialReport()
+        private Task GenerateFinancialReport()
         {
             ReportTitle = $"Financial Report ({StartDate:d} - {EndDate:d})";
             
-            // Get all financial transactions in date range
-            var transactions = await _financeService.GetTransactionsByDateRange(StartDate, EndDate);
+            // Get all financial transactions in date range 
+            var transactions = _financeService.GetTransactionsByDateRange(StartDate, EndDate);
+            // Store the transactions directly without awaiting
             ReportData = transactions.ToList();
             
             // Calculate summary data
@@ -323,7 +324,7 @@ namespace Page_Navigation_App.ViewModel
                 })
                 .OrderByDescending(x => x.TotalAmount)
                 .ToList();
-            
+
             var paymentMethods = transactions
                 .Where(t => t.TransactionType == "Income")
                 .GroupBy(t => t.PaymentMethod)
@@ -344,6 +345,8 @@ namespace Page_Navigation_App.ViewModel
                 { "Transactions by Type", transactionsByType },
                 { "Payment Methods", paymentMethods }
             };
+            
+            return Task.CompletedTask;
         }
         
         private async Task GenerateCategoryReport()

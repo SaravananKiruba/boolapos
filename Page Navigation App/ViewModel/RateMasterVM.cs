@@ -6,6 +6,7 @@ using Page_Navigation_App.Services;
 using Page_Navigation_App.Utilities;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace Page_Navigation_App.ViewModel
 {
@@ -85,22 +86,22 @@ namespace Page_Navigation_App.ViewModel
             SearchCommand = new RelayCommand<object>(_ => LoadRateHistory(), _ => true);
         }
 
-        private async void LoadCurrentRates()
+        private void LoadCurrentRates()
         {
             Rates.Clear();
-            var currentRates = await _rateService.GetCurrentRates();
+            var currentRates = _rateService.GetCurrentRates();
             foreach (var rate in currentRates)
             {
                 Rates.Add(rate);
             }
         }
 
-        private async void LoadRateHistory()
+        private void LoadRateHistory()
         {
             if (SelectedRate == null) return;
 
             RateHistory.Clear();
-            var history = await _rateService.GetRateHistory(
+            var history = _rateService.GetRateHistory(
                 SelectedRate.MetalType,
                 SelectedRate.Purity,
                 DateTime.Now.AddMonths(-1));
@@ -111,14 +112,14 @@ namespace Page_Navigation_App.ViewModel
             }
         }
 
-        private async void LoadRateAnalytics()
+        private void LoadRateAnalytics()
         {
             RateAnalytics.Clear();
-            var currentRates = await _rateService.GetCurrentRates();
+            var currentRates = _rateService.GetCurrentRates();
             
             foreach (var current in currentRates)
             {
-                var dayHistory = await _rateService.GetRateHistory(
+                var dayHistory = _rateService.GetRateHistory(
                     current.MetalType,
                     current.Purity,
                     DateTime.Now.AddDays(-7));
@@ -151,7 +152,7 @@ namespace Page_Navigation_App.ViewModel
             }
         }
 
-        private async void AddOrUpdateRate()
+        private void AddOrUpdateRate()
         {
             try
             {
@@ -170,19 +171,20 @@ namespace Page_Navigation_App.ViewModel
                     SelectedRate.Source = "Market";
                 }
 
+                bool result;
                 if (SelectedRate.RateID > 0)
                 {
-                    await _rateService.UpdateRate(SelectedRate);
+                    result = _rateService.UpdateRate(SelectedRate);
                 }
                 else
                 {
-                    await _rateService.AddRate(SelectedRate);
+                    result = _rateService.AddRate(SelectedRate);
                 }
 
                 // Update product prices if enabled
-                if (AutoUpdatePrices)
+                if (AutoUpdatePrices && result)
                 {
-                    await UpdateProductPrices(SelectedRate);
+                    UpdateProductPrices(SelectedRate).Wait();
                 }
 
                 LoadCurrentRates();

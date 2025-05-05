@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using System.IO;
 using Page_Navigation_App;
 using Page_Navigation_App.Data;
+using Page_Navigation_App.Model;
 using Page_Navigation_App.Services;
 using Page_Navigation_App.View;
 using Page_Navigation_App.ViewModel;
@@ -55,13 +56,18 @@ namespace Page_Navigation_App
             services.AddScoped<ConfigurationService>();
             services.AddScoped<ReportService>();
             services.AddScoped<BackupService>();
+            
+            // Register newly implemented services
+            services.AddScoped<HUIDTrackingService>();
+            services.AddScoped<TaggingService>();
+            services.AddScoped<GSTComplianceService>();
 
             // Business Services - Scoped lifetime
             services.AddScoped<CustomerService>();
             services.AddScoped<ProductService>();
             services.AddScoped<OrderService>();
             services.AddScoped<FinanceService>();
-            services.AddScoped<StockLedgerService>();  // Add this line
+            services.AddScoped<StockLedgerService>();
             services.AddScoped<SupplierService>();
             services.AddScoped<RateMasterService>();
             services.AddScoped<RepairJobService>();
@@ -108,6 +114,10 @@ namespace Page_Navigation_App
                 // Seed default admin user if needed
                 var authService = scope.ServiceProvider.GetRequiredService<AuthenticationService>();
                 await authService.SeedDefaultUserAsync();
+                
+                // Setup automatic backup schedule
+                var backupService = scope.ServiceProvider.GetRequiredService<BackupService>();
+                await backupService.ScheduleAutomaticBackupsAsync();
             }
 
             // Get main window but don't show it yet

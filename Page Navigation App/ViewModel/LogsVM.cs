@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 using System;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace Page_Navigation_App.ViewModel
 {
@@ -84,17 +85,19 @@ namespace Page_Navigation_App.ViewModel
                     await LoadAllLogs();
                     break;
                 case "System":
-                    var systemLogs = await _logService.GetSystemLogs(_startDate, _endDate);
+                    var systemLogs = _logService.GetSystemLogs();
                     foreach (var log in systemLogs)
                         SystemLogs.Add(log);
                     break;
                 case "Security":
-                    var securityLogs = await _securityService.GetSecurityLogs(_startDate, _endDate);
+                    var securityLogs = await _securityService.GetSecurityLogs(
+                        startDate: _startDate,
+                        endDate: _endDate);
                     foreach (var log in securityLogs)
                         SecurityLogs.Add(log);
                     break;
                 case "Audit":
-                    var auditLogs = await _logService.GetAuditLogs(_startDate, _endDate);
+                    var auditLogs = _logService.GetAuditLogs();
                     foreach (var log in auditLogs)
                         AuditLogs.Add(log);
                     break;
@@ -103,17 +106,26 @@ namespace Page_Navigation_App.ViewModel
 
         private async Task LoadAllLogs()
         {
-            var systemLogsTask = _logService.GetSystemLogs(_startDate, _endDate);
+            // Get logs synchronously since the methods don't have async versions with date parameters
+            var systemLogs = _logService.GetSystemLogs();
             var securityLogsTask = _securityService.GetSecurityLogs(_startDate, _endDate);
-            var auditLogsTask = _logService.GetAuditLogs(_startDate, _endDate);
+            var auditLogs = _logService.GetAuditLogs();
 
-            await Task.WhenAll(systemLogsTask, securityLogsTask, auditLogsTask);
+            // Only need to await the security logs
+            var securityLogs = await securityLogsTask;
 
-            foreach (var log in await systemLogsTask)
+            // Filter logs by date if needed (for system and audit logs)
+            var filteredSystemLogs = systemLogs.Where(l => 
+                l.Timestamp >= _startDate && l.Timestamp <= _endDate.AddDays(1).AddSeconds(-1));
+                
+            var filteredAuditLogs = auditLogs.Where(l => 
+                l.Timestamp >= _startDate && l.Timestamp <= _endDate.AddDays(1).AddSeconds(-1));
+
+            foreach (var log in filteredSystemLogs)
                 SystemLogs.Add(log);
-            foreach (var log in await securityLogsTask)
+            foreach (var log in securityLogs)
                 SecurityLogs.Add(log);
-            foreach (var log in await auditLogsTask)
+            foreach (var log in filteredAuditLogs)
                 AuditLogs.Add(log);
         }
     }

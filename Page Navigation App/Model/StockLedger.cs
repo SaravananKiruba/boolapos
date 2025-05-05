@@ -12,6 +12,11 @@ namespace Page_Navigation_App.Model
         [Required]
         public int ProductID { get; set; }
         
+        // Properties referenced in StockLedgerService
+        public int SupplierID { get; set; }
+        public decimal UnitCost { get; set; }
+        public int OrderID { get; set; }
+        
         [Required]
         public DateTime TransactionDate { get; set; }
         

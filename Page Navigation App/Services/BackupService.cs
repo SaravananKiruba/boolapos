@@ -1,34 +1,39 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
-using System.Security.Cryptography;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System.IO.Compression;
-using Microsoft.EntityFrameworkCore;
-using Page_Navigation_App.Data;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
+using System.Text;
 using Page_Navigation_App.Model;
 
 namespace Page_Navigation_App.Services
 {
+    /// <summary>
+    /// Service to handle database backups and restores with encryption
+    /// </summary>
     public class BackupService
     {
-        private readonly AppDbContext _context;
-        private readonly ILogger<BackupService> _logger;
+        private readonly AppSettings _settings;
+        private readonly LogService _logService;
+        private readonly SecurityService _securityService;
+        private readonly string _databasePath;
         private readonly string _backupFolder;
-        private readonly string _encryptionKey;
 
         public BackupService(
-            AppDbContext context,
-            ILogger<BackupService> logger,
-            IOptions<AppSettings> appSettings)
+            IOptions<AppSettings> settings,
+            LogService logService,
+            SecurityService securityService)
         {
-            _context = context;
-            _logger = logger;
-            _backupFolder = appSettings.Value.BackupFolder ?? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Backups");
-            _encryptionKey = appSettings.Value.EncryptionKey ?? "JSMS_DefaultSecureEncryptionKey_2025";
+            _settings = settings.Value;
+            _logService = logService;
+            _securityService = securityService;
+            _databasePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "StockInventory.db");
+            _backupFolder = _settings.BackupFolder;
             
-            // Ensure backup directory exists
+            // Ensure backup folder exists
             if (!Directory.Exists(_backupFolder))
             {
                 Directory.CreateDirectory(_backupFolder);
@@ -36,241 +41,226 @@ namespace Page_Navigation_App.Services
         }
 
         /// <summary>
-        /// Creates an encrypted backup of the database
+        /// Create an encrypted backup of the database
         /// </summary>
-        public async Task<string> CreateBackupAsync(string comment = "")
+        public async Task<string> CreateBackupAsync(string description = "")
         {
             try
             {
-                _logger.LogInformation("Starting database backup process");
-                
-                // Get database connection string
-                var connection = _context.Database.GetDbConnection();
-                string dbPath = connection.DataSource;
-                
-                if (string.IsNullOrEmpty(dbPath))
+                if (!File.Exists(_databasePath))
                 {
-                    throw new Exception("Cannot determine database file path");
+                    await _logService.LogErrorAsync("Database file not found for backup");
+                    return null;
                 }
 
-                // Generate backup filename with timestamp
+                // Create backup filename with timestamp
                 string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-                string backupFilename = $"JSMS_Backup_{timestamp}.db.bak";
-                string backupPath = Path.Combine(_backupFolder, backupFilename);
-                string encryptedBackupPath = $"{backupPath}.aes";
-                
-                // First create a copy of the SQLite database file
-                using (var source = new FileStream(dbPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                using (var destination = new FileStream(backupPath, FileMode.Create, FileAccess.Write))
+                string backupName = $"backup_{timestamp}.jsmsb";
+                string backupPath = Path.Combine(_backupFolder, backupName);
+                string metadataPath = Path.Combine(_backupFolder, $"backup_{timestamp}.meta");
+
+                // Create backup metadata
+                string metadata = $"Timestamp: {DateTime.Now}\nDescription: {description}\nVersion: 1.0\n";
+                File.WriteAllText(metadataPath, _securityService.EncryptString(metadata));
+
+                // Create backup with encryption
+                using (FileStream originalFileStream = new FileStream(_databasePath, FileMode.Open, FileAccess.Read))
+                using (FileStream backupFileStream = new FileStream(backupPath, FileMode.Create))
+                using (var aes = Aes.Create())
+                using (CryptoStream cryptoStream = new CryptoStream(
+                    backupFileStream,
+                    aes.CreateEncryptor(
+                        Encoding.UTF8.GetBytes(_settings.EncryptionKey.PadRight(32).Substring(0, 32)),
+                        new byte[16]),
+                    CryptoStreamMode.Write))
                 {
-                    await source.CopyToAsync(destination);
+                    await originalFileStream.CopyToAsync(cryptoStream);
                 }
-                
-                // Compress the backup
-                string compressedBackupPath = $"{backupPath}.zip";
-                using (var zipFile = ZipFile.Open(compressedBackupPath, ZipArchiveMode.Create))
-                {
-                    zipFile.CreateEntryFromFile(backupPath, Path.GetFileName(backupPath));
-                }
-                
-                // Delete the uncompressed backup
-                File.Delete(backupPath);
-                
-                // Encrypt the compressed backup
-                EncryptFile(compressedBackupPath, encryptedBackupPath, _encryptionKey);
-                
-                // Delete the compressed backup
-                File.Delete(compressedBackupPath);
-                
-                // Log the backup in the database
-                await LogBackupAsync(encryptedBackupPath, comment);
-                
-                _logger.LogInformation($"Database backup completed successfully: {encryptedBackupPath}");
-                return encryptedBackupPath;
+
+                await _logService.LogInformationAsync($"Database backup created: {backupName}");
+                return backupPath;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error during database backup process");
-                throw;
+                await _logService.LogErrorAsync($"Error creating backup: {ex.Message}");
+                return null;
             }
         }
-        
+
         /// <summary>
-        /// Restores a database from an encrypted backup file
+        /// Restore the database from a backup file
         /// </summary>
-        public async Task<bool> RestoreBackupAsync(string backupFilePath)
+        public async Task<bool> RestoreFromBackupAsync(string backupPath)
         {
             try
             {
-                _logger.LogInformation($"Starting database restore from: {backupFilePath}");
-                
-                if (!File.Exists(backupFilePath))
+                if (!File.Exists(backupPath))
                 {
-                    throw new FileNotFoundException("Backup file not found", backupFilePath);
+                    await _logService.LogErrorAsync($"Backup file not found: {backupPath}");
+                    return false;
                 }
-                
-                // Get database connection string
-                var connection = _context.Database.GetDbConnection();
-                string dbPath = connection.DataSource;
-                
-                // Create a temporary location for the decrypted and uncompressed backup
-                string tempFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-                Directory.CreateDirectory(tempFolder);
-                
-                string decryptedBackupPath = Path.Combine(tempFolder, "backup.db.zip");
-                string uncompressedBackupPath = Path.Combine(tempFolder, "backup.db");
-                
-                try
+
+                // Create a temporary path for the restored database
+                string tempRestorePath = Path.Combine(
+                    Path.GetDirectoryName(_databasePath),
+                    $"restore_{DateTime.Now:yyyyMMdd_HHmmss}.db");
+
+                // Decrypt and restore the database
+                using (FileStream backupFileStream = new FileStream(backupPath, FileMode.Open, FileAccess.Read))
+                using (var aes = Aes.Create())
+                using (CryptoStream cryptoStream = new CryptoStream(
+                    backupFileStream,
+                    aes.CreateDecryptor(
+                        Encoding.UTF8.GetBytes(_settings.EncryptionKey.PadRight(32).Substring(0, 32)),
+                        new byte[16]),
+                    CryptoStreamMode.Read))
+                using (FileStream restoredFileStream = new FileStream(tempRestorePath, FileMode.Create))
                 {
-                    // Decrypt the backup
-                    DecryptFile(backupFilePath, decryptedBackupPath, _encryptionKey);
-                    
-                    // Decompress the backup
-                    using (var zipFile = ZipFile.OpenRead(decryptedBackupPath))
-                    {
-                        var entry = zipFile.Entries[0];
-                        entry.ExtractToFile(uncompressedBackupPath, true);
-                    }
-                    
-                    // Close the current database connection
-                    await _context.Database.CloseConnectionAsync();
-                    
-                    // Copy the backup file to the database location
-                    using (var source = new FileStream(uncompressedBackupPath, FileMode.Open, FileAccess.Read))
-                    using (var destination = new FileStream(dbPath, FileMode.Create, FileAccess.Write))
-                    {
-                        await source.CopyToAsync(destination);
-                    }
-                    
-                    _logger.LogInformation("Database restore completed successfully");
-                    return true;
+                    await cryptoStream.CopyToAsync(restoredFileStream);
                 }
-                finally
-                {
-                    // Clean up temp files
-                    if (Directory.Exists(tempFolder))
-                    {
-                        Directory.Delete(tempFolder, true);
-                    }
-                }
+
+                // Create a backup of the current database before replacing it
+                string currentBackupPath = Path.Combine(
+                    _backupFolder,
+                    $"prerestore_{DateTime.Now:yyyyMMdd_HHmmss}.jsmsb");
+                File.Copy(_databasePath, currentBackupPath, true);
+
+                // Replace the current database with the restored one
+                File.Copy(tempRestorePath, _databasePath, true);
+                File.Delete(tempRestorePath);
+
+                await _logService.LogInformationAsync($"Database restored from backup: {backupPath}");
+                return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error during database restore process");
-                throw;
+                await _logService.LogErrorAsync($"Error restoring from backup: {ex.Message}");
+                return false;
             }
         }
-        
+
         /// <summary>
-        /// Encrypts a file using AES encryption
+        /// Get a list of available backups
         /// </summary>
-        private void EncryptFile(string inputFile, string outputFile, string key)
+        public async Task<List<BackupInfo>> GetBackupListAsync()
         {
-            byte[] keyBytes = GetKeyBytes(key);
-            byte[] iv = new byte[16]; // AES block size is 16 bytes
-            
-            using (var aes = Aes.Create())
+            try
             {
-                aes.KeySize = 256;
-                aes.Key = keyBytes;
-                aes.IV = iv;
-                aes.Mode = CipherMode.CBC;
-                aes.Padding = PaddingMode.PKCS7;
-                
-                using (var inputFileStream = new FileStream(inputFile, FileMode.Open, FileAccess.Read))
-                using (var outputFileStream = new FileStream(outputFile, FileMode.Create, FileAccess.Write))
+                if (!Directory.Exists(_backupFolder))
                 {
-                    // Write IV to the beginning of the output file
-                    outputFileStream.Write(iv, 0, iv.Length);
+                    return new List<BackupInfo>();
+                }
+
+                var backupFiles = Directory.GetFiles(_backupFolder, "*.jsmsb");
+                var backupList = new List<BackupInfo>();
+
+                foreach (var backupFile in backupFiles)
+                {
+                    string fileName = Path.GetFileName(backupFile);
+                    string metadataPath = Path.Combine(
+                        _backupFolder,
+                        Path.GetFileNameWithoutExtension(backupFile) + ".meta");
                     
-                    using (var cryptoStream = new CryptoStream(
-                        outputFileStream, 
-                        aes.CreateEncryptor(), 
-                        CryptoStreamMode.Write))
+                    string description = "No description";
+                    if (File.Exists(metadataPath))
                     {
-                        inputFileStream.CopyTo(cryptoStream);
+                        string encryptedMetadata = File.ReadAllText(metadataPath);
+                        string metadata = _securityService.DecryptString(encryptedMetadata);
+                        
+                        // Extract description from metadata
+                        var descriptionLine = metadata.Split('\n')
+                            .FirstOrDefault(line => line.StartsWith("Description:"));
+                        
+                        if (descriptionLine != null)
+                        {
+                            description = descriptionLine.Substring("Description:".Length).Trim();
+                        }
+                    }
+
+                    var fileInfo = new FileInfo(backupFile);
+                    backupList.Add(new BackupInfo
+                    {
+                        FileName = fileName,
+                        Description = description,
+                        Size = fileInfo.Length,
+                        CreatedDate = fileInfo.CreationTime
+                    });
+                }
+
+                return backupList.OrderByDescending(b => b.CreatedDate).ToList();
+            }
+            catch (Exception ex)
+            {
+                await _logService.LogErrorAsync($"Error getting backup list: {ex.Message}");
+                return new List<BackupInfo>();
+            }
+        }
+
+        /// <summary>
+        /// Schedule automatic backups
+        /// </summary>
+        public async Task ScheduleAutomaticBackupsAsync()
+        {
+            try
+            {
+                if (!_settings.EnableAutoBackup)
+                {
+                    await _logService.LogInformationAsync("Automatic backups are disabled in settings");
+                    return;
+                }
+
+                // Get the last backup time
+                var backups = await GetBackupListAsync();
+                var lastBackup = backups.FirstOrDefault();
+                
+                if (lastBackup != null)
+                {
+                    // Check if it's time for a new backup based on the interval
+                    var hoursSinceLastBackup = (DateTime.Now - lastBackup.CreatedDate).TotalHours;
+                    
+                    if (hoursSinceLastBackup < _settings.AutoBackupIntervalHours)
+                    {
+                        // Not time for a backup yet
+                        return;
                     }
                 }
+
+                // Create a new automatic backup
+                await CreateBackupAsync("Automatic scheduled backup");
+                await _logService.LogInformationAsync("Automatic backup created successfully");
             }
-        }
-        
-        /// <summary>
-        /// Decrypts a file using AES encryption
-        /// </summary>
-        private void DecryptFile(string inputFile, string outputFile, string key)
-        {
-            byte[] keyBytes = GetKeyBytes(key);
-            
-            using (var inputFileStream = new FileStream(inputFile, FileMode.Open, FileAccess.Read))
+            catch (Exception ex)
             {
-                // Read IV from the beginning of the encrypted file
-                byte[] iv = new byte[16]; // AES block size
-                inputFileStream.Read(iv, 0, iv.Length);
-                
-                using (var aes = Aes.Create())
-                {
-                    aes.KeySize = 256;
-                    aes.Key = keyBytes;
-                    aes.IV = iv;
-                    aes.Mode = CipherMode.CBC;
-                    aes.Padding = PaddingMode.PKCS7;
-                    
-                    using (var outputFileStream = new FileStream(outputFile, FileMode.Create, FileAccess.Write))
-                    using (var cryptoStream = new CryptoStream(
-                        inputFileStream, 
-                        aes.CreateDecryptor(), 
-                        CryptoStreamMode.Read))
-                    {
-                        cryptoStream.CopyTo(outputFileStream);
-                    }
-                }
+                await _logService.LogErrorAsync($"Error scheduling automatic backup: {ex.Message}");
             }
-        }
-        
-        /// <summary>
-        /// Derives a 256-bit key from the provided string using PBKDF2
-        /// </summary>
-        private byte[] GetKeyBytes(string key)
-        {
-            // Use a fixed salt for deterministic key derivation
-            byte[] salt = new byte[] { 0x49, 0x76, 0x61, 0x6e, 0x20, 0x4d, 0x65, 0x64, 0x76, 0x65, 0x64, 0x65, 0x76 };
-            
-            using (var derivation = new Rfc2898DeriveBytes(key, salt, 10000, HashAlgorithmName.SHA256))
-            {
-                return derivation.GetBytes(32); // 256 bits = 32 bytes
-            }
-        }
-        
-        /// <summary>
-        /// Logs the backup operation in the database
-        /// </summary>
-        private async Task LogBackupAsync(string backupPath, string comment)
-        {
-            var backupLog = new AuditLog
-            {
-                Action = "Database Backup",
-                EntityName = "Database",
-                Details = $"Backup created: {Path.GetFileName(backupPath)}",
-                Timestamp = DateTime.Now,
-                UserID = "System",
-                IPAddress = "127.0.0.1",
-                ModifiedAt = DateTime.Now,
-                ModifiedBy = "System"
-            };
-            
-            _context.AuditLogs.Add(backupLog);
-            await _context.SaveChangesAsync();
         }
     }
 
     /// <summary>
-    /// Configuration settings for the application
+    /// Information about a database backup
     /// </summary>
-    public class AppSettings
+    public class BackupInfo
     {
-        public string BackupFolder { get; set; }
-        public string EncryptionKey { get; set; }
-        public int AutoBackupIntervalHours { get; set; } = 24;
-        public bool EnableAutoBackup { get; set; } = true;
+        public string FileName { get; set; }
+        public string Description { get; set; }
+        public long Size { get; set; }
+        public DateTime CreatedDate { get; set; }
+        
+        public string SizeFormatted => FormatSize(Size);
+        
+        private string FormatSize(long bytes)
+        {
+            string[] suffixes = { "B", "KB", "MB", "GB" };
+            int counter = 0;
+            decimal number = bytes;
+            
+            while (Math.Round(number / 1024) >= 1)
+            {
+                number /= 1024;
+                counter++;
+            }
+            
+            return $"{number:n1} {suffixes[counter]}";
+        }
     }
 }

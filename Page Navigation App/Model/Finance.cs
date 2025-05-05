@@ -58,7 +58,7 @@ namespace Page_Navigation_App.Model
         [ForeignKey("Order")]
         public int? OrderReference { get; set; }
         
-        // Adding OrderID as alias for OrderReference for compatibility
+        // Using OrderID as a nullable property instead of duplicating it
         [NotMapped]
         public int? OrderID 
         { 
@@ -66,8 +66,13 @@ namespace Page_Navigation_App.Model
             set { OrderReference = value; } 
         }
 
-        // Customer reference
-        public int? CustomerId { get; set; }
+        // Customer reference - make this the main property
+        public int? CustomerID { get; set; }
+        
+        public bool IsPaymentReceived { get; set; }
+        
+        [StringLength(500)]
+        public string Notes { get; set; }
         
         // EMI transaction status
         [StringLength(50)]

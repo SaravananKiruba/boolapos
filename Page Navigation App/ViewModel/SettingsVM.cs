@@ -2,6 +2,9 @@ using Microsoft.Win32;
 using Page_Navigation_App.Model;
 using Page_Navigation_App.Services;
 using Page_Navigation_App.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 
@@ -191,11 +194,11 @@ namespace Page_Navigation_App.ViewModel
         #endregion
 
         #region Methods
-        private async void LoadSettings()
+        private void LoadSettings()
         {
-            var businessInfo = await _configService.GetBusinessInfo();
-            var settings = await _configService.GetSettings();
-            var emailSettings = await _configService.GetEmailSettings();
+            var businessInfo = _configService.GetBusinessInfo();
+            var settings = _configService.GetSettings();
+            var emailSettings = _configService.GetEmailSettings();
 
             // Business Information
             BusinessName = businessInfo.BusinessName;
@@ -206,25 +209,26 @@ namespace Page_Navigation_App.ViewModel
             TaxId = businessInfo.TaxId;
 
             // General Settings
-            LowStockAlerts = settings.LowStockAlerts;
-            PaymentReminders = settings.PaymentReminders;
-            LowStockThreshold = settings.LowStockThreshold;
+            LowStockAlerts = settings.FirstOrDefault(s => s.Key == "LowStockAlerts")?.Value == "True";
+            PaymentReminders = settings.FirstOrDefault(s => s.Key == "PaymentReminders")?.Value == "True";
+            LowStockThreshold = int.TryParse(settings.FirstOrDefault(s => s.Key == "LowStockThreshold")?.Value, out int threshold) ? threshold : 10;
 
             // Email Settings
             SmtpServer = emailSettings.SmtpServer;
-            SmtpPort = emailSettings.SmtpPort;
+            SmtpPort = emailSettings.Port;
             SmtpUsername = emailSettings.Username;
-            SenderName = emailSettings.SenderName;
+            SenderName = emailSettings.FromName;
 
             // Backup Settings
-            BackupPath = settings.BackupPath;
+            BackupPath = settings.FirstOrDefault(s => s.Key == "BackupPath")?.Value ?? "";
         }
 
-        private async void SaveSettings()
+        private void SaveSettings()
         {
             try
             {
-                await _configService.UpdateBusinessInfo(new BusinessInfo
+                // Update business information
+                bool businessInfoResult = _configService.UpdateBusinessInfo(new BusinessInfo
                 {
                     BusinessName = BusinessName,
                     Address = Address,
@@ -234,23 +238,34 @@ namespace Page_Navigation_App.ViewModel
                     TaxId = TaxId
                 });
 
-                await _configService.UpdateSettings(new Setting
+                // Create and save individual settings
+                var settingsList = new List<Setting>
                 {
-                    LowStockAlerts = LowStockAlerts,
-                    PaymentReminders = PaymentReminders,
-                    LowStockThreshold = LowStockThreshold,
-                    BackupPath = BackupPath
-                });
+                    new Setting { Key = "LowStockAlerts", Value = LowStockAlerts.ToString() },
+                    new Setting { Key = "PaymentReminders", Value = PaymentReminders.ToString() },
+                    new Setting { Key = "LowStockThreshold", Value = LowStockThreshold.ToString() },
+                    new Setting { Key = "BackupPath", Value = BackupPath }
+                };
 
-                await _configService.UpdateEmailSettings(new EmailSettings
+                bool settingsResult = _configService.UpdateSettings(settingsList);
+
+                // Update email settings
+                bool emailResult = _configService.UpdateEmailSettings(new EmailSettings
                 {
                     SmtpServer = SmtpServer,
-                    SmtpPort = SmtpPort,
+                    Port = SmtpPort,
                     Username = SmtpUsername,
-                    SenderName = SenderName
+                    FromName = SenderName
                 });
 
-                MessageBox.Show("Settings saved successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                if (businessInfoResult && settingsResult && emailResult)
+                {
+                    MessageBox.Show("Settings saved successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show("Some settings may not have been saved correctly.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
             }
             catch (System.Exception ex)
             {

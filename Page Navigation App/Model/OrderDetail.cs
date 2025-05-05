@@ -103,6 +103,9 @@ namespace Page_Navigation_App.Model
         [StringLength(500)]
         public string Notes { get; set; }
 
+        // Property referenced in PrintService, FinanceService and ReportService
+        public decimal TotalPrice { get => FinalAmount; set => FinalAmount = value; }
+
         // Navigation Properties
         public virtual Order Order { get; set; }
         public virtual Product Product { get; set; }

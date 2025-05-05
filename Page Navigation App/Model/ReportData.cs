@@ -13,6 +13,10 @@ namespace Page_Navigation_App.Model
         [Required]
         public DateTime Date { get; set; }
         
+        // Properties referenced in ReportService
+        public DateTime ReportDate { get => Date; set => Date = value; }
+        public object ReportContent { get; set; }
+        
         [Required]
         [StringLength(50)]
         public string ReportType { get; set; } // Daily, Weekly, Monthly, Custom

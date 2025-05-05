@@ -19,6 +19,12 @@ namespace Page_Navigation_App.Model
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int RateID { get; set; }
 
+        // Properties referenced in RateManagementService and RateMasterService
+        public decimal RatePerGram { get => Rate; set => Rate = value; }
+        public decimal MakingChargePercentage { get; set; }
+        public DateTime UpdatedDate { get; set; }
+        public DateTime RateDate { get => EffectiveDate; set => EffectiveDate = value; }
+
         private string _metalType;
         [Required]
         [StringLength(50)]
@@ -275,6 +281,21 @@ namespace Page_Navigation_App.Model
                 if (_isSpecialRate != value)
                 {
                     _isSpecialRate = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private string _description;
+        [StringLength(500)]
+        public string Description
+        {
+            get => _description;
+            set
+            {
+                if (_description != value)
+                {
+                    _description = value;
                     OnPropertyChanged();
                 }
             }

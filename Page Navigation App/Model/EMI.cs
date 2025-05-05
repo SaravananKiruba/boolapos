@@ -13,6 +13,14 @@ namespace Page_Navigation_App.Model
         [Required]
         [ForeignKey("Order")]
         public int OrderID { get; set; }
+        
+        // Properties referenced in FinanceService
+        public int CustomerID { get; set; }
+        public int EMINumber { get; set; }
+        public decimal Amount { get; set; }
+        public DateTime DueDate { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public DateTime? PaymentDate { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]

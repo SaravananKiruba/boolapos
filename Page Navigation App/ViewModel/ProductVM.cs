@@ -191,6 +191,7 @@ namespace Page_Navigation_App.ViewModel
                     return;
                 }
 
+                // Calculate base price directly without await
                 SelectedProduct.BasePrice = Math.Round(SelectedProduct.NetWeight * currentRate, 2);
                 
                 // Calculate making charges
@@ -218,7 +219,7 @@ namespace Page_Navigation_App.ViewModel
                 decimal wastageAmount = (SelectedProduct.BasePrice * wastagePercentage) / 100;
                 decimal makingAmount = (SelectedProduct.BasePrice * makingCharges) / 100;
 
-                // Calculate final price with all components
+                // Calculate final price with all components - ensure we're not awaiting a decimal
                 SelectedProduct.FinalPrice = Math.Round(
                     SelectedProduct.BasePrice + 
                     makingAmount + 
@@ -247,17 +248,18 @@ namespace Page_Navigation_App.ViewModel
             }
         }
 
-        private async Task<decimal> GetCurrentMetalRate()
+        private Task<decimal> GetCurrentMetalRate()
         {
             if (string.IsNullOrEmpty(SelectedProduct.MetalType) || 
                 string.IsNullOrEmpty(SelectedProduct.Purity))
-                return 0;
+                return Task.FromResult(0m);
 
-            var currentRate = await _rateService.GetCurrentRate(
+            // Use the synchronous GetCurrentRate method and wrap the result in a Task
+            decimal rate = _rateService.GetCurrentRate(
                 SelectedProduct.MetalType,
                 SelectedProduct.Purity);
-
-            return currentRate?.Rate ?? 0;
+                
+            return Task.FromResult(rate);
         }
 
         private void ClearForm()

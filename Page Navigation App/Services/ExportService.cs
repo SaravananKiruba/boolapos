@@ -39,7 +39,7 @@ namespace Page_Navigation_App.Services
             DateTime endDate,
             string format = "xlsx")
         {
-            var analytics = await _reportService.GetSalesAnalytics(startDate, endDate);
+            var analytics = _reportService.GetSalesAnalytics(startDate, endDate);
             var fileName = $"SalesReport_{startDate:yyyyMMdd}_{endDate:yyyyMMdd}.{format}";
             var filePath = Path.Combine(_exportPath, fileName);
 
@@ -54,10 +54,10 @@ namespace Page_Navigation_App.Services
 
                 // Add data
                 var row = 2;
-                foreach (var item in analytics)
+                foreach (var item in analytics.SalesByCategory)
                 {
-                    worksheet.Cell(row, 1).Value = item.Key;
-                    worksheet.Cell(row, 2).Value = item.Value;
+                    worksheet.Cell(row, 1).Value = item.CategoryName;
+                    worksheet.Cell(row, 2).Value = item.Amount;
                     row++;
                 }
 
@@ -68,10 +68,10 @@ namespace Page_Navigation_App.Services
                 using var writer = new StreamWriter(filePath);
                 using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
 
-                var records = analytics.Select(a => new
+                var records = analytics.SalesByCategory.Select(a => new
                 {
-                    Category = a.Key,
-                    Amount = a.Value
+                    Category = a.CategoryName,
+                    Amount = a.Amount
                 });
 
                 csv.WriteRecords(records);
@@ -143,7 +143,7 @@ namespace Page_Navigation_App.Services
             DateTime endDate,
             string format = "xlsx")
         {
-            var gstData = await _reportService.GetFinancialReports(startDate, endDate);
+            var gstData = _reportService.GetFinancialReports(startDate, endDate);
             var fileName = $"GSTReport_{startDate:yyyyMMdd}_{endDate:yyyyMMdd}.{format}";
             var filePath = Path.Combine(_exportPath, fileName);
 
@@ -153,16 +153,38 @@ namespace Page_Navigation_App.Services
                 var worksheet = workbook.Worksheets.Add("GST Report");
 
                 // Headers
-                worksheet.Cell(1, 1).Value = "Tax Type";
-                worksheet.Cell(1, 2).Value = "Amount";
+                worksheet.Cell(1, 1).Value = "Category";
+                worksheet.Cell(1, 2).Value = "Sales";
+                worksheet.Cell(1, 3).Value = "Expenses"; 
+                worksheet.Cell(1, 4).Value = "Profit/Loss";
 
                 // Data
-                worksheet.Cell(2, 1).Value = "CGST";
-                worksheet.Cell(2, 2).Value = gstData["CGST_Collected"];
-                worksheet.Cell(3, 1).Value = "SGST";
-                worksheet.Cell(3, 2).Value = gstData["SGST_Collected"];
-                worksheet.Cell(4, 1).Value = "IGST";
-                worksheet.Cell(4, 2).Value = gstData["IGST_Collected"];
+                worksheet.Cell(2, 1).Value = "Total";
+                worksheet.Cell(2, 2).Value = gstData.TotalSales;
+                worksheet.Cell(2, 3).Value = gstData.TotalExpenses;
+                worksheet.Cell(2, 4).Value = gstData.GrossProfit;
+
+                // Category breakdowns
+                var row = 4;
+                worksheet.Cell(3, 1).Value = "By Category";
+                
+                foreach (var category in gstData.SalesByCategory)
+                {
+                    worksheet.Cell(row, 1).Value = category.CategoryName;
+                    worksheet.Cell(row, 2).Value = category.SalesAmount;
+                    row++;
+                }
+
+                row += 2;
+                worksheet.Cell(row, 1).Value = "Expenses by Category";
+                row++;
+                
+                foreach (var expense in gstData.ExpensesByCategory)
+                {
+                    worksheet.Cell(row, 1).Value = expense.CategoryName;
+                    worksheet.Cell(row, 3).Value = expense.ExpenseAmount;
+                    row++;
+                }
 
                 workbook.SaveAs(filePath);
             }
@@ -171,12 +193,29 @@ namespace Page_Navigation_App.Services
                 using var writer = new StreamWriter(filePath);
                 using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
 
-                var records = new[]
+                // Create a flattened record structure for CSV
+                var records = new List<object>
                 {
-                    new { TaxType = "CGST", Amount = gstData["CGST_Collected"] },
-                    new { TaxType = "SGST", Amount = gstData["SGST_Collected"] },
-                    new { TaxType = "IGST", Amount = gstData["IGST_Collected"] }
+                    new { Category = "Total", Sales = gstData.TotalSales, Expenses = gstData.TotalExpenses, ProfitLoss = gstData.GrossProfit }
                 };
+                
+                // Add empty row
+                records.Add(new { Category = string.Empty, Sales = (decimal?)null, Expenses = (decimal?)null, ProfitLoss = (decimal?)null });
+                
+                // Add sales by category
+                records.Add(new { Category = "Sales by Category", Sales = (decimal?)null, Expenses = (decimal?)null, ProfitLoss = (decimal?)null });
+                foreach (var category in gstData.SalesByCategory)
+                {
+                    records.Add(new { Category = category.CategoryName, Sales = category.SalesAmount, Expenses = (decimal?)null, ProfitLoss = (decimal?)null });
+                }
+                
+                // Add expenses by category
+                records.Add(new { Category = string.Empty, Sales = (decimal?)null, Expenses = (decimal?)null, ProfitLoss = (decimal?)null });
+                records.Add(new { Category = "Expenses by Category", Sales = (decimal?)null, Expenses = (decimal?)null, ProfitLoss = (decimal?)null });
+                foreach (var expense in gstData.ExpensesByCategory)
+                {
+                    records.Add(new { Category = expense.CategoryName, Sales = (decimal?)null, Expenses = expense.ExpenseAmount, ProfitLoss = (decimal?)null });
+                }
 
                 csv.WriteRecords(records);
             }
@@ -195,7 +234,7 @@ namespace Page_Navigation_App.Services
             DateTime endDate,
             string format = "xlsx")
         {
-            var repairs = await _reportService.GetRepairAnalytics(startDate, endDate);
+            var repairs = _reportService.GetRepairAnalytics(startDate, endDate);
             var fileName = $"RepairReport_{startDate:yyyyMMdd}_{endDate:yyyyMMdd}.{format}";
             var filePath = Path.Combine(_exportPath, fileName);
 
@@ -205,21 +244,47 @@ namespace Page_Navigation_App.Services
                 var worksheet = workbook.Worksheets.Add("Repair Report");
 
                 // Headers
-                worksheet.Cell(1, 1).Value = "Work Type";
-                worksheet.Cell(1, 2).Value = "Count";
-                worksheet.Cell(1, 3).Value = "Estimated Amount";
-                worksheet.Cell(1, 4).Value = "Final Amount";
+                worksheet.Cell(1, 1).Value = "Job ID";
+                worksheet.Cell(1, 2).Value = "Customer";
+                worksheet.Cell(1, 3).Value = "Item Description";
+                worksheet.Cell(1, 4).Value = "Work Type";
+                worksheet.Cell(1, 5).Value = "Status";
+                worksheet.Cell(1, 6).Value = "Receipt Date";
+                worksheet.Cell(1, 7).Value = "Delivery Date";
+                worksheet.Cell(1, 8).Value = "Estimated Cost";
+                worksheet.Cell(1, 9).Value = "Final Amount";
 
                 // Data
                 var row = 2;
-                foreach (var repair in repairs)
+                foreach (var job in repairs.JobDetails)
                 {
-                    worksheet.Cell(row, 1).Value = repair.WorkType;
-                    worksheet.Cell(row, 2).Value = repair.Status; // Using Status field for count
-                    worksheet.Cell(row, 3).Value = repair.EstimatedAmount;
-                    worksheet.Cell(row, 4).Value = repair.FinalAmount;
+                    worksheet.Cell(row, 1).Value = job.RepairID;
+                    worksheet.Cell(row, 2).Value = job.CustomerName;
+                    worksheet.Cell(row, 3).Value = job.ItemDescription;
+                    worksheet.Cell(row, 4).Value = job.WorkType;
+                    worksheet.Cell(row, 5).Value = job.Status;
+                    worksheet.Cell(row, 6).Value = job.ReceiptDate;
+                    worksheet.Cell(row, 7).Value = job.DeliveryDate;
+                    worksheet.Cell(row, 8).Value = job.EstimatedCost;
+                    worksheet.Cell(row, 9).Value = job.FinalAmount;
                     row++;
                 }
+
+                // Add summary section
+                row += 2;
+                worksheet.Cell(row, 1).Value = "Summary";
+                row++;
+                worksheet.Cell(row, 1).Value = "Total Jobs:";
+                worksheet.Cell(row, 2).Value = repairs.TotalJobs;
+                row++;
+                worksheet.Cell(row, 1).Value = "Completed Jobs:";
+                worksheet.Cell(row, 2).Value = repairs.CompletedJobs;
+                row++;
+                worksheet.Cell(row, 1).Value = "Pending Jobs:";
+                worksheet.Cell(row, 2).Value = repairs.PendingJobs;
+                row++;
+                worksheet.Cell(row, 1).Value = "Total Revenue:";
+                worksheet.Cell(row, 2).Value = repairs.TotalRevenue;
 
                 workbook.SaveAs(filePath);
             }
@@ -228,12 +293,17 @@ namespace Page_Navigation_App.Services
                 using var writer = new StreamWriter(filePath);
                 using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
 
-                var records = repairs.Select(r => new
+                var records = repairs.JobDetails.Select(job => new
                 {
-                    WorkType = r.WorkType,
-                    Count = r.Status, // Using Status field for count
-                    EstimatedAmount = r.EstimatedAmount,
-                    FinalAmount = r.FinalAmount
+                    JobID = job.RepairID,
+                    Customer = job.CustomerName,
+                    ItemDescription = job.ItemDescription,
+                    WorkType = job.WorkType,
+                    Status = job.Status,
+                    ReceiptDate = job.ReceiptDate,
+                    DeliveryDate = job.DeliveryDate,
+                    EstimatedCost = job.EstimatedCost,
+                    FinalAmount = job.FinalAmount
                 });
 
                 csv.WriteRecords(records);

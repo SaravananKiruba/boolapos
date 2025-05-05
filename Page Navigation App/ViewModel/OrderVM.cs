@@ -289,17 +289,38 @@ namespace Page_Navigation_App.ViewModel
             {
                 if (SelectedOrder.OrderID > 0)
                 {
-                    await _orderService.UpdateOrder(SelectedOrder);
-                    await _orderService.UpdateOrderDetails(SelectedOrder.OrderID, orderDetails);
+                    bool updateResult = await _orderService.UpdateOrder(SelectedOrder);
+                    bool detailsResult = await _orderService.UpdateOrderDetails(SelectedOrder.OrderID, orderDetails);
+                    
+                    if (!updateResult || !detailsResult)
+                    {
+                        System.Windows.MessageBox.Show("Failed to update order");
+                        return;
+                    }
                 }
                 else
                 {
                     // Create new order with details
                     var newOrder = await _orderService.CreateOrder(SelectedOrder, orderDetails);
+                    if (newOrder == null)
+                    {
+                        System.Windows.MessageBox.Show("Failed to create order");
+                        return;
+                    }
+                    
                     SelectedOrder = newOrder;
                     
                     // Add loyalty points to customer based on purchase amount
-                    await _customerService.AddLoyaltyPoints(SelectedOrder.CustomerID, SelectedOrder.GrandTotal);
+                    // This method returns Task<bool> so it's properly awaitable
+                    bool pointsResult = await _customerService.AddLoyaltyPoints(
+                        SelectedOrder.CustomerID, 
+                        SelectedOrder.GrandTotal);
+                        
+                    if (!pointsResult)
+                    {
+                        // Just log this; don't prevent order completion
+                        System.Console.WriteLine($"Failed to add loyalty points for customer {SelectedOrder.CustomerID}");
+                    }
                 }
 
                 System.Windows.MessageBox.Show($"Order {(SelectedOrder.OrderID > 0 ? "updated" : "created")} successfully!");
@@ -312,7 +333,7 @@ namespace Page_Navigation_App.ViewModel
             }
         }
 
-        private async void CreateFinanceEntry()
+        private void CreateFinanceEntry()
         {
             if (SelectedOrder == null || SelectedOrder.OrderID <= 0)
             {
@@ -322,6 +343,7 @@ namespace Page_Navigation_App.ViewModel
 
             try
             {
+                // Create finance entry for the order
                 var finance = new Finance
                 {
                     TransactionDate = DateTime.Now,
@@ -329,14 +351,15 @@ namespace Page_Navigation_App.ViewModel
                     TransactionType = "Income",
                     PaymentMethod = SelectedOrder.PaymentType,
                     Description = $"Payment for Order #{SelectedOrder.OrderID}",
-                    CustomerId = SelectedOrder.CustomerID,
+                    CustomerID = SelectedOrder.CustomerID,
                     OrderID = SelectedOrder.OrderID,
                     ReferenceNumber = SelectedOrder.OrderID.ToString(),
                     CreatedBy = Environment.UserName
                 };
 
-                var result = await _financeService.AddFinanceRecord(finance);
-                if (result != null)
+                // Call AddFinanceRecord and handle result properly
+                bool result = _financeService.AddFinanceRecord(finance);
+                if (result)
                 {
                     System.Windows.MessageBox.Show("Finance entry created successfully!");
                 }

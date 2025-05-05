@@ -16,6 +16,9 @@ namespace Page_Navigation_App.Model
         [Required]
         [StringLength(50)]
         public string UserID { get; set; }
+        
+        // Property referenced in LogService
+        public string UserId { get => UserID; set => UserID = value; }
 
         [Required]
         [StringLength(100)]
@@ -24,6 +27,9 @@ namespace Page_Navigation_App.Model
         [Required]
         [StringLength(500)]
         public string Description { get; set; }
+        
+        // Property referenced in LogService
+        public string Details { get => Description; set => Description = value; }
 
         [Required]
         public bool IsSuccessful { get; set; }
@@ -31,6 +37,9 @@ namespace Page_Navigation_App.Model
         [Required]
         [StringLength(50)]
         public string IPAddress { get; set; }
+        
+        // Property referenced in LogService
+        public string IpAddress { get => IPAddress; set => IPAddress = value; }
 
         [Required]
         [StringLength(500)]

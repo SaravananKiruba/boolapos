@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Page_Navigation_App.Model
@@ -26,5 +27,21 @@ namespace Page_Navigation_App.Model
         public string City { get; set; }
         public string State { get; set; }
         public string PostalCode { get; set; }
+        
+        // Properties referenced in errors
+        public string Country { get; set; }
+        public string AlternatePhone { get; set; }
+        public string GSTNumber { get; set; }
+        public string LogoPath { get; set; }
+        public string InvoicePrefix { get; set; }
+        public string BankDetails { get; set; }
+        public string TermsAndConditions { get; set; }
+        public DateTime UpdatedDate { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public string PhoneNumber { get => Phone; set => Phone = value; }
+        public string TagLine { get; set; }
+        public string LogoUrl { get => LogoPath; set => LogoPath = value; }
+        public string BISRegistrationNumber { get; set; }
+        public string OwnerName { get; set; }
     }
 }

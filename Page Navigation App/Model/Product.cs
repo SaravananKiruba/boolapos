@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -135,5 +136,14 @@ namespace Page_Navigation_App.Model
         public virtual Supplier Supplier { get; set; }
         public virtual ICollection<Stock> Stocks { get; set; }
         public virtual ICollection<OrderDetail> OrderDetails { get; set; }
+
+        // Properties referenced in HUIDTrackingService and RateManagementService
+        public string AHCCode { get; set; }
+        public string JewelType { get; set; }
+        public DateTime? HUIDRegistrationDate { get; set; }
+        public decimal Wastage { get => WastagePercentage; set => WastagePercentage = value; }
+        public decimal MetalPrice { get; set; }
+        public decimal MakingCharge { get => MakingCharges; set => MakingCharges = value; }
+        public DateTime? LastPriceUpdate { get; set; }
     }
 }

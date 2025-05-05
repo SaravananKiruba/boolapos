@@ -32,8 +32,11 @@ namespace Page_Navigation_App.Data
         public DbSet<Role> Roles { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }
         public DbSet<EMI> EMIs { get; set; }
-        // Add ReportData to DbContext
         public DbSet<ReportData> ReportData { get; set; }
+        
+        // Properties referenced in services
+        public DbSet<RateMaster> RateMasters { get; set; }
+        public DbSet<HUIDLog> HUIDLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

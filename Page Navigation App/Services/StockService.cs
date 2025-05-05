@@ -315,13 +315,15 @@ namespace Page_Navigation_App.Services
                 decimal totalValue = 0;
                 foreach (var stock in group)
                 {
-                    var currentRate = await _rateService.GetCurrentRate(
+                    // Get current rate as a decimal without awaiting
+                    var currentRate = _rateService.GetCurrentRate(
                         stock.Product.MetalType,
                         stock.Product.Purity);
 
-                    if (currentRate != null)
+                    // Calculate directly without awaiting
+                    if (currentRate > 0)
                     {
-                        totalValue += stock.Quantity * stock.Product.NetWeight * currentRate.Rate;
+                        totalValue += stock.Quantity * stock.Product.NetWeight * currentRate;
                     }
                 }
                 result[group.Key] = totalValue;
@@ -354,13 +356,15 @@ namespace Page_Navigation_App.Services
             decimal totalValue = 0;
             foreach (var stock in stocks)
             {
-                var currentRate = await _rateService.GetCurrentRate(
+                // Get the current rate without awaiting the decimal value
+                var currentRate = _rateService.GetCurrentRate(
                     stock.Product.MetalType,
                     stock.Product.Purity);
 
-                if (currentRate != null)
+                // Calculate all values directly since GetCurrentRate returns a decimal
+                if (currentRate > 0)
                 {
-                    decimal metalValue = stock.Quantity * stock.Product.NetWeight * currentRate.Rate;
+                    decimal metalValue = stock.Quantity * stock.Product.NetWeight * currentRate;
                     decimal makingValue = metalValue * (stock.Product.MakingCharges / 100);
                     decimal stoneValue = stock.Quantity * stock.Product.StoneValue;
                     totalValue += metalValue + makingValue + stoneValue;
