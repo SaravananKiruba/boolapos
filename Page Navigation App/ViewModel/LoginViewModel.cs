@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Threading;
+using Page_Navigation_App.Model; // Added to reference the User class
 
 namespace Page_Navigation_App.ViewModel
 {
@@ -102,6 +103,27 @@ namespace Page_Navigation_App.ViewModel
             Username = "admin";
             ErrorMessage = "";
             IsLoggingIn = false;
+            
+            // Check database connection immediately
+            Task.Run(async () => await CheckDatabaseConnectionAsync());
+        }
+        
+        private async Task CheckDatabaseConnectionAsync()
+        {
+            try
+            {
+                // Check if we can access the authentication service
+                await _authService.SeedDefaultUserAsync();
+                Debug.WriteLine("Database connection successful, default user seeded if needed.");
+            }
+            catch (Exception ex)
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    ErrorMessage = "Database connection error. Please check your configuration.";
+                    Debug.WriteLine($"Database connection error: {ex.Message}");
+                });
+            }
         }
         
         private bool CanExecuteLogin()
@@ -133,26 +155,41 @@ namespace Page_Navigation_App.ViewModel
                 if (string.IsNullOrEmpty(password) && Username.ToLower() == "admin")
                 {
                     password = "Admin@123";
+                    Debug.WriteLine("Using default password for admin user");
                 }
                 
                 Debug.WriteLine($"Attempting login with username: {Username}");
                 
-                // Attempt authentication
-                var user = await _authService.AuthenticateAsync(Username, password);
+                // Add a small delay to show the loading animation
+                await Task.Delay(500);
+                
+                // Attempt authentication with retry
+                var user = await AuthenticateWithRetryAsync(Username, password);
                 
                 if (user != null)
                 {
                     // Successful login
+                    Debug.WriteLine($"Login successful for user: {user.Username}");
                     _navigationVM.CurrentUser = user.FullName;
                     
                     // Show main window
                     Application.Current.Dispatcher.Invoke(() => 
                     {
-                        MessageBox.Show("Login successful!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                        Application.Current.MainWindow.Show();
+                        MessageBox.Show($"Welcome back, {user.FullName}!", "Login Successful", MessageBoxButton.OK, MessageBoxImage.Information);
                         
-                        // Close the login window
-                        CloseLoginWindow();
+                        // Ensure the MainWindow is available
+                        if (Application.Current.MainWindow != null)
+                        {
+                            Application.Current.MainWindow.Show();
+                            
+                            // Close the login window
+                            CloseLoginWindow();
+                        }
+                        else
+                        {
+                            MessageBox.Show("Error accessing main application window. Please restart the application.", 
+                                "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
                     });
                 }
                 else
@@ -171,6 +208,40 @@ namespace Page_Navigation_App.ViewModel
             {
                 IsLoggingIn = false;
             }
+        }
+        
+        private async Task<User> AuthenticateWithRetryAsync(string username, string password, int maxRetries = 2)
+        {
+            User user = null;
+            int attempts = 0;
+            
+            while (user == null && attempts < maxRetries)
+            {
+                try
+                {
+                    user = await _authService.AuthenticateAsync(username, password);
+                    if (user == null && attempts == 0)
+                    {
+                        // If first attempt fails, try to seed the database and retry
+                        Debug.WriteLine("Authentication failed, checking if database needs seeding...");
+                        await _authService.SeedDefaultUserAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Authentication attempt {attempts + 1} failed: {ex.Message}");
+                    
+                    if (attempts == maxRetries - 1)
+                        throw; // Re-throw on last attempt
+                }
+                
+                attempts++;
+                
+                if (user == null && attempts < maxRetries)
+                    await Task.Delay(500); // Small delay between retries
+            }
+            
+            return user;
         }
         
         private System.Windows.Controls.PasswordBox FindPasswordBox()

@@ -13,6 +13,7 @@ using System.Windows.Media;
 using MahApps.Metro.Controls;
 using System.IO;
 using System.Xml;
+using System.Threading.Tasks;
 
 namespace Page_Navigation_App.View
 {
@@ -26,14 +27,45 @@ namespace Page_Navigation_App.View
 
         public LoginWindow()
         {
-            // Setup dependency injection
-            var services = new ServiceCollection();
-            
-            // Register database context
-            services.AddSingleton(provider => 
-                new AppDbContextFactory().CreateDbContext(new string[] {}));
-            
-            // Register all services with their dependencies
+            try
+            {
+                InitializeComponent();
+                
+                // Setup dependency injection
+                var services = new ServiceCollection();
+                
+                // Register database context
+                services.AddSingleton(provider => 
+                    new AppDbContextFactory().CreateDbContext(new string[] {}));
+                
+                // Register core services
+                RegisterServices(services);
+                
+                // Register view models
+                RegisterViewModels(services);
+                
+                // Build service provider
+                _serviceProvider = services.BuildServiceProvider();
+                
+                // Set DataContext
+                this.DataContext = _serviceProvider.GetService<LoginViewModel>();
+                
+                // Run database validation on startup
+                Task.Run(async () => await ValidateDatabaseConnectionAsync());
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error initializing login window: {ex.Message}\n\nThe application may not function correctly.", 
+                    "Initialization Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                
+                // Fall back to manual initialization if necessary
+                SafeInitializeComponent();
+            }
+        }
+
+        private void RegisterServices(ServiceCollection services)
+        {
+            // Core services
             services.AddSingleton<LogService>();
             services.AddSingleton<ConfigurationService>();
             services.AddSingleton<ILogger<BackupService>>(provider => 
@@ -41,57 +73,31 @@ namespace Page_Navigation_App.View
             services.AddSingleton<IOptions<AppSettings>>(provider => 
                 Options.Create(new AppSettings()));
             
-            // Register services resolving circular dependencies
-            services.AddSingleton<SecurityService>(provider => 
-                new SecurityService(
-                    provider.GetService<AppDbContext>(),
-                    provider.GetService<LogService>(),
-                    provider.GetService<ConfigurationService>(),
-                    provider.GetService<IOptions<AppSettings>>()));
-                    
-            services.AddSingleton<StockLedgerService>();
-            services.AddSingleton<RateMasterService>();
-            
-            services.AddSingleton<StockService>(provider => 
-                new StockService(
-                    provider.GetService<AppDbContext>(),
-                    provider.GetService<RateMasterService>()));
-                    
-            services.AddSingleton<FinanceService>(provider => 
-                new FinanceService(
-                    provider.GetService<AppDbContext>(),
-                    provider.GetService<LogService>()));
-                    
-            services.AddSingleton<ProductService>();
-            
-            services.AddSingleton<OrderService>(provider => 
-                new OrderService(
-                    provider.GetService<AppDbContext>(),
-                    provider.GetService<StockService>(),
-                    provider.GetService<RateMasterService>()));
-                    
-            services.AddSingleton<CustomerService>(provider => 
-                new CustomerService(
-                    provider.GetService<AppDbContext>(),
-                    provider.GetService<FinanceService>()));
-                    
-            services.AddSingleton<CategoryService>(provider => 
-                new CategoryService(
-                    provider.GetService<AppDbContext>(),
-                    provider.GetService<ProductService>()));
-                    
-            services.AddSingleton<SupplierService>(provider => 
-                new SupplierService(
-                    provider.GetService<AppDbContext>(),
-                    provider.GetService<StockService>(),
-                    provider.GetService<StockLedgerService>()));
-                    
-            services.AddSingleton<RepairJobService>();
-            services.AddSingleton<BackupService>();
+            // Security and authentication
+            services.AddSingleton<SecurityService>();
             services.AddSingleton<AuthenticationService>();
             services.AddSingleton<UserService>();
             
-            // Register view models
+            // Business services
+            services.AddSingleton<StockLedgerService>();
+            services.AddSingleton<RateMasterService>();
+            services.AddSingleton<StockService>();
+            services.AddSingleton<FinanceService>();
+            services.AddSingleton<ProductService>();
+            services.AddSingleton<OrderService>();
+            services.AddSingleton<CustomerService>();
+            services.AddSingleton<CategoryService>();
+            services.AddSingleton<SupplierService>();
+            services.AddSingleton<RepairJobService>();
+            services.AddSingleton<BackupService>();
+        }
+        
+        private void RegisterViewModels(ServiceCollection services)
+        {
+            // Navigation
+            services.AddSingleton<NavigationVM>();
+            
+            // Feature ViewModels
             services.AddSingleton<HomeVM>();
             services.AddSingleton<CustomerVM>();
             services.AddSingleton<ProductVM>();
@@ -105,17 +111,43 @@ namespace Page_Navigation_App.View
             services.AddSingleton<UserVM>();
             services.AddSingleton<ReportVM>();
             services.AddSingleton<SettingsVM>();
-            services.AddSingleton<NavigationVM>();
+            
+            // Login ViewModel
             services.AddSingleton<LoginViewModel>();
-            
-            // Build service provider
-            _serviceProvider = services.BuildServiceProvider();
-            
-            // Since InitializeComponent() is missing, we need to handle window initialization manually
-            SafeInitializeComponent();
-            
-            // Set DataContext
-            this.DataContext = _serviceProvider.GetService<LoginViewModel>();
+        }
+        
+        private async Task ValidateDatabaseConnectionAsync()
+        {
+            try
+            {
+                var dbContext = _serviceProvider.GetService<AppDbContext>();
+                if (dbContext == null)
+                {
+                    throw new Exception("Failed to initialize database context");
+                }
+                
+                var authService = _serviceProvider.GetService<AuthenticationService>();
+                if (authService == null)
+                {
+                    throw new Exception("Failed to initialize authentication service");
+                }
+                
+                // Verify database connection and ensure it has the default user
+                await authService.SeedDefaultUserAsync();
+            }
+            catch (Exception ex)
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    MessageBox.Show($"Database validation error: {ex.Message}\n\nThe application will continue, but login functionality may be limited.",
+                        "Database Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        
+                    if (DataContext is LoginViewModel viewModel)
+                    {
+                        viewModel.ErrorMessage = "Database connection error. Login may not work.";
+                    }
+                });
+            }
         }
 
         private void ExitButton_Click(object sender, RoutedEventArgs e)
@@ -132,7 +164,7 @@ namespace Page_Navigation_App.View
             }
         }
         
-        // Custom initialization method to replace the missing InitializeComponent()
+        // Fallback initialization method
         private void SafeInitializeComponent()
         {
             try
@@ -157,6 +189,10 @@ namespace Page_Navigation_App.View
                             {
                                 this.Content = content;
                                 _passwordBox = FindName("PasswordBox") as PasswordBox;
+                                if (_passwordBox != null)
+                                {
+                                    _passwordBox.PasswordChanged += PasswordBox_PasswordChanged;
+                                }
                             }
                         }
                     }
@@ -233,6 +269,12 @@ namespace Page_Navigation_App.View
                 Padding = new Thickness(10, 0, 10, 0),
                 Margin = new Thickness(0, 0, 0, 20)
             };
+            // Bind username textbox to viewmodel
+            var usernameBinding = new System.Windows.Data.Binding("Username")
+            {
+                UpdateSourceTrigger = System.Windows.Data.UpdateSourceTrigger.PropertyChanged
+            };
+            usernameBox.SetBinding(TextBox.TextProperty, usernameBinding);
             formPanel.Children.Add(usernameBox);
             
             // Password
@@ -250,7 +292,8 @@ namespace Page_Navigation_App.View
                 Height = 40,
                 FontSize = 14,
                 Padding = new Thickness(10, 0, 10, 0),
-                Margin = new Thickness(0, 0, 0, 30)
+                Margin = new Thickness(0, 0, 0, 30),
+                Password = "Admin@123" // Default password
             };
             _passwordBox.PasswordChanged += PasswordBox_PasswordChanged;
             formPanel.Children.Add(_passwordBox);
@@ -264,6 +307,14 @@ namespace Page_Navigation_App.View
                 FontWeight = FontWeights.Bold,
                 Margin = new Thickness(0, 0, 0, 15)
             };
+            // Bind login button to viewmodel command
+            var commandBinding = new System.Windows.Data.Binding("LoginCommand");
+            loginButton.SetBinding(Button.CommandProperty, commandBinding);
+            
+            // Bind IsEnabled to CanLoginEnabled
+            var enabledBinding = new System.Windows.Data.Binding("CanLoginEnabled");
+            loginButton.SetBinding(Button.IsEnabledProperty, enabledBinding);
+            
             formPanel.Children.Add(loginButton);
             
             // Debug info
