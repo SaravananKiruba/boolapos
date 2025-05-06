@@ -61,8 +61,9 @@ namespace Page_Navigation_App.ViewModel
             _customerService = customerService;
             LoadCustomers();
 
-            // Initialize new customer with default type
+            // Initialize new customer with default type and registration date
             SelectedCustomer.CustomerType = CustomerTypes.First();
+            SelectedCustomer.RegistrationDate = DateTime.Now;
 
             AddOrUpdateCommand = new RelayCommand<object>(_ => AddOrUpdateCustomer(), _ => CanAddOrUpdateCustomer());
             ClearCommand = new RelayCommand<object>(_ => ClearForm(), _ => true);
@@ -83,6 +84,12 @@ namespace Page_Navigation_App.ViewModel
 
         private async void AddOrUpdateCustomer()
         {
+            // If this is a new customer, set the registration date
+            if (SelectedCustomer.CustomerID == 0)
+            {
+                SelectedCustomer.RegistrationDate = DateTime.Now;
+            }
+
             // Validate the customer before saving
             var validationContext = new ValidationContext(SelectedCustomer, null, null);
             var validationResults = new List<ValidationResult>();
@@ -95,17 +102,24 @@ namespace Page_Navigation_App.ViewModel
                 return;
             }
 
-            if (SelectedCustomer.CustomerID > 0)
+            try
             {
-                await _customerService.UpdateCustomer(SelectedCustomer);
-            }
-            else
-            {
-                await _customerService.AddCustomer(SelectedCustomer);
-            }
+                if (SelectedCustomer.CustomerID > 0)
+                {
+                    await _customerService.UpdateCustomer(SelectedCustomer);
+                }
+                else
+                {
+                    await _customerService.AddCustomer(SelectedCustomer);
+                }
 
-            LoadCustomers();
-            ClearForm();
+                LoadCustomers();
+                ClearForm();
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Error saving customer: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
         }
 
         private void EditCustomer(Customer customer)
@@ -115,22 +129,44 @@ namespace Page_Navigation_App.ViewModel
             // Create a new Customer object and copy all properties
             SelectedCustomer = new Customer
             {
+                // Basic Information
                 CustomerID = customer.CustomerID,
                 CustomerName = customer.CustomerName,
+                FirstName = customer.FirstName,
+                LastName = customer.LastName,
                 PhoneNumber = customer.PhoneNumber,
                 Email = customer.Email,
                 WhatsAppNumber = customer.WhatsAppNumber,
+                
+                // Address Information
                 Address = customer.Address,
                 City = customer.City,
                 GSTNumber = customer.GSTNumber,
+                
+                // Personal Details
                 CustomerType = customer.CustomerType,
                 DateOfBirth = customer.DateOfBirth,
                 DateOfAnniversary = customer.DateOfAnniversary,
                 RegistrationDate = customer.RegistrationDate,
+                IsActive = customer.IsActive,
+                
+                // Preferences
+                PreferredDesigns = customer.PreferredDesigns,
+                PreferredMetalType = customer.PreferredMetalType,
+                RingSize = customer.RingSize,
+                BangleSize = customer.BangleSize,
+                ChainLength = customer.ChainLength,
+                
+                // Financial Information
                 LoyaltyPoints = customer.LoyaltyPoints,
                 CreditLimit = customer.CreditLimit,
-                IsActive = customer.IsActive
-                // NotifyRateChanges property removed as it doesn't exist in the Customer model
+                TotalPurchases = customer.TotalPurchases,
+                OutstandingAmount = customer.OutstandingAmount,
+                IsGoldSchemeEnrolled = customer.IsGoldSchemeEnrolled,
+                LastPurchaseDate = customer.LastPurchaseDate,
+                
+                // Additional Information
+                FamilyDetails = customer.FamilyDetails
             };
         }
 
@@ -146,10 +182,16 @@ namespace Page_Navigation_App.ViewModel
 
             if (result == System.Windows.MessageBoxResult.Yes)
             {
-                // Here you would implement the delete logic
-                // For now we'll just remove from the collection
-                Customers.Remove(customer);
-                ClearForm();
+                try
+                {
+                    await _customerService.DeleteCustomer(customer.CustomerID);
+                    Customers.Remove(customer);
+                    ClearForm();
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.MessageBox.Show($"Error deleting customer: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                }
             }
         }
 
@@ -157,7 +199,8 @@ namespace Page_Navigation_App.ViewModel
         {
             SelectedCustomer = new Customer
             {
-                CustomerType = CustomerTypes.First() // Set default customer type when clearing form
+                CustomerType = CustomerTypes.First(), // Set default customer type when clearing form
+                RegistrationDate = DateTime.Now // Set current date as registration date for new customers
             };
             SearchTerm = string.Empty;
         }

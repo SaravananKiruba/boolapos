@@ -220,6 +220,31 @@ namespace Page_Navigation_App.Services
 
             return await query.ToListAsync();
         }
+
+        public async Task<bool> DeleteCustomer(int customerId)
+        {
+            var customer = await _context.Customers.FindAsync(customerId);
+            if (customer == null) return false;
+
+            // Check for dependencies before deleting
+            bool hasOrders = await _context.Orders.AnyAsync(o => o.CustomerID == customerId);
+            bool hasRepairJobs = await _context.RepairJobs.AnyAsync(r => r.CustomerID == customerId);
+            bool hasPayments = await _context.Finances.AnyAsync(f => f.CustomerID == customerId);
+
+            if (hasOrders || hasRepairJobs || hasPayments)
+            {
+                // Instead of hard delete, perform a soft delete by marking as inactive
+                customer.IsActive = false;
+            }
+            else
+            {
+                // Hard delete if no dependencies
+                _context.Customers.Remove(customer);
+            }
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 
     public class CustomerStats

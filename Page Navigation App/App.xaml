@@ -16,11 +16,7 @@
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml"/>
 
-                <!-- MahApps Control Styles -->
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.Buttons.xaml"/>
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.DataGrid.xaml"/>
-
-                <!-- Remove problematic style references and use correct theme references -->
+                <!-- Theme references -->
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Light.Blue.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
@@ -67,6 +63,29 @@
                         Value="{DynamicResource MahApps.Brushes.Accent}"/>
                 <Setter Property="Foreground"
                         Value="{DynamicResource MahApps.Brushes.ThemeBackground}"/>
+            </Style>
+            
+            <!-- Add custom style for DateTimePicker -->
+            <Style x:Key="MahApps.Styles.DateTimePicker" 
+                   TargetType="{x:Type mah:DateTimePicker}">
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="FontFamily" Value="{DynamicResource MahApps.Fonts.Family.Control}" />
+                <Setter Property="FontSize" Value="{DynamicResource MahApps.Font.Size.Content}" />
+                <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Text}" />
+                <Setter Property="HorizontalAlignment" Value="Stretch" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+            
+            <!-- Add custom style for ComboBox -->
+            <Style x:Key="MahApps.Styles.ComboBox"
+                   TargetType="{x:Type ComboBox}"
+                   BasedOn="{StaticResource {x:Type ComboBox}}">
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="FontFamily" Value="{DynamicResource MahApps.Fonts.Family.Control}" />
+                <Setter Property="FontSize" Value="{DynamicResource MahApps.Font.Size.Content}" />
+                <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Text}" />
+                <Setter Property="HorizontalAlignment" Value="Stretch" />
+                <Setter Property="VerticalAlignment" Value="Center" />
             </Style>
 
             <!-- Converters -->

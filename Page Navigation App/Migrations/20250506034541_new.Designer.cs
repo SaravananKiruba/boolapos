@@ -11,7 +11,7 @@ using Page_Navigation_App.Data;
 namespace Page_Navigation_App.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250505142512_new")]
+    [Migration("20250506034541_new")]
     partial class @new
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -244,6 +244,7 @@ namespace Page_Navigation_App.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("FirstName")
+                        .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("GSTNumber")
@@ -257,6 +258,7 @@ namespace Page_Navigation_App.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("LastName")
+                        .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("LastPurchaseDate")
