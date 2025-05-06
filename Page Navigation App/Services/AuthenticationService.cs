@@ -132,7 +132,7 @@ namespace Page_Navigation_App.Services
                         Email = "admin@boolapos.com",
                         FirstName = "System",
                         LastName = "Administrator",
-                        RoleId = role.Id,
+                        RoleId = role.RoleID,
                         IsActive = true,
                         CreatedDate = DateTime.Now,
                         LastPasswordChangeDate = DateTime.Now

@@ -194,11 +194,15 @@ namespace Page_Navigation_App.ViewModel
         #endregion
 
         #region Methods
-        private void LoadSettings()
+        private async void LoadSettings()
         {
             var businessInfo = _configService.GetBusinessInfo();
-            var settings = _configService.GetSettings();
-            var emailSettings = _configService.GetEmailSettings();
+            var settingsTask = _configService.GetSettings();
+            var emailSettingsTask = _configService.GetEmailSettings();
+
+            // Await the tasks to get their results
+            var settings = await settingsTask;
+            var emailSettings = await emailSettingsTask;
 
             // Business Information
             BusinessName = businessInfo.BusinessName;
@@ -223,12 +227,12 @@ namespace Page_Navigation_App.ViewModel
             BackupPath = settings.FirstOrDefault(s => s.Key == "BackupPath")?.Value ?? "";
         }
 
-        private void SaveSettings()
+        private async void SaveSettings()
         {
             try
             {
                 // Update business information
-                bool businessInfoResult = _configService.UpdateBusinessInfo(new BusinessInfo
+                bool businessInfoResult = await _configService.UpdateBusinessInfo(new BusinessInfo
                 {
                     BusinessName = BusinessName,
                     Address = Address,
@@ -247,10 +251,10 @@ namespace Page_Navigation_App.ViewModel
                     new Setting { Key = "BackupPath", Value = BackupPath }
                 };
 
-                bool settingsResult = _configService.UpdateSettings(settingsList);
+                bool settingsResult = await _configService.UpdateSettings(settingsList);
 
                 // Update email settings
-                bool emailResult = _configService.UpdateEmailSettings(new EmailSettings
+                bool emailResult = await _configService.UpdateEmailSettings(new EmailSettings
                 {
                     SmtpServer = SmtpServer,
                     Port = SmtpPort,
