@@ -242,11 +242,23 @@
                                                 Opacity="0.3"/>
                                     </Button.Effect>
                                 </Button>
-                                <Button Content="Add Subcategory"
+                                <Button Content="Add"
                                         Style="{StaticResource MahApps.Styles.Button.Accent}"
                                         mah:ControlsHelper.CornerRadius="5"
                                         Padding="15,8"
-                                        Command="{Binding AddSubcategoryCommand}">
+                                        Command="{Binding AddSubcategoryCommand}"
+                                        Margin="0,0,10,0">
+                                    <Button.Effect>
+                                        <DropShadowEffect BlurRadius="5"
+                                                ShadowDepth="1"
+                                                Opacity="0.3"/>
+                                    </Button.Effect>
+                                </Button>
+                                <Button Content="Update"
+                                        Style="{StaticResource MahApps.Styles.Button.Accent}"
+                                        mah:ControlsHelper.CornerRadius="5"
+                                        Padding="15,8"
+                                        Command="{Binding UpdateSubcategoryCommand}">
                                     <Button.Effect>
                                         <DropShadowEffect BlurRadius="5"
                                                 ShadowDepth="1"
@@ -389,6 +401,154 @@
                                                         CornerRadius="4"
                                                         Padding="5,2"
                                                         HorizontalAlignment="Left">
+                                                    <TextBlock Text="{Binding IsActive, Converter={StaticResource BooleanToActiveConverter}}"
+                                                            Foreground="White"
+                                                            FontSize="12"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Actions" Width="80">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Content="Delete" 
+                                                      Background="#F44336"
+                                                      Foreground="White"
+                                                      Command="{Binding DataContext.DeleteSubcategoryCommand, 
+                                                               RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                      Style="{StaticResource MahApps.Styles.Button}"
+                                                      Padding="5,2"
+                                                      mah:ControlsHelper.CornerRadius="3"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </TabItem>
+                    
+                    <!-- Category Mapping Tab -->
+                    <TabItem Header="Category Mapping">
+                        <Grid Margin="5">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <Border Grid.Row="0" 
+                                    Background="#E8F5E9"
+                                    CornerRadius="5"
+                                    Padding="10"
+                                    Margin="0,0,0,10">
+                                <StackPanel>
+                                    <TextBlock Text="Subcategory Mapping" 
+                                           FontWeight="Bold" 
+                                           Margin="0,0,0,10"
+                                           Foreground="#2E7D32"/>
+                                    <TextBlock Text="Use this tab to reassign subcategories between categories. Select a subcategory below, then choose a target category to move it to."
+                                           TextWrapping="Wrap"
+                                           Foreground="#4CAF50"/>
+                                </StackPanel>
+                            </Border>
+                            
+                            <!-- Mapping controls will be added here -->
+                            <Grid Grid.Row="1" Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="0" 
+                                       Background="#F5F5F5"
+                                       CornerRadius="5"
+                                       Padding="10">
+                                    <StackPanel>
+                                        <TextBlock Text="Current Category" 
+                                                FontWeight="SemiBold"
+                                                Margin="0,0,0,5"/>
+                                        <TextBlock Text="{Binding SelectedCategory.CategoryName}"
+                                                FontSize="16"
+                                                Foreground="#3F51B5"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0">
+                                    <iconPacks:PackIconMaterial Kind="ArrowRightBold" 
+                                                         Width="24" 
+                                                         Height="24"
+                                                         Foreground="#757575"/>
+                                </StackPanel>
+
+                                <Border Grid.Column="2" 
+                                       Background="#F5F5F5"
+                                       CornerRadius="5"
+                                       Padding="10">
+                                    <StackPanel>
+                                        <TextBlock Text="Target Category" 
+                                                FontWeight="SemiBold"
+                                                Margin="0,0,0,5"/>
+                                        <ComboBox ItemsSource="{Binding Categories}"
+                                              SelectedItem="{Binding TargetCategory}"
+                                              DisplayMemberPath="CategoryName"
+                                              Style="{StaticResource MahApps.Styles.ComboBox}"
+                                              mah:ControlsHelper.CornerRadius="5"
+                                              Margin="0,5,0,0"/>
+                                        <Button Content="Reassign Subcategory"
+                                            Style="{StaticResource MahApps.Styles.Button.Accent}"
+                                            mah:ControlsHelper.CornerRadius="5"
+                                            Command="{Binding ReassignSubcategoryCommand}"
+                                            Margin="0,10,0,0"
+                                            HorizontalAlignment="Right"
+                                            Padding="10,5"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                            
+                            <!-- All Subcategories DataGrid -->
+                            <DataGrid Grid.Row="2"
+                                   ItemsSource="{Binding AllSubcategories}"
+                                   SelectedItem="{Binding SelectedSubcategory, Mode=TwoWay}"
+                                   AutoGenerateColumns="False"
+                                   Style="{StaticResource MahApps.Styles.DataGrid}"
+                                   GridLinesVisibility="Horizontal"
+                                   SelectionMode="Single"
+                                   IsReadOnly="True"
+                                   AlternatingRowBackground="#F9F9F9"
+                                   RowHeight="45"
+                                   BorderThickness="0"
+                                   VerticalGridLinesBrush="Transparent">
+                                <DataGrid.Resources>
+                                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
+                                                  Color="#E8F5E9"/>
+                                    <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}"
+                                                  Color="#E8F5E9"/>
+                                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}"
+                                                  Color="Black"/>
+                                    <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}"
+                                                  Color="Black"/>
+                                </DataGrid.Resources>
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Subcategory Name" 
+                                                     Binding="{Binding SubcategoryName}"
+                                                     Width="*"/>
+                                    <DataGridTextColumn Header="Current Category" 
+                                                     Binding="{Binding Category.CategoryName}"
+                                                     Width="*"/>
+                                    <DataGridTextColumn Header="Making Charges" 
+                                                     Binding="{Binding SpecialMakingCharges, StringFormat='{}{0:N2}%'}"
+                                                     Width="110"/>
+                                    <DataGridTextColumn Header="Wastage" 
+                                                     Binding="{Binding SpecialWastage, StringFormat='{}{0:N2}%'}"
+                                                     Width="110"/>
+                                    <DataGridTemplateColumn Header="Status" Width="80">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Border Background="{Binding IsActive, Converter={StaticResource BooleanToStatusBrushConverter}}"
+                                                      CornerRadius="4"
+                                                      Padding="5,2"
+                                                      HorizontalAlignment="Left">
                                                     <TextBlock Text="{Binding IsActive, Converter={StaticResource BooleanToActiveConverter}}"
                                                             Foreground="White"
                                                             FontSize="12"/>

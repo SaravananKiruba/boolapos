@@ -292,5 +292,23 @@ namespace Page_Navigation_App.Services
                     g => g.Sum(p => p.Stocks.Sum(s => s.Quantity * p.BasePrice))
                 );
         }
+
+        // Category-Subcategory Mapping Method
+        public async Task<IEnumerable<Subcategory>> GetAllSubcategoriesWithCategories(bool includeInactive = false)
+        {
+            // Create a queryable first
+            var query = _context.Subcategories.AsQueryable();
+            
+            // Apply filter condition first
+            if (!includeInactive)
+                query = query.Where(s => s.IsActive && s.Category.IsActive);
+                
+            // Then include related data and sort
+            return await query
+                .Include(s => s.Category)
+                .OrderBy(s => s.Category.CategoryName)
+                .ThenBy(s => s.SubcategoryName)
+                .ToListAsync();
+        }
     }
 }

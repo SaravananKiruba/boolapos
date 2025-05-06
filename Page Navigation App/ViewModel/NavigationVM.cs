@@ -79,6 +79,9 @@ namespace Page_Navigation_App.ViewModel
             ReportCommand = new RelayCommand<object>(_ => NavigateTo(reportVM));
             SettingsCommand = new RelayCommand<object>(_ => NavigateTo(settingsVM));
 
+            // Set the NavigationVM reference in HomeVM
+            homeVM.NavigationService = this;
+
             // Set default view
             CurrentView = homeVM;
         }
@@ -86,6 +89,22 @@ namespace Page_Navigation_App.ViewModel
         private void NavigateTo(object view)
         {
             CurrentView = view;
+        }
+
+        // Navigation helper methods for Home page
+        public void NavigateToCustomers()
+        {
+            CustomersCommand.Execute(null);
+        }
+
+        public void NavigateToProducts()
+        {
+            ProductsCommand.Execute(null);
+        }
+
+        public void NavigateToOrders()
+        {
+            OrdersCommand.Execute(null);
         }
 
         private bool CanAccessUserManagement()

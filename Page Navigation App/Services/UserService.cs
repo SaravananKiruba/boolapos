@@ -63,6 +63,19 @@ namespace Page_Navigation_App.Services
             user.IsActive = true;
             
             await _context.Users.AddAsync(user);
+            
+            // Add a log entry for user creation with the required Source field
+            var logEntry = new LogEntry
+            {
+                Timestamp = DateTime.Now,
+                Level = "Info",
+                Message = $"User created: {user.Username}",
+                Source = "UserService", // Setting the required Source field
+                Component = "User Management",
+                UserID = user.UserID.ToString()
+            };
+            await _context.Set<LogEntry>().AddAsync(logEntry);
+            
             await _context.SaveChangesAsync();
             return user;
         }

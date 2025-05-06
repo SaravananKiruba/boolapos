@@ -145,5 +145,9 @@ namespace Page_Navigation_App.Model
         public decimal MetalPrice { get; set; }
         public decimal MakingCharge { get => MakingCharges; set => MakingCharges = value; }
         public DateTime? LastPriceUpdate { get; set; }
+        
+        // Add tracking dates for inventory management
+        public DateTime? DateAdded { get; set; }
+        public DateTime? DateRemoved { get; set; }
     }
 }
