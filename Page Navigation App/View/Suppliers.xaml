@@ -15,74 +15,187 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Supplier Entry Form -->
-        <mah:MetroHeader Header="Supplier Details">
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <mah:MetroContentControl>
-                    <StackPanel>
-                        <TextBox Text="{Binding SelectedSupplier.SupplierName}"
-                                 Margin="0,5"
-                                 mah:TextBoxHelper.Watermark="Supplier Name"
-                                 Style="{StaticResource MahApps.Styles.TextBox}"/>
+        <!-- Supplier Entry Form with standardized visual design -->
+        <Border Background="#FFFFFF"
+                CornerRadius="10">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="10"
+                        ShadowDepth="1"
+                        Opacity="0.2"/>
+            </Border.Effect>
+            <mah:MetroHeader Header="Supplier Details" 
+                         Margin="5">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <mah:MetroContentControl>
+                        <StackPanel Margin="10">
+                            <!-- Basic Information with visual grouping -->
+                            <Border Background="#F9F9F9"
+                                    CornerRadius="8"
+                                    Padding="10"
+                                    Margin="0,0,0,15">
+                                <StackPanel>
+                                    <TextBlock Text="Basic Information" 
+                                            Style="{StaticResource MahApps.Styles.TextBlock}" 
+                                            FontWeight="Bold"
+                                            Foreground="#2D3748"
+                                            Margin="0,0,0,10"/>
+                                    
+                                    <TextBox Text="{Binding SelectedSupplier.SupplierName}"
+                                            Margin="0,5"
+                                            mah:TextBoxHelper.Watermark="Supplier Name"
+                                            mah:TextBoxHelper.UseFloatingWatermark="True"
+                                            mah:ControlsHelper.CornerRadius="5"
+                                            Style="{StaticResource MahApps.Styles.TextBox}"/>
 
-                        <TextBox Text="{Binding SelectedSupplier.ContactNumber}"
-                                 Margin="0,5"
-                                 mah:TextBoxHelper.Watermark="Contact Number"
-                                 Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <TextBox Grid.Column="0"
+                                                Text="{Binding SelectedSupplier.ContactNumber}"
+                                                Margin="0,5,5,5"
+                                                mah:TextBoxHelper.Watermark="Contact Number"
+                                                mah:TextBoxHelper.UseFloatingWatermark="True"
+                                                mah:ControlsHelper.CornerRadius="5"
+                                                Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                        
+                                        <TextBox Grid.Column="1"
+                                                Text="{Binding SelectedSupplier.ContactPerson}"
+                                                Margin="5,5,0,5"
+                                                mah:TextBoxHelper.Watermark="Contact Person"
+                                                mah:TextBoxHelper.UseFloatingWatermark="True"
+                                                mah:ControlsHelper.CornerRadius="5"
+                                                Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                    </Grid>
 
-                        <TextBox Text="{Binding SelectedSupplier.ContactPerson}"
-                                 Margin="0,5"
-                                 mah:TextBoxHelper.Watermark="Contact Person"
-                                 Style="{StaticResource MahApps.Styles.TextBox}"/>
-
-                        <TextBox Text="{Binding SelectedSupplier.Email}"
-                                 Margin="0,5"
-                                 mah:TextBoxHelper.Watermark="Email"
-                                 Style="{StaticResource MahApps.Styles.TextBox}"/>
-
-                        <TextBox Text="{Binding SelectedSupplier.Address}"
-                                 Margin="0,5"
-                                 mah:TextBoxHelper.Watermark="Address"
-                                 Style="{StaticResource MahApps.Styles.TextBox}"
-                                 TextWrapping="Wrap"
-                                 AcceptsReturn="True"
-                                 Height="60"/>
-
-                        <mah:NumericUpDown Value="{Binding SelectedSupplier.CreditLimit}"
-                                          Margin="0,5"
-                                          mah:TextBoxHelper.Watermark="Credit Limit"
-                                          Style="{StaticResource {x:Type mah:NumericUpDown}}"
-                                          StringFormat="C"
-                                          Minimum="0"/>
-
-                        <TextBox Text="{Binding SelectedSupplier.PaymentTerms}"
-                                 Margin="0,5"
-                                 mah:TextBoxHelper.Watermark="Payment Terms"
-                                 Style="{StaticResource MahApps.Styles.TextBox}"/>
-
-                        <mah:ToggleSwitch Header="Active Status"
-                                         IsOn="{Binding SelectedSupplier.IsActive}"
-                                         OnContent="Active"
-                                         OffContent="Inactive"
-                                         Style="{StaticResource MahApps.Styles.ToggleSwitch}"
-                                         Margin="0,10"/>
-
-                        <StackPanel Orientation="Horizontal" 
-                                  Margin="0,20,0,0"
-                                  HorizontalAlignment="Right">
-                            <Button Content="Clear"
-                                    Margin="0,0,10,0"
-                                    Style="{StaticResource MahApps.Styles.Button}"
-                                    Command="{Binding ClearCommand}"/>
+                                    <TextBox Text="{Binding SelectedSupplier.Email}"
+                                            Margin="0,5"
+                                            mah:TextBoxHelper.Watermark="Email"
+                                            mah:TextBoxHelper.UseFloatingWatermark="True"
+                                            mah:ControlsHelper.CornerRadius="5"
+                                            Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                </StackPanel>
+                            </Border>
                             
-                            <Button Content="Save"
-                                    Style="{StaticResource MahApps.Styles.Button.Square.Accent}"
-                                    Command="{Binding AddOrUpdateCommand}"/>
+                            <!-- Address Information with visual grouping -->
+                            <Border Background="#F9F9F9"
+                                    CornerRadius="8"
+                                    Padding="10"
+                                    Margin="0,0,0,15">
+                                <StackPanel>
+                                    <TextBlock Text="Address Information" 
+                                            Style="{StaticResource MahApps.Styles.TextBlock}" 
+                                            FontWeight="Bold"
+                                            Foreground="#2D3748"
+                                            Margin="0,0,0,10"/>
+                                    
+                                    <TextBox Text="{Binding SelectedSupplier.Address}"
+                                            Margin="0,5"
+                                            mah:TextBoxHelper.Watermark="Address"
+                                            mah:TextBoxHelper.UseFloatingWatermark="True"
+                                            mah:ControlsHelper.CornerRadius="5"
+                                            Style="{StaticResource MahApps.Styles.TextBox}"
+                                            TextWrapping="Wrap"
+                                            AcceptsReturn="True"
+                                            Height="60"/>
+                                </StackPanel>
+                            </Border>
+                            
+                            <!-- Financial Information with visual grouping -->
+                            <Border Background="#F9F9F9"
+                                    CornerRadius="8"
+                                    Padding="10"
+                                    Margin="0,0,0,15">
+                                <StackPanel>
+                                    <TextBlock Text="Financial Information" 
+                                            Style="{StaticResource MahApps.Styles.TextBlock}" 
+                                            FontWeight="Bold"
+                                            Foreground="#2D3748"
+                                            Margin="0,0,0,10"/>
+                                    
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <mah:NumericUpDown Grid.Column="0"
+                                                        Value="{Binding SelectedSupplier.CreditLimit}"
+                                                        Margin="0,5,5,5"
+                                                        mah:TextBoxHelper.Watermark="Credit Limit"
+                                                        mah:ControlsHelper.CornerRadius="5"
+                                                        Style="{StaticResource {x:Type mah:NumericUpDown}}"
+                                                        StringFormat="C"
+                                                        Minimum="0"/>
+                                        
+                                        <TextBox Grid.Column="1"
+                                                Text="{Binding SelectedSupplier.PaymentTerms}"
+                                                Margin="5,5,0,5"
+                                                mah:TextBoxHelper.Watermark="Payment Terms"
+                                                mah:TextBoxHelper.UseFloatingWatermark="True"
+                                                mah:ControlsHelper.CornerRadius="5"
+                                                Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                            
+                            <!-- Status Information with visual grouping -->
+                            <Border Background="#F9F9F9"
+                                    CornerRadius="8"
+                                    Padding="10"
+                                    Margin="0,0,0,15">
+                                <StackPanel>
+                                    <TextBlock Text="Supplier Status" 
+                                            Style="{StaticResource MahApps.Styles.TextBlock}" 
+                                            FontWeight="Bold"
+                                            Foreground="#2D3748"
+                                            Margin="0,0,0,10"/>
+                                    
+                                    <mah:ToggleSwitch Header="Active Status"
+                                                     IsOn="{Binding SelectedSupplier.IsActive}"
+                                                     OnContent="Active"
+                                                     OffContent="Inactive"
+                                                     Style="{StaticResource MahApps.Styles.ToggleSwitch}"
+                                                     Margin="0,10"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Action Buttons -->
+                            <StackPanel Orientation="Horizontal" 
+                                    Margin="0,20,0,0"
+                                    HorizontalAlignment="Right">
+                                <Button Content="Clear"
+                                        Margin="0,0,10,0"
+                                        Style="{StaticResource MahApps.Styles.Button}"
+                                        mah:ControlsHelper.CornerRadius="5"
+                                        Padding="15,8"
+                                        Command="{Binding ClearCommand}">
+                                    <Button.Effect>
+                                        <DropShadowEffect BlurRadius="5"
+                                                ShadowDepth="1"
+                                                Opacity="0.3"/>
+                                    </Button.Effect>
+                                </Button>
+                                
+                                <Button Content="Save"
+                                        Style="{StaticResource MahApps.Styles.Button.Square.Accent}"
+                                        mah:ControlsHelper.CornerRadius="5"
+                                        Padding="15,8"
+                                        Command="{Binding AddOrUpdateCommand}">
+                                    <Button.Effect>
+                                        <DropShadowEffect BlurRadius="5"
+                                                ShadowDepth="1"
+                                                Opacity="0.3"/>
+                                    </Button.Effect>
+                                </Button>
+                            </StackPanel>
                         </StackPanel>
-                    </StackPanel>
-                </mah:MetroContentControl>
-            </ScrollViewer>
-        </mah:MetroHeader>
+                    </mah:MetroContentControl>
+                </ScrollViewer>
+            </mah:MetroHeader>
+        </Border>
 
         <!-- Supplier List and Transactions -->
         <Grid Grid.Column="1" Margin="20,0,0,0">
@@ -92,142 +205,237 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- Search Panel -->
-            <mah:MetroHeader Header="Search Suppliers">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+            <!-- Search Panel with enhanced design -->
+            <Border Grid.Row="0"
+                    Background="#FFFFFF"
+                    CornerRadius="10"
+                    Margin="0,0,0,15">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="10"
+                            ShadowDepth="1"
+                            Opacity="0.2"/>
+                </Border.Effect>
+                <mah:MetroHeader Header="Search Suppliers"
+                             Margin="5">
+                    <Grid Margin="10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
 
-                    <TextBox Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}"
-                             mah:TextBoxHelper.Watermark="Search suppliers..."
-                             Style="{StaticResource MahApps.Styles.TextBox}">
-                        <TextBox.InputBindings>
-                            <KeyBinding Key="Return" Command="{Binding SearchCommand}"/>
-                        </TextBox.InputBindings>
-                    </TextBox>
+                        <TextBox Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}"
+                                mah:TextBoxHelper.Watermark="Search suppliers..."
+                                mah:TextBoxHelper.UseFloatingWatermark="True"
+                                mah:ControlsHelper.CornerRadius="20"
+                                Padding="30,5,5,5"
+                                Style="{StaticResource MahApps.Styles.TextBox}">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Return" Command="{Binding SearchCommand}"/>
+                            </TextBox.InputBindings>
+                        </TextBox>
+                        <iconPacks:PackIconMaterial Kind="Magnify"
+                                                Width="16"
+                                                Height="16"
+                                                Margin="10,0,0,0"
+                                                VerticalAlignment="Center"
+                                                Foreground="#777777"/>
 
-                    <Button Grid.Column="1"
-                            Margin="10,0,0,0"
-                            Style="{StaticResource MahApps.Styles.Button.Square}"
-                            Command="{Binding SearchCommand}">
-                        <StackPanel Orientation="Horizontal">
-                            <iconPacks:PackIconMaterial Kind="Magnify" 
-                                                           Margin="0,0,5,0"/>
-                            <TextBlock Text="Search"/>
-                        </StackPanel>
-                    </Button>
-                </Grid>
-            </mah:MetroHeader>
+                        <Button Grid.Column="1"
+                                Margin="10,0,0,0"
+                                Style="{StaticResource MahApps.Styles.Button.Square.Accent}"
+                                mah:ControlsHelper.CornerRadius="5"
+                                Padding="10,8"
+                                Command="{Binding SearchCommand}">
+                            <Button.Effect>
+                                <DropShadowEffect BlurRadius="5"
+                                        ShadowDepth="1"
+                                        Opacity="0.3"/>
+                            </Button.Effect>
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="Magnify" 
+                                                        Margin="0,0,5,0"/>
+                                <TextBlock Text="Search"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </mah:MetroHeader>
+            </Border>
 
-            <!-- Suppliers List -->
-            <DataGrid Grid.Row="1"
-                      Margin="0,20"
-                      ItemsSource="{Binding Suppliers}"
-                      SelectedItem="{Binding SelectedSupplier}"
-                      AutoGenerateColumns="False"
-                      Style="{StaticResource MahApps.Styles.DataGrid}"
-                      GridLinesVisibility="Horizontal"
-                      SelectionMode="Single"
-                      IsReadOnly="True">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Name" 
-                                      Binding="{Binding SupplierName}"
-                                      Width="*"/>
-                    <DataGridTextColumn Header="Contact" 
-                                      Binding="{Binding ContactNumber}"
-                                      Width="120"/>
-                    <DataGridTextColumn Header="Contact Person" 
-                                      Binding="{Binding ContactPerson}"
-                                      Width="150"/>
-                    <DataGridTextColumn Header="Balance" 
-                                      Binding="{Binding CurrentBalance, StringFormat=C2}"
-                                      Width="120"/>
-                    <DataGridTemplateColumn Header="Status" Width="100">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding IsActive, Converter={StaticResource BooleanToActiveConverter}}"
-                                           Foreground="{Binding IsActive, Converter={StaticResource BooleanToStatusBrushConverter}}"/>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                    <DataGridTemplateColumn Width="Auto">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal">
-                                    <Button Style="{StaticResource MahApps.Styles.Button.Circle}"
-                                            Width="32"
-                                            Height="32"
-                                            Margin="0,0,5,0"
-                                            ToolTip="Edit"
-                                            Command="{Binding DataContext.EditCommand, 
-                                                    RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                            CommandParameter="{Binding}">
-                                        <iconPacks:PackIconMaterial Kind="Pencil" Width="16" Height="16"/>
-                                    </Button>
-                                    <Button Style="{StaticResource MahApps.Styles.Button.Circle}"
-                                            Width="32"
-                                            Height="32"
-                                            ToolTip="Delete"
-                                            Command="{Binding DataContext.DeleteCommand, 
-                                                    RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                            CommandParameter="{Binding}">
-                                        <iconPacks:PackIconMaterial Kind="Delete" Width="16" Height="16"/>
-                                    </Button>
-                                </StackPanel>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>
-            </DataGrid>
+            <!-- Suppliers List with enhanced styling -->
+            <Border Grid.Row="1"
+                    Background="#FFFFFF"
+                    CornerRadius="10"
+                    Margin="0,0,0,15">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="10"
+                            ShadowDepth="1"
+                            Opacity="0.2"/>
+                </Border.Effect>
+                <mah:MetroHeader Header="Supplier List"
+                             Margin="5">
+                    <DataGrid Margin="10"
+                            ItemsSource="{Binding Suppliers}"
+                            SelectedItem="{Binding SelectedSupplier}"
+                            AutoGenerateColumns="False"
+                            Style="{StaticResource MahApps.Styles.DataGrid}"
+                            GridLinesVisibility="Horizontal"
+                            SelectionMode="Single"
+                            IsReadOnly="True"
+                            AlternatingRowBackground="#F9F9F9"
+                            RowHeight="45"
+                            BorderThickness="0"
+                            VerticalGridLinesBrush="Transparent">
+                        <DataGrid.Resources>
+                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
+                                        Color="#E3F2FD"/>
+                            <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}"
+                                        Color="#E3F2FD"/>
+                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}"
+                                        Color="Black"/>
+                            <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}"
+                                        Color="Black"/>
+                        </DataGrid.Resources>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Name" 
+                                            Binding="{Binding SupplierName}"
+                                            Width="*"/>
+                            <DataGridTextColumn Header="Contact" 
+                                            Binding="{Binding ContactNumber}"
+                                            Width="120"/>
+                            <DataGridTextColumn Header="Contact Person" 
+                                            Binding="{Binding ContactPerson}"
+                                            Width="150"/>
+                            <DataGridTextColumn Header="Balance" 
+                                            Binding="{Binding CurrentBalance, StringFormat=C2}"
+                                            Width="120"/>
+                            <DataGridTemplateColumn Header="Status" Width="100">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{Binding IsActive, Converter={StaticResource BooleanToStatusBrushConverter}}"
+                                            CornerRadius="4"
+                                            Padding="5,2"
+                                            HorizontalAlignment="Left">
+                                            <TextBlock Text="{Binding IsActive, Converter={StaticResource BooleanToActiveConverter}}"
+                                                    Foreground="White"
+                                                    FontSize="12"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Width="Auto">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Style="{StaticResource MahApps.Styles.Button.Circle}"
+                                                    Width="32"
+                                                    Height="32"
+                                                    Margin="0,0,5,0"
+                                                    ToolTip="Edit"
+                                                    Background="#E3F2FD"
+                                                    BorderBrush="#2196F3"
+                                                    Command="{Binding DataContext.EditCommand, 
+                                                            RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    CommandParameter="{Binding}">
+                                                <iconPacks:PackIconMaterial Kind="Pencil" 
+                                                                        Width="16" 
+                                                                        Height="16"
+                                                                        Foreground="#2196F3"/>
+                                            </Button>
+                                            <Button Style="{StaticResource MahApps.Styles.Button.Circle}"
+                                                    Width="32"
+                                                    Height="32"
+                                                    ToolTip="Delete"
+                                                    Background="#FFEBEE"
+                                                    BorderBrush="#F44336"
+                                                    Command="{Binding DataContext.DeleteCommand, 
+                                                            RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    CommandParameter="{Binding}">
+                                                <iconPacks:PackIconMaterial Kind="Delete" 
+                                                                        Width="16" 
+                                                                        Height="16"
+                                                                        Foreground="#F44336"/>
+                                            </Button>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </mah:MetroHeader>
+            </Border>
 
-            <!-- Transaction Panel -->
-            <mah:MetroHeader Grid.Row="2"
-                            Header="Quick Actions">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+            <!-- Transaction Panel with enhanced styling -->
+            <Border Grid.Row="2"
+                    Background="#FFFFFF"
+                    CornerRadius="10">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="10"
+                            ShadowDepth="1"
+                            Opacity="0.2"/>
+                </Border.Effect>
+                <mah:MetroHeader Header="Quick Actions"
+                             Margin="5">
+                    <Grid Margin="10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
 
-                    <mah:NumericUpDown Value="{Binding TransactionAmount}"
-                                      mah:TextBoxHelper.Watermark="Amount"
-                                      Style="{StaticResource {x:Type mah:NumericUpDown}}"
-                                      StringFormat="C"
-                                      Minimum="0"/>
+                        <mah:NumericUpDown Value="{Binding TransactionAmount}"
+                                        mah:TextBoxHelper.Watermark="Amount"
+                                        mah:ControlsHelper.CornerRadius="5"
+                                        Style="{StaticResource {x:Type mah:NumericUpDown}}"
+                                        StringFormat="C"
+                                        Minimum="0"/>
 
-                    <TextBox Grid.Column="1"
-                             Text="{Binding ReferenceNumber}"
-                             mah:TextBoxHelper.Watermark="Reference #"
-                             Style="{StaticResource MahApps.Styles.TextBox}"
-                             Width="120"
-                             Margin="10,0"/>
+                        <TextBox Grid.Column="1"
+                                Text="{Binding ReferenceNumber}"
+                                mah:TextBoxHelper.Watermark="Reference #"
+                                mah:TextBoxHelper.UseFloatingWatermark="True"
+                                mah:ControlsHelper.CornerRadius="5"
+                                Style="{StaticResource MahApps.Styles.TextBox}"
+                                Width="120"
+                                Margin="10,0"/>
 
-                    <Button Grid.Column="2"
-                            Style="{StaticResource MahApps.Styles.Button}"
-                            Command="{Binding RecordPurchaseCommand}"
-                            Margin="0,0,10,0">
-                        <StackPanel Orientation="Horizontal">
-                            <iconPacks:PackIconMaterial Kind="CartArrowDown" 
-                                                           Margin="0,0,5,0"/>
-                            <TextBlock Text="Record Purchase"/>
-                        </StackPanel>
-                    </Button>
+                        <Button Grid.Column="2"
+                                Style="{StaticResource MahApps.Styles.Button}"
+                                mah:ControlsHelper.CornerRadius="5"
+                                Padding="10,8"
+                                Command="{Binding RecordPurchaseCommand}"
+                                Margin="0,0,10,0">
+                            <Button.Effect>
+                                <DropShadowEffect BlurRadius="5"
+                                        ShadowDepth="1"
+                                        Opacity="0.3"/>
+                            </Button.Effect>
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="CartArrowDown" 
+                                                        Margin="0,0,5,0"/>
+                                <TextBlock Text="Record Purchase"/>
+                            </StackPanel>
+                        </Button>
 
-                    <Button Grid.Column="3"
-                            Style="{StaticResource MahApps.Styles.Button}"
-                            Command="{Binding RecordPaymentCommand}">
-                        <StackPanel Orientation="Horizontal">
-                            <iconPacks:PackIconMaterial Kind="CashRegister" 
-                                                           Margin="0,0,5,0"/>
-                            <TextBlock Text="Record Payment"/>
-                        </StackPanel>
-                    </Button>
-                </Grid>
-            </mah:MetroHeader>
+                        <Button Grid.Column="3"
+                                Style="{StaticResource MahApps.Styles.Button.Square.Accent}"
+                                mah:ControlsHelper.CornerRadius="5"
+                                Padding="10,8"
+                                Command="{Binding RecordPaymentCommand}">
+                            <Button.Effect>
+                                <DropShadowEffect BlurRadius="5"
+                                        ShadowDepth="1"
+                                        Opacity="0.3"/>
+                            </Button.Effect>
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="CashRegister" 
+                                                        Margin="0,0,5,0"/>
+                                <TextBlock Text="Record Payment"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </mah:MetroHeader>
+            </Border>
         </Grid>
     </Grid>
 </UserControl>

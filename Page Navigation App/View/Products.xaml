@@ -15,209 +15,367 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Product Entry Form -->
-        <mah:MetroHeader Header="Product Details">
-            <mah:MetroContentControl>
-                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="600">
-                    <StackPanel>
-                        <!-- Basic Information -->
-                        <TextBlock Text="Basic Information" Style="{StaticResource MahApps.Styles.TextBlock}" FontWeight="Bold" Margin="0,10,0,5"/>
-                        <TextBox Text="{Binding SelectedProduct.ProductName, UpdateSourceTrigger=PropertyChanged}"
-                                 Margin="0,5"
-                                 mah:TextBoxHelper.Watermark="Product Name"
-                                 Style="{StaticResource MahApps.Styles.TextBox}"/>
-                        
-                        <TextBox Text="{Binding SelectedProduct.Description, UpdateSourceTrigger=PropertyChanged}"
-                                 Margin="0,5"
-                                 mah:TextBoxHelper.Watermark="Description"
-                                 TextWrapping="Wrap"
-                                 AcceptsReturn="True"
-                                 Height="60"
-                                 Style="{StaticResource MahApps.Styles.TextBox}"/>
+        <!-- Product Entry Form with standardized visual design -->
+        <Border Background="#FFFFFF"
+                CornerRadius="10">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="10"
+                        ShadowDepth="1"
+                        Opacity="0.2"/>
+            </Border.Effect>
+            <mah:MetroHeader Header="Product Details"
+                    Margin="5">
+                <mah:MetroContentControl>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="600">
+                        <StackPanel Margin="10">
+                            <!-- Basic Information with visual grouping -->
+                            <Border Background="#F9F9F9"
+                                    CornerRadius="8"
+                                    Padding="10"
+                                    Margin="0,0,0,15">
+                                <StackPanel>
+                                    <TextBlock Text="Basic Information" 
+                                              Style="{StaticResource MahApps.Styles.TextBlock}" 
+                                              FontWeight="Bold"
+                                              Foreground="#2D3748"
+                                              Margin="0,0,0,10"/>
+                                    
+                                    <TextBox Text="{Binding SelectedProduct.ProductName, UpdateSourceTrigger=PropertyChanged}"
+                                           Margin="0,5"
+                                           mah:TextBoxHelper.Watermark="Product Name"
+                                           mah:TextBoxHelper.UseFloatingWatermark="True"
+                                           mah:ControlsHelper.CornerRadius="5"
+                                           Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                    
+                                    <TextBox Text="{Binding SelectedProduct.Description, UpdateSourceTrigger=PropertyChanged}"
+                                           Margin="0,5"
+                                           mah:TextBoxHelper.Watermark="Description"
+                                           mah:TextBoxHelper.UseFloatingWatermark="True"
+                                           mah:ControlsHelper.CornerRadius="5"
+                                           TextWrapping="Wrap"
+                                           AcceptsReturn="True"
+                                           Height="60"
+                                           Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                </StackPanel>
+                            </Border>
 
-                        <!-- Metal Type and Purity -->
-                        <TextBlock Text="Metal Information" Style="{StaticResource MahApps.Styles.TextBlock}" FontWeight="Bold" Margin="0,10,0,5"/>
-                        <ComboBox ItemsSource="{Binding MetalTypes}"
-                                  SelectedItem="{Binding SelectedProduct.MetalType, UpdateSourceTrigger=PropertyChanged}"
-                                  Margin="0,5"
-                                  mah:TextBoxHelper.Watermark="Select Metal Type"
-                                  Style="{StaticResource MahApps.Styles.ComboBox}"/>
+                            <!-- Metal Type and Purity with visual grouping -->
+                            <Border Background="#F9F9F9"
+                                    CornerRadius="8"
+                                    Padding="10"
+                                    Margin="0,0,0,15">
+                                <StackPanel>
+                                    <TextBlock Text="Metal Information" 
+                                              Style="{StaticResource MahApps.Styles.TextBlock}" 
+                                              FontWeight="Bold"
+                                              Foreground="#2D3748"
+                                              Margin="0,0,0,10"/>
+                                    
+                                    <ComboBox ItemsSource="{Binding MetalTypes}"
+                                           SelectedItem="{Binding SelectedProduct.MetalType, UpdateSourceTrigger=PropertyChanged}"
+                                           Margin="0,5"
+                                           mah:TextBoxHelper.Watermark="Select Metal Type"
+                                           mah:ControlsHelper.CornerRadius="5"
+                                           Style="{StaticResource MahApps.Styles.ComboBox}"/>
+                                    
+                                    <ComboBox ItemsSource="{Binding Purities}"
+                                           SelectedItem="{Binding SelectedProduct.Purity, UpdateSourceTrigger=PropertyChanged}"
+                                           Margin="0,5"
+                                           mah:TextBoxHelper.Watermark="Select Purity"
+                                           mah:ControlsHelper.CornerRadius="5"
+                                           Style="{StaticResource MahApps.Styles.ComboBox}"/>
+                                </StackPanel>
+                            </Border>
 
-                        <ComboBox ItemsSource="{Binding Purities}"
-                                  SelectedItem="{Binding SelectedProduct.Purity, UpdateSourceTrigger=PropertyChanged}"
-                                  Margin="0,5"
-                                  mah:TextBoxHelper.Watermark="Select Purity"
-                                  Style="{StaticResource MahApps.Styles.ComboBox}"/>
+                            <!-- Weights and Prices with visual grouping -->
+                            <Border Background="#F9F9F9"
+                                    CornerRadius="8"
+                                    Padding="10"
+                                    Margin="0,0,0,15">
+                                <StackPanel>
+                                    <TextBlock Text="Weights and Prices (INR)" 
+                                              Style="{StaticResource MahApps.Styles.TextBlock}" 
+                                              FontWeight="Bold"
+                                              Foreground="#2D3748"
+                                              Margin="0,0,0,10"/>
+                                    
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <TextBox Grid.Column="0"
+                                               Text="{Binding SelectedProduct.GrossWeight, StringFormat=N3, UpdateSourceTrigger=PropertyChanged}"
+                                               Margin="0,5,5,5"
+                                               mah:TextBoxHelper.Watermark="Gross Weight (g)"
+                                               mah:TextBoxHelper.UseFloatingWatermark="True"
+                                               mah:ControlsHelper.CornerRadius="5"
+                                               Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                        
+                                        <TextBox Grid.Column="1"
+                                               Text="{Binding SelectedProduct.NetWeight, StringFormat=N3, UpdateSourceTrigger=PropertyChanged}"
+                                               Margin="5,5,0,5"
+                                               mah:TextBoxHelper.Watermark="Net Weight (g)"
+                                               mah:TextBoxHelper.UseFloatingWatermark="True"
+                                               mah:ControlsHelper.CornerRadius="5"
+                                               Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                    </Grid>
 
-                        <!-- Weights and Prices -->
-                        <TextBlock Text="Weights and Prices (INR)" Style="{StaticResource MahApps.Styles.TextBlock}" FontWeight="Bold" Margin="0,10,0,5"/>
-                        <TextBox Text="{Binding SelectedProduct.GrossWeight, StringFormat=N3, UpdateSourceTrigger=PropertyChanged}"
-                                 Margin="0,5"
-                                 mah:TextBoxHelper.Watermark="Gross Weight (g)"
-                                 Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <TextBox Grid.Column="0"
+                                               Text="{Binding SelectedProduct.MakingCharges, StringFormat=N2, UpdateSourceTrigger=PropertyChanged}"
+                                               Margin="0,5,5,5"
+                                               mah:TextBoxHelper.Watermark="Making Charges (INR)"
+                                               mah:TextBoxHelper.UseFloatingWatermark="True"
+                                               mah:ControlsHelper.CornerRadius="5"
+                                               Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                        
+                                        <TextBox Grid.Column="1"
+                                               Text="{Binding SelectedProduct.StoneValue, StringFormat=N2, UpdateSourceTrigger=PropertyChanged}"
+                                               Margin="5,5,0,5"
+                                               mah:TextBoxHelper.Watermark="Stone Value (INR)"
+                                               mah:TextBoxHelper.UseFloatingWatermark="True"
+                                               mah:ControlsHelper.CornerRadius="5"
+                                               Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                    </Grid>
 
-                        <TextBox Text="{Binding SelectedProduct.NetWeight, StringFormat=N3, UpdateSourceTrigger=PropertyChanged}"
-                                 Margin="0,5"
-                                 mah:TextBoxHelper.Watermark="Net Weight (g)"
-                                 Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <TextBox Grid.Column="0"
+                                               Text="{Binding SelectedProduct.WastagePercentage, StringFormat=N2, UpdateSourceTrigger=PropertyChanged}"
+                                               Margin="0,5,5,5"
+                                               mah:TextBoxHelper.Watermark="Wastage %"
+                                               mah:TextBoxHelper.UseFloatingWatermark="True"
+                                               mah:ControlsHelper.CornerRadius="5"
+                                               Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                        
+                                        <TextBox Grid.Column="1"
+                                               Text="{Binding SelectedProduct.FinalPrice, StringFormat='₹ {0:N2}', UpdateSourceTrigger=PropertyChanged}"
+                                               Margin="5,5,0,5"
+                                               IsReadOnly="True"
+                                               mah:TextBoxHelper.Watermark="Final Price (INR)"
+                                               mah:TextBoxHelper.UseFloatingWatermark="True"
+                                               mah:ControlsHelper.CornerRadius="5"
+                                               Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
 
-                        <TextBox Text="{Binding SelectedProduct.MakingCharges, StringFormat=N2, UpdateSourceTrigger=PropertyChanged}"
-                                 Margin="0,5"
-                                 mah:TextBoxHelper.Watermark="Making Charges (INR)"
-                                 Style="{StaticResource MahApps.Styles.TextBox}"/>
+                            <!-- Classification with visual grouping -->
+                            <Border Background="#F9F9F9"
+                                    CornerRadius="8"
+                                    Padding="10"
+                                    Margin="0,0,0,15">
+                                <StackPanel>
+                                    <TextBlock Text="Classification" 
+                                             Style="{StaticResource MahApps.Styles.TextBlock}" 
+                                             FontWeight="Bold"
+                                             Foreground="#2D3748"
+                                             Margin="0,0,0,10"/>
+                                    
+                                    <ComboBox ItemsSource="{Binding Categories}"
+                                           DisplayMemberPath="CategoryName"
+                                           SelectedValuePath="CategoryID"
+                                           SelectedValue="{Binding SelectedProduct.CategoryID, UpdateSourceTrigger=PropertyChanged}"
+                                           Margin="0,5"
+                                           mah:TextBoxHelper.Watermark="Select Category"
+                                           mah:ControlsHelper.CornerRadius="5"
+                                           Style="{StaticResource MahApps.Styles.ComboBox}"/>
+                                    
+                                    <ComboBox ItemsSource="{Binding Subcategories}"
+                                           DisplayMemberPath="SubcategoryName"
+                                           SelectedValuePath="SubcategoryID"
+                                           SelectedValue="{Binding SelectedProduct.SubcategoryID, UpdateSourceTrigger=PropertyChanged}"
+                                           Margin="0,5"
+                                           mah:TextBoxHelper.Watermark="Select Subcategory"
+                                           mah:ControlsHelper.CornerRadius="5"
+                                           Style="{StaticResource MahApps.Styles.ComboBox}"/>
+                                    
+                                    <ComboBox ItemsSource="{Binding Suppliers}"
+                                           SelectedItem="{Binding SelectedProduct.Supplier}"
+                                           Margin="0,5"
+                                           mah:TextBoxHelper.Watermark="Supplier"
+                                           mah:ControlsHelper.CornerRadius="5"
+                                           Style="{StaticResource MahApps.Styles.ComboBox}"/>
+                                    
+                                    <TextBox Text="{Binding SelectedProduct.Location, UpdateSourceTrigger=PropertyChanged}"
+                                          Margin="0,5"
+                                          mah:TextBoxHelper.Watermark="Location"
+                                          mah:TextBoxHelper.UseFloatingWatermark="True"
+                                          mah:ControlsHelper.CornerRadius="5"
+                                          Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                </StackPanel>
+                            </Border>
 
-                        <TextBox Text="{Binding SelectedProduct.StoneValue, StringFormat=N2, UpdateSourceTrigger=PropertyChanged}"
-                                 Margin="0,5"
-                                 mah:TextBoxHelper.Watermark="Stone Value (INR)"
-                                 Style="{StaticResource MahApps.Styles.TextBox}"/>
-
-                        <TextBox Text="{Binding SelectedProduct.WastagePercentage, StringFormat=N2, UpdateSourceTrigger=PropertyChanged}"
-                                 Margin="0,5"
-                                 mah:TextBoxHelper.Watermark="Wastage %"
-                                 Style="{StaticResource MahApps.Styles.TextBox}"/>
-
-                        <TextBox Text="{Binding SelectedProduct.FinalPrice, StringFormat='₹ {0:N2}', UpdateSourceTrigger=PropertyChanged}"
-                                 Margin="0,5"
-                                 IsReadOnly="True"
-                                 mah:TextBoxHelper.Watermark="Final Price (INR)"
-                                 Style="{StaticResource MahApps.Styles.TextBox}"/>
-
-                        <!-- Classification -->
-                        <TextBlock Text="Classification" Style="{StaticResource MahApps.Styles.TextBlock}" FontWeight="Bold" Margin="0,10,0,5"/>
-                        <ComboBox ItemsSource="{Binding Categories}"
-                                  DisplayMemberPath="CategoryName"
-                                  SelectedValuePath="CategoryID"
-                                  SelectedValue="{Binding SelectedProduct.CategoryID, UpdateSourceTrigger=PropertyChanged}"
-                                  Margin="0,5"
-                                  mah:TextBoxHelper.Watermark="Select Category"
-                                  Style="{StaticResource MahApps.Styles.ComboBox}"/>
-
-                        <ComboBox ItemsSource="{Binding Subcategories}"
-                                  DisplayMemberPath="SubcategoryName"
-                                  SelectedValuePath="SubcategoryID"
-                                  SelectedValue="{Binding SelectedProduct.SubcategoryID, UpdateSourceTrigger=PropertyChanged}"
-                                  Margin="0,5"
-                                  mah:TextBoxHelper.Watermark="Select Subcategory"
-                                  Style="{StaticResource MahApps.Styles.ComboBox}"/>
-
-                        <ComboBox ItemsSource="{Binding Suppliers}"
-                                  SelectedItem="{Binding SelectedProduct.Supplier}"
-                                  Margin="0,5"
-                                  mah:TextBoxHelper.Watermark="Supplier"
-                                  Style="{StaticResource MahApps.Styles.ComboBox}"/>
-
-                        <TextBox Text="{Binding SelectedProduct.Location, UpdateSourceTrigger=PropertyChanged}"
-                                 Margin="0,5"
-                                 mah:TextBoxHelper.Watermark="Location"
-                                 Style="{StaticResource MahApps.Styles.TextBox}"/>
-
-                        <!-- Action Buttons -->
-                        <StackPanel Orientation="Horizontal" 
-                                  Margin="0,20,0,0"
-                                  HorizontalAlignment="Right">
-                            <Button Content="Clear"
-                                    Margin="0,0,10,0"
-                                    Style="{StaticResource MahApps.Styles.Button}"
-                                    Command="{Binding ClearCommand}"/>
-                            
-                            <Button Content="Save"
-                                    Style="{StaticResource MahApps.Styles.Button.Square.Accent}"
-                                    Command="{Binding AddOrUpdateCommand}"/>
+                            <!-- Action Buttons -->
+                            <StackPanel Orientation="Horizontal" 
+                                      Margin="0,20,0,0"
+                                      HorizontalAlignment="Right">
+                                <Button Content="Clear"
+                                      Margin="0,0,10,0"
+                                      Style="{StaticResource MahApps.Styles.Button}"
+                                      mah:ControlsHelper.CornerRadius="5"
+                                      Padding="15,8"
+                                      Command="{Binding ClearCommand}">
+                                    <Button.Effect>
+                                        <DropShadowEffect BlurRadius="5"
+                                                ShadowDepth="1"
+                                                Opacity="0.3"/>
+                                    </Button.Effect>
+                                </Button>
+                                
+                                <Button Content="Save"
+                                      Style="{StaticResource MahApps.Styles.Button.Square.Accent}"
+                                      mah:ControlsHelper.CornerRadius="5"
+                                      Padding="15,8"
+                                      Command="{Binding AddOrUpdateCommand}">
+                                    <Button.Effect>
+                                        <DropShadowEffect BlurRadius="5"
+                                                ShadowDepth="1"
+                                                Opacity="0.3"/>
+                                    </Button.Effect>
+                                </Button>
+                            </StackPanel>
                         </StackPanel>
-                    </StackPanel>
-                </ScrollViewer>
-            </mah:MetroContentControl>
-        </mah:MetroHeader>
+                    </ScrollViewer>
+                </mah:MetroContentControl>
+            </mah:MetroHeader>
+        </Border>
 
         <!-- Product List -->
-        <mah:MetroHeader Grid.Column="1"
-                        Margin="20,0,0,0"
-                        Header="Product List">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+        <Border Grid.Column="1"
+                Background="#FFFFFF"
+                CornerRadius="10"
+                Margin="20,0,0,0">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="10"
+                        ShadowDepth="1"
+                        Opacity="0.2"/>
+            </Border.Effect>
+            <mah:MetroHeader Margin="5"
+                    Header="Product List">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
 
-                <!-- Search Box -->
-                <TextBox Margin="0,0,0,10"
-                         mah:TextBoxHelper.Watermark="Search products..."
-                         Style="{StaticResource MahApps.Styles.TextBox}"
-                         Text="{Binding SearchName, UpdateSourceTrigger=PropertyChanged}">
-                    <TextBox.InputBindings>
-                        <KeyBinding Key="Return" Command="{Binding SearchCommand}"/>
-                    </TextBox.InputBindings>
-                </TextBox>
+                    <!-- Search Box with icon -->
+                    <Grid Margin="0,0,0,10">
+                        <TextBox mah:TextBoxHelper.Watermark="Search products..."
+                               Style="{StaticResource MahApps.Styles.TextBox}"
+                               mah:TextBoxHelper.UseFloatingWatermark="True"
+                               mah:ControlsHelper.CornerRadius="20"
+                               Padding="30,5,5,5"
+                               Text="{Binding SearchName, UpdateSourceTrigger=PropertyChanged}">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Return" Command="{Binding SearchCommand}"/>
+                            </TextBox.InputBindings>
+                        </TextBox>
+                        <iconPacks:PackIconMaterial Kind="Magnify"
+                                                 Width="16"
+                                                 Height="16"
+                                                 Margin="10,0,0,0"
+                                                 VerticalAlignment="Center"
+                                                 Foreground="#777777"/>
+                    </Grid>
 
-                <DataGrid Grid.Row="1"
-                          ItemsSource="{Binding Products}"
-                          SelectedItem="{Binding SelectedProduct}"
-                          AutoGenerateColumns="False"
-                          Style="{StaticResource MahApps.Styles.DataGrid}"
-                          GridLinesVisibility="Horizontal"
-                          SelectionMode="Single"
-                          IsReadOnly="True">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Name" 
-                                          Binding="{Binding ProductName}"
-                                          Width="*"/>
-                        <DataGridTextColumn Header="Metal" 
-                                          Binding="{Binding MetalType}"
-                                          Width="80"/>
-                        <DataGridTextColumn Header="Purity" 
-                                          Binding="{Binding Purity}"
-                                          Width="70"/>
-                        <DataGridTextColumn Header="Gross (g)" 
-                                          Binding="{Binding GrossWeight, StringFormat=N3}"
-                                          Width="80"/>
-                        <DataGridTextColumn Header="Net (g)" 
-                                          Binding="{Binding NetWeight, StringFormat=N3}"
-                                          Width="80"/>
-                        <DataGridTextColumn Header="Making" 
-                                          Binding="{Binding MakingCharges, StringFormat=C}"
-                                          Width="90"/>
-                        <DataGridTextColumn Header="Stone" 
-                                          Binding="{Binding StoneValue, StringFormat=C}"
-                                          Width="90"/>
-                        <DataGridTextColumn Header="Price" 
-                                          Binding="{Binding Price, StringFormat=C}"
-                                          Width="100"/>
-                        <DataGridTextColumn Header="Category" 
-                                          Binding="{Binding Category.CategoryName}"
-                                          Width="120"/>
-                        <DataGridTextColumn Header="Location" 
-                                          Binding="{Binding Location}"
-                                          Width="100"/>
-                        <DataGridTemplateColumn Width="Auto">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal">
-                                        <Button Style="{StaticResource MahApps.Styles.Button.Circle}"
-                                                Width="32"
-                                                Height="32"
-                                                Margin="0,0,5,0"
-                                                ToolTip="Edit"
-                                                Command="{Binding DataContext.EditCommand, 
-                                                        RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                CommandParameter="{Binding}">
-                                            <iconPacks:PackIconMaterial Kind="Pencil" Width="16" Height="16"/>
-                                        </Button>
-                                        <Button Style="{StaticResource MahApps.Styles.Button.Circle}"
-                                                Width="32"
-                                                Height="32"
-                                                ToolTip="Delete"
-                                                Command="{Binding DataContext.DeleteCommand, 
-                                                        RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                CommandParameter="{Binding}">
-                                            <iconPacks:PackIconMaterial Kind="Delete" Width="16" Height="16"/>
-                                        </Button>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                    </DataGrid.Columns>
-                </DataGrid>
-            </Grid>
-        </mah:MetroHeader>
+                    <!-- Enhanced DataGrid -->
+                    <DataGrid Grid.Row="1"
+                            ItemsSource="{Binding Products}"
+                            SelectedItem="{Binding SelectedProduct}"
+                            AutoGenerateColumns="False"
+                            Style="{StaticResource MahApps.Styles.DataGrid}"
+                            GridLinesVisibility="Horizontal"
+                            SelectionMode="Single"
+                            IsReadOnly="True"
+                            AlternatingRowBackground="#F9F9F9"
+                            RowHeight="45"
+                            BorderThickness="0"
+                            VerticalGridLinesBrush="Transparent">
+                        <DataGrid.Resources>
+                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
+                                           Color="#E3F2FD"/>
+                            <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}"
+                                           Color="#E3F2FD"/>
+                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}"
+                                           Color="Black"/>
+                            <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}"
+                                           Color="Black"/>
+                        </DataGrid.Resources>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Name" 
+                                              Binding="{Binding ProductName}"
+                                              Width="*"/>
+                            <DataGridTextColumn Header="Metal" 
+                                              Binding="{Binding MetalType}"
+                                              Width="80"/>
+                            <DataGridTextColumn Header="Purity" 
+                                              Binding="{Binding Purity}"
+                                              Width="70"/>
+                            <DataGridTextColumn Header="Gross (g)" 
+                                              Binding="{Binding GrossWeight, StringFormat=N3}"
+                                              Width="80"/>
+                            <DataGridTextColumn Header="Net (g)" 
+                                              Binding="{Binding NetWeight, StringFormat=N3}"
+                                              Width="80"/>
+                            <DataGridTextColumn Header="Price" 
+                                              Binding="{Binding FinalPrice, StringFormat=C}"
+                                              Width="100"/>
+                            <DataGridTextColumn Header="Category" 
+                                              Binding="{Binding Category.CategoryName}"
+                                              Width="120"/>
+                            <DataGridTemplateColumn Width="Auto">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Style="{StaticResource MahApps.Styles.Button.Circle}"
+                                                  Width="32"
+                                                  Height="32"
+                                                  Margin="0,0,5,0"
+                                                  ToolTip="Edit"
+                                                  Background="#E3F2FD"
+                                                  BorderBrush="#2196F3"
+                                                  Command="{Binding DataContext.EditCommand, 
+                                                         RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                  CommandParameter="{Binding}">
+                                                <iconPacks:PackIconMaterial Kind="Pencil" 
+                                                                         Width="16" 
+                                                                         Height="16"
+                                                                         Foreground="#2196F3"/>
+                                            </Button>
+                                            <Button Style="{StaticResource MahApps.Styles.Button.Circle}"
+                                                  Width="32"
+                                                  Height="32"
+                                                  ToolTip="Delete"
+                                                  Background="#FFEBEE"
+                                                  BorderBrush="#F44336"
+                                                  Command="{Binding DataContext.DeleteCommand, 
+                                                         RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                  CommandParameter="{Binding}">
+                                                <iconPacks:PackIconMaterial Kind="Delete" 
+                                                                         Width="16" 
+                                                                         Height="16"
+                                                                         Foreground="#F44336"/>
+                                            </Button>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </mah:MetroHeader>
+        </Border>
     </Grid>
 </UserControl>
