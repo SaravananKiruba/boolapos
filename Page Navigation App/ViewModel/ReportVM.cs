@@ -7,6 +7,11 @@ using Page_Navigation_App.Model;
 using Page_Navigation_App.Services;
 using Page_Navigation_App.Utilities;
 using System.Threading.Tasks;
+using System.IO;
+using Microsoft.Win32;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace Page_Navigation_App.ViewModel
 {
@@ -17,6 +22,9 @@ namespace Page_Navigation_App.ViewModel
         private readonly ProductService _productService;
         private readonly FinanceService _financeService;
         private readonly CategoryService _categoryService;
+        private readonly ExportService _exportService;
+        private readonly PrintService _printService;
+        private readonly LogService _logService;
         
         public ICommand GenerateReportCommand { get; }
         public ICommand ExportReportCommand { get; }
@@ -26,13 +34,19 @@ namespace Page_Navigation_App.ViewModel
             OrderService orderService,
             ProductService productService,
             FinanceService financeService,
-            CategoryService categoryService)
+            CategoryService categoryService,
+            ExportService exportService,
+            PrintService printService,
+            LogService logService)
         {
             _customerService = customerService;
             _orderService = orderService;
             _productService = productService;
             _financeService = financeService;
             _categoryService = categoryService;
+            _exportService = exportService;
+            _printService = printService;
+            _logService = logService;
             
             // Initialize collections
             ReportTypes = new ObservableCollection<string>
@@ -381,14 +395,230 @@ namespace Page_Navigation_App.ViewModel
             };
         }
         
-        private void ExportReport()
+        private async void ExportReport()
         {
-            // This would typically export the report to Excel or PDF
-            System.Windows.MessageBox.Show(
-                $"The {SelectedReportType} would be exported to Excel or PDF.", 
-                "Export Report", 
-                System.Windows.MessageBoxButton.OK, 
-                System.Windows.MessageBoxImage.Information);
+            try
+            {
+                // Create a SaveFileDialog to let user choose where to save the file
+                var saveFileDialog = new SaveFileDialog
+                {
+                    Title = "Export Report",
+                    Filter = "Excel Files (*.xlsx)|*.xlsx|CSV Files (*.csv)|*.csv|All Files (*.*)|*.*",
+                    DefaultExt = ".xlsx",
+                    FileName = $"{SelectedReportType.Replace(" ", "")}_{DateTime.Now:yyyyMMdd}"
+                };
+
+                if (saveFileDialog.ShowDialog() == true)
+                {
+                    string filePath = saveFileDialog.FileName;
+                    string exportFormat = Path.GetExtension(filePath).TrimStart('.').ToLower();
+                    
+                    // Validate format
+                    if (string.IsNullOrEmpty(exportFormat) || (exportFormat != "xlsx" && exportFormat != "csv"))
+                    {
+                        MessageBox.Show("Unsupported export format. Please choose either Excel (.xlsx) or CSV (.csv) format.",
+                            "Invalid Format", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+                    
+                    // Show export progress using a non-blocking message
+                    var progressMessage = new Window
+                    {
+                        Title = "Export In Progress",
+                        Width = 300,
+                        Height = 120,
+                        WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                        ResizeMode = ResizeMode.NoResize,
+                        WindowStyle = WindowStyle.ToolWindow,
+                        Content = new TextBlock
+                        {
+                            Text = $"Exporting {SelectedReportType}...\nPlease wait.",
+                            TextAlignment = TextAlignment.Center,
+                            VerticalAlignment = VerticalAlignment.Center,
+                            FontSize = 14
+                        }
+                    };
+                    
+                    try
+                    {
+                        progressMessage.Show();
+                        string result = string.Empty;
+                        int retryCount = 0;
+                        const int maxRetries = 3;
+                        bool success = false;
+
+                        // Retry logic for export operations
+                        while (!success && retryCount < maxRetries)
+                        {
+                            try
+                            {
+                                switch (SelectedReportType)
+                                {
+                                    case "Sales Report":
+                                        result = await _exportService.ExportSalesReport(StartDate, EndDate, exportFormat);
+                                        break;
+                                    case "Inventory Report":
+                                        result = await _exportService.ExportInventoryReport(exportFormat);
+                                        break;
+                                    case "Customer Report":
+                                        try {
+                                            // Get all customers and prepare report data
+                                            var customers = await _customerService.GetAllCustomers();
+                                            if(customers == null || !customers.Any()) {
+                                                throw new InvalidOperationException("No customer data available to export");
+                                            }
+                                            
+                                            var customerReport = new Services.CustomerReport
+                                            {
+                                                FromDate = StartDate,
+                                                ToDate = EndDate,
+                                                TotalCustomers = customers.Count(),
+                                                CustomerDetails = customers.Select(c => new Services.CustomerPurchaseDetail
+                                                {
+                                                    CustomerID = c.CustomerID,
+                                                    CustomerName = c.CustomerName,
+                                                    PhoneNumber = c.PhoneNumber,
+                                                    TotalPurchases = c.TotalPurchases,
+                                                    OrderCount = c.Orders?.Count() ?? 0,
+                                                    LastPurchaseDate = c.LastPurchaseDate,
+                                                    PendingAmount = c.OutstandingAmount,
+                                                    LoyaltyPoints = c.LoyaltyPoints
+                                                }).ToList()
+                                            };
+                                            
+                                            // First try export service
+                                            try {
+                                                result = await _exportService.ExportCustomerList(exportFormat);
+                                            }
+                                            catch (Exception exportEx) {
+                                                await _logService.LogWarningAsync($"Export service failed, falling back to print service: {exportEx.Message}");
+                                                // Fall back to print service
+                                                result = await _printService.GenerateReportAsync("customer", customerReport);
+                                            }
+                                        }
+                                        catch (Exception ex) {
+                                            await _logService.LogErrorAsync($"Error generating customer report: {ex.Message}");
+                                            throw;
+                                        }
+                                        break;
+                                    case "Financial Report":
+                                        try {
+                                            var financialReport = await _financeService.GetProfitLossReportAsync(StartDate, EndDate);
+                                            result = await _printService.GenerateReportAsync("financial", financialReport);
+                                        }
+                                        catch (Exception ex) {
+                                            await _logService.LogErrorAsync($"Error generating financial report: {ex.Message}");
+                                            throw;
+                                        }
+                                        break;
+                                    case "Category Report":
+                                        var categories = await _categoryService.GetAllCategories();
+                                        result = await _printService.GenerateReportAsync("category", categories);
+                                        break;
+                                    default:
+                                        progressMessage.Close();
+                                        throw new NotImplementedException($"Export for {SelectedReportType} is not implemented");
+                                }
+
+                                success = true;
+                            }
+                            catch (Exception ex) when (retryCount < maxRetries - 1 && 
+                                                       !(ex is NotImplementedException || 
+                                                         ex is ArgumentException))
+                            {
+                                retryCount++;
+                                await _logService.LogWarningAsync($"Export attempt {retryCount} failed: {ex.Message}. Retrying...");
+                                await Task.Delay(500); // Brief delay before retry
+                            }
+                        }
+
+                        progressMessage.Close();
+
+                        // Copy the result file to the user-selected location if needed
+                        if (!string.IsNullOrEmpty(result) && File.Exists(result) && result != filePath)
+                        {
+                            try
+                            {
+                                // Ensure the target directory exists
+                                string targetDir = Path.GetDirectoryName(filePath);
+                                if (!Directory.Exists(targetDir))
+                                {
+                                    Directory.CreateDirectory(targetDir);
+                                }
+                                
+                                // Copy with overwrite if file exists
+                                File.Copy(result, filePath, true);
+                            }
+                            catch (Exception copyEx)
+                            {
+                                await _logService.LogErrorAsync($"Error copying export file: {copyEx.Message}");
+                                MessageBox.Show($"The report was generated but could not be saved to the selected location: {copyEx.Message}",
+                                    "File Access Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                                
+                                // Use the source file as result
+                                filePath = result;
+                            }
+                        }
+
+                        // Check if export was successful and file exists
+                        if (File.Exists(filePath))
+                        {
+                            var successMessage = $"{SelectedReportType} has been exported successfully!\n\nSaved to: {filePath}";
+                            
+                            // Ask if user wants to open the file
+                            if (MessageBox.Show(successMessage + "\n\nWould you like to open this file now?", 
+                                "Export Success", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes)
+                            {
+                                try
+                                {
+                                    // Open the file with default application
+                                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                                    {
+                                        FileName = filePath,
+                                        UseShellExecute = true
+                                    });
+                                }
+                                catch (Exception openEx)
+                                {
+                                    MessageBox.Show($"Could not open the file: {openEx.Message}", 
+                                        "File Open Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                                }
+                            }
+                            
+                            // Log the successful export
+                            await _logService.LogInformationAsync($"Report exported: {SelectedReportType} to {filePath}");
+                        }
+                        else
+                        {
+                            throw new Exception("Export failed. The output file was not created.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        progressMessage.Close();
+                        throw; // Re-throw to be caught by outer try/catch
+                    }
+                }
+            }
+            catch (NotImplementedException ex)
+            {
+                MessageBox.Show($"{ex.Message}. Please contact support to request this feature.", 
+                    "Feature Not Available", MessageBoxButton.OK, MessageBoxImage.Information);
+                
+                await _logService.LogWarningAsync($"Attempted to use unimplemented export: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                string errorDetails = ex.InnerException != null 
+                    ? $"{ex.Message}\n\nAdditional details: {ex.InnerException.Message}" 
+                    : ex.Message;
+                    
+                MessageBox.Show($"Error exporting report: {errorDetails}", 
+                    "Export Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                
+                // Log the detailed error
+                await _logService.LogErrorAsync($"Report export error: {ex.Message}", exception: ex);
+            }
         }
     }
 }

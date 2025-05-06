@@ -1,10 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Page_Navigation_App.Data;
+using System.Collections.Generic;
+using System.Linq;
 using Page_Navigation_App.Model;
 
 namespace Page_Navigation_App.Services
@@ -14,399 +12,214 @@ namespace Page_Navigation_App.Services
     /// </summary>
     public class LogService
     {
-        private readonly AppDbContext _context;
         private readonly string _logFilePath;
-        private readonly object _fileLock = new object();
+        private readonly object _lockObj = new object();
 
-        public LogService(AppDbContext context)
+        public LogService()
         {
-            _context = context;
-            
-            // Create logs folder if it doesn't exist
             string logDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
+            
+            // Create logs directory if it doesn't exist
             if (!Directory.Exists(logDirectory))
             {
                 Directory.CreateDirectory(logDirectory);
             }
             
             // Set log file path with date in filename
-            _logFilePath = Path.Combine(logDirectory, $"BoolaPOS_{DateTime.Now:yyyy-MM-dd}.log");
-        }
-
-        /// <summary>
-        /// Log error message to database and file
-        /// </summary>
-        public async Task LogErrorAsync(string message, string userId = null, Exception exception = null)
-        {
-            try
-            {
-                // Create log entry
-                var logEntry = new LogEntry
-                {
-                    LogLevel = "ERROR",
-                    Message = message,
-                    Timestamp = DateTime.Now,
-                    UserId = userId,
-                    Exception = exception?.ToString(),
-                    Source = exception?.Source,
-                    StackTrace = exception?.StackTrace
-                };
-                
-                // Save to database
-                _context.LogEntries.Add(logEntry);
-                await _context.SaveChangesAsync();
-                
-                // Also log to file for redundancy
-                WriteToLogFile("ERROR", message, exception);
-            }
-            catch (Exception ex)
-            {
-                // If database logging fails, at least try to write to file
-                WriteToLogFile("ERROR", message, exception);
-                WriteToLogFile("FATAL", $"Failed to log to database: {ex.Message}", ex);
-            }
-        }
-
-        /// <summary>
-        /// Log warning message
-        /// </summary>
-        public async Task LogWarningAsync(string message, string userId = null)
-        {
-            try
-            {
-                var logEntry = new LogEntry
-                {
-                    LogLevel = "WARNING",
-                    Message = message,
-                    Timestamp = DateTime.Now,
-                    UserId = userId
-                };
-                
-                _context.LogEntries.Add(logEntry);
-                await _context.SaveChangesAsync();
-                
-                WriteToLogFile("WARNING", message);
-            }
-            catch (Exception ex)
-            {
-                WriteToLogFile("WARNING", message);
-                WriteToLogFile("ERROR", $"Failed to log warning to database: {ex.Message}", ex);
-            }
+            _logFilePath = Path.Combine(logDirectory, $"BoolaPOS_{DateTime.Now:yyyyMMdd}.log");
         }
 
         /// <summary>
         /// Log information message
         /// </summary>
-        public async Task LogInformationAsync(string message, string userId = null)
+        public void LogInfo(string message)
         {
-            try
-            {
-                var logEntry = new LogEntry
-                {
-                    LogLevel = "INFO",
-                    Message = message,
-                    Timestamp = DateTime.Now,
-                    UserId = userId
-                };
-                
-                _context.LogEntries.Add(logEntry);
-                await _context.SaveChangesAsync();
-                
-                WriteToLogFile("INFO", message);
-            }
-            catch (Exception ex)
-            {
-                WriteToLogFile("INFO", message);
-                WriteToLogFile("ERROR", $"Failed to log info to database: {ex.Message}", ex);
-            }
+            WriteLog("INFO", message);
         }
 
         /// <summary>
-        /// Log security event (login, permissions change, etc.)
+        /// Log warning message
         /// </summary>
-        public async Task LogSecurityEventAsync(string action, string userId, string details, bool isSuccessful)
+        public void LogWarning(string message)
         {
-            try
-            {
-                var securityLog = new SecurityLog
-                {
-                    Action = action,
-                    UserId = userId,
-                    Details = details,
-                    Timestamp = DateTime.Now,
-                    IsSuccessful = isSuccessful,
-                    IpAddress = GetClientIpAddress()
-                };
-                
-                _context.SecurityLogs.Add(securityLog);
-                await _context.SaveChangesAsync();
-                
-                string logMessage = $"SECURITY: {action} - User: {userId} - Success: {isSuccessful} - {details}";
-                WriteToLogFile("SECURITY", logMessage);
-            }
-            catch (Exception ex)
-            {
-                string logMessage = $"SECURITY: {action} - User: {userId} - Success: {isSuccessful} - {details}";
-                WriteToLogFile("SECURITY", logMessage);
-                WriteToLogFile("ERROR", $"Failed to log security event to database: {ex.Message}", ex);
-            }
+            WriteLog("WARNING", message);
         }
 
         /// <summary>
-        /// Log audit information for data changes
+        /// Log error message
         /// </summary>
-        public async Task LogAuditAsync(string entityName, int entityId, string action, string userId, string oldValues, string newValues)
+        public void LogError(string message)
         {
-            try
-            {
-                var auditLog = new AuditLog
-                {
-                    EntityName = entityName,
-                    EntityId = entityId.ToString(),
-                    Action = action,
-                    UserId = userId,
-                    Timestamp = DateTime.Now,
-                    OldValues = oldValues,
-                    NewValues = newValues
-                };
-                
-                _context.AuditLogs.Add(auditLog);
-                await _context.SaveChangesAsync();
-                
-                string logMessage = $"AUDIT: {action} on {entityName} #{entityId} by {userId}";
-                WriteToLogFile("AUDIT", logMessage);
-            }
-            catch (Exception ex)
-            {
-                string logMessage = $"AUDIT: {action} on {entityName} #{entityId} by {userId}";
-                WriteToLogFile("AUDIT", logMessage);
-                WriteToLogFile("ERROR", $"Failed to log audit event to database: {ex.Message}", ex);
-            }
+            WriteLog("ERROR", message);
         }
 
         /// <summary>
-        /// Get recent error logs
+        /// Log information message asynchronously
         /// </summary>
-        public async Task<LogEntry[]> GetRecentErrorLogsAsync(int count = 100)
+        public async Task LogInfoAsync(string message)
         {
-            try
-            {
-                return await _context.LogEntries
-                    .Where(l => l.LogLevel == "ERROR")
-                    .OrderByDescending(l => l.Timestamp)
-                    .Take(count)
-                    .ToArrayAsync();
-            }
-            catch (Exception ex)
-            {
-                WriteToLogFile("ERROR", $"Failed to get recent error logs: {ex.Message}", ex);
-                return Array.Empty<LogEntry>();
-            }
+            await WriteLogAsync("INFO", message);
         }
 
         /// <summary>
-        /// Get security logs for a user
+        /// Log information message asynchronously (alias for LogInfoAsync)
         /// </summary>
-        public async Task<SecurityLog[]> GetUserSecurityLogsAsync(string userId, int count = 100)
+        public async Task LogInformationAsync(string message)
         {
-            try
-            {
-                return await _context.SecurityLogs
-                    .Where(l => l.UserId == userId)
-                    .OrderByDescending(l => l.Timestamp)
-                    .Take(count)
-                    .ToArrayAsync();
-            }
-            catch (Exception ex)
-            {
-                WriteToLogFile("ERROR", $"Failed to get security logs for user {userId}: {ex.Message}", ex);
-                return Array.Empty<SecurityLog>();
-            }
+            await LogInfoAsync(message);
         }
 
         /// <summary>
-        /// Get audit logs for an entity
+        /// Log warning message asynchronously
         /// </summary>
-        public async Task<AuditLog[]> GetEntityAuditLogsAsync(string entityName, int entityId, int count = 100)
+        public async Task LogWarningAsync(string message)
         {
-            try
-            {
-                return await _context.AuditLogs
-                    .Where(l => l.EntityName == entityName && l.EntityId == entityId.ToString())
-                    .OrderByDescending(l => l.Timestamp)
-                    .Take(count)
-                    .ToArrayAsync();
-            }
-            catch (Exception ex)
-            {
-                WriteToLogFile("ERROR", $"Failed to get audit logs for {entityName} #{entityId}: {ex.Message}", ex);
-                return Array.Empty<AuditLog>();
-            }
+            await WriteLogAsync("WARNING", message);
         }
 
         /// <summary>
-        /// Get system logs
+        /// Log error message asynchronously
         /// </summary>
-        public List<LogEntry> GetSystemLogs(int count = 100)
+        public async Task LogErrorAsync(string message)
         {
-            try
-            {
-                return _context.LogEntries
-                    .OrderByDescending(l => l.Timestamp)
-                    .Take(count)
-                    .ToList();
-            }
-            catch (Exception ex)
-            {
-                WriteToLogFile("ERROR", $"Failed to get system logs: {ex.Message}", ex);
-                return new List<LogEntry>();
-            }
+            await WriteLogAsync("ERROR", message);
         }
 
         /// <summary>
-        /// Get audit logs
+        /// Log error message asynchronously with exception
         /// </summary>
-        public List<AuditLog> GetAuditLogs(int count = 100)
+        public async Task LogErrorAsync(string message, Exception exception)
         {
-            try
-            {
-                return _context.AuditLogs
-                    .OrderByDescending(l => l.Timestamp)
-                    .Take(count)
-                    .ToList();
-            }
-            catch (Exception ex)
-            {
-                WriteToLogFile("ERROR", $"Failed to get audit logs: {ex.Message}", ex);
-                return new List<AuditLog>();
-            }
-        }
-
-        /// <summary>
-        /// Write log message to file
-        /// </summary>
-        private void WriteToLogFile(string level, string message, Exception exception = null)
-        {
-            try
-            {
-                string logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} [{level}] {message}";
-                
-                if (exception != null)
-                {
-                    logEntry += $"\nException: {exception.Message}";
-                    logEntry += $"\nSource: {exception.Source}";
-                    logEntry += $"\nStack Trace: {exception.StackTrace}";
-                    
-                    if (exception.InnerException != null)
-                    {
-                        logEntry += $"\nInner Exception: {exception.InnerException.Message}";
-                    }
-                }
-                
-                lock (_fileLock)
-                {
-                    File.AppendAllText(_logFilePath, logEntry + "\n\n");
-                }
-            }
-            catch
-            {
-                // Last resort fallback if file logging fails
-                Console.Error.WriteLine($"CRITICAL: Failed to write to log file: {level} - {message}");
-            }
-        }
-
-        /// <summary>
-        /// Get client IP address (mock implementation)
-        /// </summary>
-        private string GetClientIpAddress()
-        {
-            // In a real application, this would get the client's IP address
-            // For a desktop application, this might be the local machine's IP
-            return "127.0.0.1";
-        }
-
-        /// <summary>
-        /// Clean up old logs (logs older than specified days)
-        /// </summary>
-        public async Task CleanupOldLogsAsync(int olderThanDays = 90)
-        {
-            try
-            {
-                var cutoffDate = DateTime.Now.AddDays(-olderThanDays);
-                
-                // Clean up database logs
-                var oldLogs = await _context.LogEntries
-                    .Where(l => l.Timestamp < cutoffDate)
-                    .ToListAsync();
-                
-                _context.LogEntries.RemoveRange(oldLogs);
-                
-                var oldSecurityLogs = await _context.SecurityLogs
-                    .Where(l => l.Timestamp < cutoffDate)
-                    .ToListAsync();
-                
-                _context.SecurityLogs.RemoveRange(oldSecurityLogs);
-                
-                // Don't delete audit logs automatically as they're important for compliance
-                
-                await _context.SaveChangesAsync();
-                
-                // Clean up log files
-                string logDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
-                if (Directory.Exists(logDirectory))
-                {
-                    foreach (var file in Directory.GetFiles(logDirectory, "BoolaPOS_*.log"))
-                    {
-                        FileInfo fileInfo = new FileInfo(file);
-                        if (fileInfo.CreationTime < cutoffDate)
-                        {
-                            fileInfo.Delete();
-                        }
-                    }
-                }
-                
-                await LogInformationAsync($"Cleaned up logs older than {olderThanDays} days");
-            }
-            catch (Exception ex)
-            {
-                WriteToLogFile("ERROR", $"Failed to clean up old logs: {ex.Message}", ex);
-            }
-        }
-
-        /// <summary>
-        /// Log warning message (synchronous version for compatibility)
-        /// </summary>
-        public void LogWarning(string message, string userId = null)
-        {
-            // Call the async version without awaiting
-            _ = LogWarningAsync(message, userId);
-        }
-
-        /// <summary>
-        /// Log warning message with source (for SecurityService compatibility)
-        /// </summary>
-        public void LogWarning(string message, string source, string userId = null)
-        {
-            // Call the async version without awaiting
-            _ = LogWarningAsync($"{message} - Source: {source}", userId);
-        }
-
-        /// <summary>
-        /// Log error message (synchronous version for compatibility)
-        /// </summary>
-        public void LogError(string message, string userId = null, Exception exception = null)
-        {
-            // Call the async version without awaiting
-            _ = LogErrorAsync(message, userId, exception);
+            await WriteLogAsync("ERROR", $"{message}. Exception: {exception.Message}");
         }
 
         /// <summary>
         /// Log information message (synchronous version for compatibility)
         /// </summary>
-        public void LogInformation(string message, string userId = null)
+        public void LogInformation(string message)
         {
-            // Call the async version without awaiting
-            _ = LogInformationAsync(message, userId);
+            WriteLog("INFO", message);
+        }
+
+        /// <summary>
+        /// Log warning message with additional context
+        /// </summary>
+        public void LogWarning(string message, string context, string additionalInfo = null)
+        {
+            string fullMessage = $"{message} | Context: {context}";
+            if (!string.IsNullOrEmpty(additionalInfo))
+            {
+                fullMessage += $" | {additionalInfo}";
+            }
+            WriteLog("WARNING", fullMessage);
+        }
+
+        // Methods for retrieving logs
+        public List<LogEntry> GetSystemLogs(DateTime? startDate = null, DateTime? endDate = null)
+        {
+            // Implementation to retrieve system logs from the log file
+            var logs = new List<LogEntry>();
+            
+            try
+            {
+                if (File.Exists(_logFilePath))
+                {
+                    var logLines = File.ReadAllLines(_logFilePath);
+                    
+                    foreach (var line in logLines)
+                    {
+                        try
+                        {
+                            // Parse log line (format: "2025-05-06 14:25:30 [INFO] Log message")
+                            var timestampString = line.Substring(0, 19);
+                            var levelStart = line.IndexOf('[') + 1;
+                            var levelEnd = line.IndexOf(']', levelStart);
+                            var level = line.Substring(levelStart, levelEnd - levelStart);
+                            var message = line.Substring(levelEnd + 2);
+                            
+                            DateTime timestamp;
+                            if (DateTime.TryParse(timestampString, out timestamp))
+                            {
+                                if ((!startDate.HasValue || timestamp >= startDate.Value) && 
+                                    (!endDate.HasValue || timestamp <= endDate.Value))
+                                {
+                                    logs.Add(new LogEntry
+                                    {
+                                        Timestamp = timestamp,
+                                        Level = level,
+                                        Message = message,
+                                        Source = "Application"
+                                    });
+                                }
+                            }
+                        }
+                        catch
+                        {
+                            // Skip malformed log lines
+                            continue;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving system logs: {ex.Message}");
+            }
+            
+            return logs.OrderByDescending(l => l.Timestamp).ToList();
+        }
+
+        public List<AuditLog> GetAuditLogs(DateTime? startDate = null, DateTime? endDate = null)
+        {
+            // Implementation to retrieve audit logs from the database
+            // This would typically query from a database using DbContext
+            // For now, returning an empty list as a placeholder
+            return new List<AuditLog>();
+        }
+
+        /// <summary>
+        /// Write log message to file
+        /// </summary>
+        private void WriteLog(string level, string message)
+        {
+            try
+            {
+                lock (_lockObj)
+                {
+                    string logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [{level}] {message}";
+                    File.AppendAllText(_logFilePath, logEntry + Environment.NewLine);
+                    
+                    // Also write to console for debugging
+                    Console.WriteLine(logEntry);
+                }
+            }
+            catch (Exception ex)
+            {
+                // If logging fails, write to console
+                Console.WriteLine($"Error writing to log file: {ex.Message}");
+                Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [{level}] {message}");
+            }
+        }
+
+        /// <summary>
+        /// Write log message to file asynchronously
+        /// </summary>
+        private async Task WriteLogAsync(string level, string message)
+        {
+            try
+            {
+                string logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [{level}] {message}";
+                await File.AppendAllTextAsync(_logFilePath, logEntry + Environment.NewLine);
+                
+                // Also write to console for debugging
+                Console.WriteLine(logEntry);
+            }
+            catch (Exception ex)
+            {
+                // If logging fails, write to console
+                Console.WriteLine($"Error writing to log file: {ex.Message}");
+                Console.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [{level}] {message}");
+            }
         }
     }
 }

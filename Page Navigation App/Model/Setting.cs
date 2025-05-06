@@ -13,6 +13,9 @@ namespace Page_Navigation_App.Model
         public string Value { get; set; }
         public string Description { get; set; }
         
+        // Add LastUpdated property that was referenced in ConfigurationService
+        public DateTime LastUpdated { get; set; } = DateTime.Now;
+        
         // Add UpdatedDate property that was referenced but missing
         public DateTime UpdatedDate { get; set; } = DateTime.Now;
         

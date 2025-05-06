@@ -17,13 +17,33 @@ namespace Page_Navigation_App.Model
         [StringLength(50)]
         public string UserID { get; set; }
         
-        // Property referenced in LogService
+        // Property referenced in SecurityService
         [NotMapped]
-        public string UserId { get => UserID; set => UserID = value; }
+        public int UserId 
+        { 
+            get { return int.TryParse(UserID, out int id) ? id : 0; } 
+            set { UserID = value.ToString(); } 
+        }
 
         [Required]
         [StringLength(100)]
         public string Action { get; set; }
+        
+        // Property referenced in SecurityService
+        [NotMapped]
+        public string ActivityType 
+        { 
+            get { return Action; } 
+            set { Action = value; } 
+        }
+        
+        // Property referenced in SecurityService
+        [NotMapped]
+        public DateTime ActivityDate 
+        { 
+            get { return Timestamp; } 
+            set { Timestamp = value; } 
+        }
 
         [Required]
         [StringLength(500)]

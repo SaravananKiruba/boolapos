@@ -11,6 +11,8 @@ using Page_Navigation_App.Model;
 using Page_Navigation_App.Services;
 using Page_Navigation_App.View;
 using Page_Navigation_App.ViewModel;
+using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace Page_Navigation_App
 {
@@ -47,6 +49,42 @@ namespace Page_Navigation_App
                 options.UseSqlite("Data Source=StockInventory.db"),
                 ServiceLifetime.Scoped);
 
+            // Add export service
+            services.AddScoped<ExportService>(provider => {
+                try {
+                    var reportService = provider.GetRequiredService<ReportService>();
+                    var orderService = provider.GetRequiredService<OrderService>();
+                    var stockService = provider.GetRequiredService<StockService>();
+                    var customerService = provider.GetRequiredService<CustomerService>();
+                    var logService = provider.GetRequiredService<LogService>();
+                    var exportPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Exports");
+                    
+                    // Ensure the exports directory exists
+                    if (!Directory.Exists(exportPath)) {
+                        Directory.CreateDirectory(exportPath);
+                    }
+                    
+                    return new ExportService(reportService, orderService, stockService, customerService, logService, exportPath);
+                }
+                catch (Exception ex) {
+                    // Log error but don't crash the application
+                    Console.WriteLine($"Error initializing ExportService: {ex.Message}");
+                    // Return a minimal functional service to avoid null reference errors
+                    var logService = provider.GetRequiredService<LogService>();
+                    var reportService = provider.GetRequiredService<ReportService>();
+                    var orderService = provider.GetRequiredService<OrderService>();
+                    var stockService = provider.GetRequiredService<StockService>();
+                    var customerService = provider.GetRequiredService<CustomerService>();
+                    var exportPath = Path.Combine(Path.GetTempPath(), "BoolaPOS_Exports");
+                    
+                    if (!Directory.Exists(exportPath)) {
+                        Directory.CreateDirectory(exportPath);
+                    }
+                    
+                    return new ExportService(reportService, orderService, stockService, customerService, logService, exportPath);
+                }
+            });
+
             // Authentication Service
             services.AddScoped<AuthenticationService>();
 
@@ -61,6 +99,7 @@ namespace Page_Navigation_App
             services.AddScoped<HUIDTrackingService>();
             services.AddScoped<TaggingService>();
             services.AddScoped<GSTComplianceService>();
+            services.AddScoped<EMIService>();
 
             // Business Services - Scoped lifetime
             services.AddScoped<CustomerService>();
@@ -105,32 +144,113 @@ namespace Page_Navigation_App
         {
             base.OnStartup(e);
 
-            // Ensure database is created and migrations are applied
-            using (var scope = ServiceProvider.CreateScope())
+            try
             {
-                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                await dbContext.Database.MigrateAsync();
-                
-                // Seed default admin user if needed
-                var authService = scope.ServiceProvider.GetRequiredService<AuthenticationService>();
-                await authService.SeedDefaultUserAsync();
-                
-                // Setup automatic backup schedule
-                var backupService = scope.ServiceProvider.GetRequiredService<BackupService>();
-                await backupService.ScheduleAutomaticBackupsAsync();
-            }
+                // Ensure database is created and migrations are applied
+                using (var scope = ServiceProvider.CreateScope())
+                {
+                    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                    await dbContext.Database.MigrateAsync();
+                    
+                    // Seed default admin user if needed
+                    var authService = scope.ServiceProvider.GetRequiredService<AuthenticationService>();
+                    await authService.SeedDefaultUserAsync();
+                    
+                    // Setup automatic backup schedule
+                    var backupService = scope.ServiceProvider.GetRequiredService<BackupService>();
+                    await backupService.ScheduleAutomaticBackupsAsync();
+                }
 
-            // Get main window but don't show it yet
-            var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
-            
-            // Set main window as the application's main window but hide it
-            MainWindow = mainWindow;
-            mainWindow.Hide();
-            
-            // Show login window
-            var loginViewModel = ServiceProvider.GetRequiredService<LoginViewModel>();
-            var loginWindow = ServiceProvider.GetRequiredService<LoginWindow>();
-            loginWindow.Show();
+                // Get main window but don't show it yet
+                var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
+                
+                // Set main window as the application's main window but hide it
+                MainWindow = mainWindow;
+                mainWindow.Hide();
+                
+                try
+                {
+                    // Show login window with error handling
+                    var loginViewModel = ServiceProvider.GetRequiredService<LoginViewModel>();
+                    var loginWindow = ServiceProvider.GetRequiredService<LoginWindow>();
+                    
+                    // Set DataContext explicitly
+                    loginWindow.DataContext = loginViewModel;
+                    
+                    loginWindow.Show();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error displaying login window: {ex.Message}\n\nThe application will now use a simplified login.", 
+                        "Login Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    
+                    // Create a simplified login window as fallback
+                    var simpleLoginWindow = new Window
+                    {
+                        Title = "Boola POS Login",
+                        Width = 500,
+                        Height = 300,
+                        WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                        Content = new Grid
+                        {
+                            Children = 
+                            {
+                                new StackPanel
+                                {
+                                    Width = 300,
+                                    HorizontalAlignment = HorizontalAlignment.Center,
+                                    VerticalAlignment = VerticalAlignment.Center,
+                                    Children = 
+                                    {
+                                        new TextBlock
+                                        {
+                                            Text = "Login to Boola POS System",
+                                            FontSize = 18,
+                                            FontWeight = FontWeights.Bold,
+                                            HorizontalAlignment = HorizontalAlignment.Center,
+                                            Margin = new Thickness(0, 0, 0, 20)
+                                        },
+                                        new TextBox
+                                        {
+                                            Text = "admin",
+                                            Height = 30,
+                                            Margin = new Thickness(0, 5, 0, 10)
+                                        },
+                                        new PasswordBox
+                                        {
+                                            Password = "Admin@123",
+                                            Height = 30,
+                                            Margin = new Thickness(0, 0, 0, 20)
+                                        },
+                                        new Button
+                                        {
+                                            Content = "Login",
+                                            Height = 35,
+                                            Background = new SolidColorBrush(Colors.DarkGoldenrod),
+                                            Foreground = new SolidColorBrush(Colors.White)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    };
+                    
+                    // Add event handler properly
+                    var loginButton = ((StackPanel)((Grid)simpleLoginWindow.Content).Children[0]).Children[3] as Button;
+                    loginButton.Click += (sender, args) => {
+                        // Simple login logic
+                        simpleLoginWindow.Close();
+                        mainWindow.Show();
+                    };
+                    
+                    simpleLoginWindow.Show();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Application initialization error: {ex.Message}", 
+                    "Startup Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }

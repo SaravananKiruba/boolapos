@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Page_Navigation_App.Model
 {
@@ -17,5 +18,18 @@ namespace Page_Navigation_App.Model
         public bool UseSSL { get; set; }
         public string FromEmail { get; set; }
         public string FromName { get => SenderName; set => SenderName = value; }
+        
+        // Add alias properties to match what's used in ConfigurationService
+        [NotMapped]
+        public string SmtpUsername { get => Username; set => Username = value; }
+        
+        [NotMapped]
+        public string SmtpPassword { get => Password; set => Password = value; }
+        
+        [NotMapped]
+        public bool EnableSsl { get => UseSSL; set => UseSSL = value; }
+        
+        [NotMapped]
+        public string SenderEmail { get => FromEmail; set => FromEmail = value; }
     }
 }

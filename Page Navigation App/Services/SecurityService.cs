@@ -385,5 +385,42 @@ namespace Page_Navigation_App.Services
                 return true;
             }
         }
+
+        public void LogLoginActivity(int userId, bool isSuccessful)
+        {
+            var securityLog = new SecurityLog
+            {
+                UserId = userId,
+                ActivityType = isSuccessful ? "Login Success" : "Login Failed",
+                ActivityDate = DateTime.Now,
+                IPAddress = GetClientIPAddress(),
+                Description = isSuccessful ? "User logged in successfully" : "Failed login attempt"
+            };
+
+            _context.SecurityLogs.Add(securityLog);
+            _context.SaveChanges();
+        }
+
+        public void LogLogoutActivity(int userId)
+        {
+            var securityLog = new SecurityLog
+            {
+                UserId = userId,
+                ActivityType = "Logout",
+                ActivityDate = DateTime.Now,
+                IPAddress = GetClientIPAddress(),
+                Description = "User logged out"
+            };
+
+            _context.SecurityLogs.Add(securityLog);
+            _context.SaveChanges();
+        }
+
+        private string GetClientIPAddress()
+        {
+            // In a real application, you would get the client's IP address
+            // For this demo, we'll just return a placeholder
+            return "127.0.0.1";
+        }
     }
 }

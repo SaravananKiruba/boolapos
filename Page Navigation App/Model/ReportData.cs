@@ -103,4 +103,18 @@ namespace Page_Navigation_App.Model
         [StringLength(100)]
         public string GeneratedBy { get; set; }
     }
+
+    public class CustomerPurchaseDetail
+    {
+        public int CustomerID { get; set; }
+        public string CustomerName { get; set; }
+        public string PhoneNumber { get; set; }
+        public string Email { get; set; }
+        public string Address { get; set; } 
+        public string CustomerType { get; set; }
+        public DateTime? LastPurchaseDate { get; set; }
+        public decimal TotalPurchases { get; set; }
+        public int PurchaseCount { get; set; }
+        public decimal AverageOrderValue { get; set; }
+    }
 }

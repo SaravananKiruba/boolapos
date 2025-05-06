@@ -15,9 +15,19 @@
                 <!-- MahApps Base Styles -->
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.Buttons.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.ComboBox.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.TextBox.xaml"/>
+                
+                <!-- Added missing base styles -->
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.DateTimePicker.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.PasswordBox.xaml"/>
 
                 <!-- Theme references -->
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Light.Blue.xaml"/>
+                
+                <!-- Include application color resources -->
+                <ResourceDictionary Source="/Resources/Colors.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <!-- Updated theme colors -->
@@ -53,6 +63,19 @@
             <SolidColorBrush x:Key="ErrorBrush"
                     Color="{StaticResource ErrorColor}"/>
 
+            <!-- Fix for missing button styles -->
+            <Style x:Key="MahApps.Styles.Button" 
+                   TargetType="{x:Type Button}" 
+                   BasedOn="{StaticResource MetroButton}"/>
+                   
+            <Style x:Key="MahApps.Styles.Button.Flat" 
+                   TargetType="{x:Type Button}" 
+                   BasedOn="{StaticResource MahApps.Styles.Button}">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="BorderBrush" Value="Transparent"/>
+            </Style>
+            
             <!-- Adding the missing MahApps.Styles.Button.Accent style -->
             <Style x:Key="MahApps.Styles.Button.Accent"
                     TargetType="{x:Type Button}"
@@ -65,13 +88,19 @@
                         Value="{DynamicResource MahApps.Brushes.ThemeBackground}"/>
             </Style>
             
+            <!-- Fix for DateTimePicker and TextBox styles -->
+            <Style x:Key="MahApps.Styles.TextBox" TargetType="{x:Type TextBox}" 
+                   BasedOn="{StaticResource MetroTextBox}"/>
+                  
+            <Style x:Key="MahApps.Styles.PasswordBox" TargetType="{x:Type PasswordBox}" 
+                   BasedOn="{StaticResource MetroPasswordBox}"/>
+            
             <!-- Add custom style for DateTimePicker -->
             <Style x:Key="MahApps.Styles.DateTimePicker" 
-                   TargetType="{x:Type mah:DateTimePicker}">
+                   TargetType="{x:Type mah:DateTimePicker}"
+                   BasedOn="{StaticResource MahApps.Metro.Styles.MetroDateTimePicker}">
                 <Setter Property="BorderThickness" Value="1" />
-                <Setter Property="FontFamily" Value="{DynamicResource MahApps.Fonts.Family.Control}" />
-                <Setter Property="FontSize" Value="{DynamicResource MahApps.Font.Size.Content}" />
-                <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Text}" />
+                <Setter Property="FontSize" Value="14" />
                 <Setter Property="HorizontalAlignment" Value="Stretch" />
                 <Setter Property="VerticalAlignment" Value="Center" />
             </Style>
@@ -79,11 +108,9 @@
             <!-- Add custom style for ComboBox -->
             <Style x:Key="MahApps.Styles.ComboBox"
                    TargetType="{x:Type ComboBox}"
-                   BasedOn="{StaticResource {x:Type ComboBox}}">
+                   BasedOn="{StaticResource MetroComboBox}">
                 <Setter Property="BorderThickness" Value="1" />
-                <Setter Property="FontFamily" Value="{DynamicResource MahApps.Fonts.Family.Control}" />
-                <Setter Property="FontSize" Value="{DynamicResource MahApps.Font.Size.Content}" />
-                <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Text}" />
+                <Setter Property="FontSize" Value="14" />
                 <Setter Property="HorizontalAlignment" Value="Stretch" />
                 <Setter Property="VerticalAlignment" Value="Center" />
             </Style>
