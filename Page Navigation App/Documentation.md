@@ -3,7 +3,7 @@
 ![Boola Logo](Images/BOOLA%20LOGO.png)
 
 **Version 1.0.0**  
-**Last Updated: May 6, 2025**
+**Last Updated: May 7, 2025**
 
 ## Table of Contents
 
@@ -59,6 +59,12 @@
 15. [Troubleshooting](#troubleshooting)
     - [Common Issues](#common-issues)
     - [Support Contact](#support-contact)
+16. [Developer Guidelines](#developer-guidelines)
+    - [Code Architecture](#code-architecture)
+    - [Coding Standards](#coding-standards)
+    - [GitHub Copilot Guidelines](#github-copilot-guidelines)
+    - [Dependency Management](#dependency-management)
+    - [Testing Guidelines](#testing-guidelines)
 
 ## Introduction
 
@@ -375,6 +381,155 @@ For additional support:
 - Email: support@boolapos.com
 - Phone: +94-XX-XXXXXXX
 - Website: www.boolapos.com/support
+
+## Developer Guidelines
+
+This section outlines the development standards and architecture guidelines for maintaining and extending the Boola POS system. Following these standards will ensure consistent, maintainable, and high-quality code, especially when using GitHub Copilot for code generation.
+
+### Code Architecture
+
+Boola POS follows the MVVM (Model-View-ViewModel) architecture pattern, which is standard for WPF applications:
+
+1. **Model Layer**
+   - Location: `/Model` directory
+   - Purpose: Represents the business data and business logic
+   - Guidelines:
+     - Models should be simple POCOs with properties and minimal business logic
+     - Use data annotations for validation where appropriate
+     - Avoid UI-specific code in models
+     - Keep models serializable for data persistence
+
+2. **View Layer**
+   - Location: `/View` directory
+   - Purpose: Represents the UI elements the user interacts with
+   - Guidelines:
+     - XAML files should focus on presentation only
+     - Code-behind files should be minimal, containing only view-specific logic
+     - Use data binding to connect to ViewModels
+     - Implement UI consistency using styles and templates from `/Resources`
+
+3. **ViewModel Layer**
+   - Location: `/ViewModel` directory
+   - Purpose: Acts as a bridge between the Model and View
+   - Guidelines:
+     - Implement `INotifyPropertyChanged` for data binding
+     - Use commands for user interactions
+     - Keep business logic separate from UI logic
+     - Maintain a clear 1:1 relationship with Views where possible
+
+4. **Data Access Layer**
+   - Location: `/Data` directory
+   - Purpose: Manages database operations using Entity Framework Core
+   - Guidelines:
+     - Use the Repository pattern for data access
+     - Keep database context configurations in one place
+     - Use migrations for database schema updates
+     - Implement proper error handling for database operations
+
+5. **Services Layer**
+   - Location: `/Services` directory
+   - Purpose: Provides reusable functionality across the application
+   - Guidelines:
+     - Implement the interface-implementation pattern
+     - Services should be stateless where possible
+     - Use dependency injection for service resolution
+
+### Coding Standards
+
+1. **Naming Conventions**
+   - Use PascalCase for class names, properties, and methods
+   - Use camelCase for local variables and parameters
+   - Prefix private fields with underscore (_)
+   - Use descriptive names that indicate purpose
+   - Avoid abbreviations unless widely recognized
+
+2. **Code Style**
+   - Use 4 spaces for indentation (not tabs)
+   - Keep lines under 100 characters when possible
+   - Use blank lines to separate logical blocks of code
+   - Place braces on new lines
+   - Group using statements by namespace
+
+3. **UI and Resource Management**
+   - **ALWAYS use MahApps resources at any cost**
+   - **STRICTLY avoid local resources**
+   - Use MahApps.Metro controls and themes for consistent UI
+   - Reference MahApps resource dictionaries in App.xaml
+   - For custom styling, extend MahApps styles rather than creating from scratch
+   - Use MahApps IconPacks for application icons and glyphs
+
+4. **Comments**
+   - Write XML documentation for public methods and classes
+   - Add summary comments for complex algorithms
+   - Don't comment obvious code
+   - Keep comments up-to-date with code changes
+   - Use TODO comments for future improvements (format: `// TODO: Action item`)
+
+5. **Error Handling**
+   - Use try-catch blocks for anticipated exceptions
+   - Log exceptions with appropriate severity levels
+   - Provide user-friendly error messages
+   - Avoid catching generic exceptions without specific handling
+   - Use async/await pattern properly with exception handling
+
+### GitHub Copilot Guidelines
+
+When using GitHub Copilot for code generation, follow these guidelines:
+
+1. **Prompt Construction**
+   - Provide clear, specific instructions about the desired functionality
+   - Specify which architectural layer the code belongs to
+   - Mention any existing patterns or conventions to follow
+   - Include requirements for error handling and validation
+
+2. **Code Review**
+   - Always review Copilot-generated code before committing
+   - Ensure generated code follows the project's architecture patterns
+   - Check for proper error handling and edge cases
+   - Verify proper implementation of interfaces and inheritance
+
+3. **Preferred Patterns**
+   - Direct Copilot to use the MVVM pattern for UI components
+   - Request implementation of INotifyPropertyChanged for ViewModels
+   - Ask for Command pattern implementations for user actions
+   - Prefer async/await over direct threading
+
+4. **Integration Guidelines**
+   - Have Copilot generate unit tests alongside implementation code
+   - Request documentation comments in XML format
+   - Ensure generated code respects existing namespaces
+   - Validate database operations follow EF Core best practices
+
+### Dependency Management
+
+1. **NuGet Packages**
+   - Keep packages updated to their latest stable versions
+   - Document package purpose in comments or commit messages
+   - Favor well-maintained packages with active communities
+   - Avoid packages with excessive dependencies
+
+2. **Version Control**
+   - Commit package changes separately from code changes
+   - Include package version updates in release notes
+   - Pin versions in production to avoid unexpected updates
+
+### Testing Guidelines
+
+1. **Unit Testing**
+   - Write unit tests for all business logic
+   - Use MSTest for testing framework
+   - Follow AAA pattern (Arrange, Act, Assert)
+   - Mock external dependencies
+
+2. **UI Testing**
+   - Test XAML bindings and UI interactions
+   - Verify UI behavior across different window sizes
+   - Test accessibility features
+
+3. **Integration Testing**
+   - Test database operations with test database
+   - Verify service integrations work correctly
+   - Test complete user workflows end-to-end
 
 ---
 
