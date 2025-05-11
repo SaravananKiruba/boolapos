@@ -182,6 +182,32 @@ namespace Page_Navigation_App.Services
                 .ToListAsync();
         }
 
+        // Adding missing methods that are referenced in ProductVM
+        // Get all products with joins
+        public async Task<IEnumerable<Product>> GetAllProductsWithJoins()
+        {
+            return await _context.Products
+                .Include(p => p.Supplier)
+                .Include(p => p.Stocks)
+                .Where(p => p.IsActive)
+                .OrderBy(p => p.ProductName)
+                .ToListAsync();
+        }
+
+        // Generate a barcode for a new product
+        public Task<string> GenerateBarcode()
+        {
+            // Generate barcode: MMPPWWWW where:
+            // MM = Metal type code (GO=Gold, SI=Silver, PL=Platinum)
+            // PP = Purity code (18=18k, 22=22k, 24=24k)
+            // WWWW = Random number
+            string metalCode = "GO"; // Default to Gold
+            string purityCode = "22"; // Default to 22k
+            string randomCode = new Random().Next(1000, 9999).ToString();
+            
+            return Task.FromResult($"{metalCode}{purityCode}{randomCode}");
+        }
+
         public async Task<IEnumerable<Product>> GetProductsByMetal(string metalType, string purity)
         {
             return await _context.Products

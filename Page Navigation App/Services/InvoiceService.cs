@@ -42,16 +42,13 @@ namespace Page_Navigation_App.Services
             }
             
             return $"INV-{yearMonth}-{sequence:D4}";
-        }
-
-        public async Task<Dictionary<string, object>> GetInvoiceData(int orderId)
+        }        public async Task<Dictionary<string, object>> GetInvoiceData(int orderId)
         {
             // Get order with all related data
             var order = await _context.Orders
                 .Include(o => o.Customer)
                 .Include(o => o.OrderDetails)
                     .ThenInclude(od => od.Product)
-                        .ThenInclude(p => p.Category)
                 .FirstOrDefaultAsync(o => o.OrderID == orderId);
                 
             if (order == null)

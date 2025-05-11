@@ -329,10 +329,14 @@ namespace Page_Navigation_App.Services
                         Count = g.Count()
                     })
                     .ToList();
-                
-                // Group products by AHC
+                  // Group products by AHC
                 var ahcStats = products
-                    .GroupBy(p => p.AHCCode)
+                    .Select(p => new AHCStats
+                    {
+                        AHCCode = p.AHCCode ?? "Unknown",
+                        Count = 1
+                    })
+                    .GroupBy(s => s.AHCCode)
                     .Select(g => new AHCStats
                     {
                         AHCCode = g.Key,

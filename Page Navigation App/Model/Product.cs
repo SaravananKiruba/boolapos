@@ -124,9 +124,8 @@ namespace Page_Navigation_App.Model
         // Navigation properties
         public virtual Supplier Supplier { get; set; }
         public virtual ICollection<Stock> Stocks { get; set; }
-        public virtual ICollection<OrderDetail> OrderDetails { get; set; }
-
-        // Properties referenced in HUIDTrackingService and RateManagementService        public string AHCCode { get; set; }
+        public virtual ICollection<OrderDetail> OrderDetails { get; set; }        // Properties referenced in HUIDTrackingService and RateManagementService
+        public string AHCCode { get; set; }
         public string JewelType { get; set; }
         [Column(TypeName = "Date")]
         public DateTime? HUIDRegistrationDate { get; set; }

@@ -313,9 +313,7 @@ namespace Page_Navigation_App.Services
         public async Task<List<Product>> GetLowStockProductsAsync()
         {
             try
-            {
-                return await _context.Products
-                    .Include(p => p.Category)
+            {                return await _context.Products
                     .Include(p => p.Supplier)
                     .Where(p => p.StockQuantity <= p.ReorderLevel && p.IsActive)
                     .OrderBy(p => p.StockQuantity)

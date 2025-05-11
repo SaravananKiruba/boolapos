@@ -207,10 +207,11 @@ namespace Page_Navigation_App.ViewModel
                     newRate.Purity);
 
                 foreach (var product in products)
-                {
-                    product.BasePrice = product.NetWeight * newRate.Rate;
+                {                    product.BasePrice = product.NetWeight * newRate.Rate;
                     
-                    // Recalculate final price with all components                    decimal makingCharges = product.MakingCharges;                    decimal wastagePercentage = product.WastagePercentage;
+                    // Recalculate final price with all components
+                    decimal makingCharges = product.MakingCharges;
+                    decimal wastagePercentage = product.WastagePercentage;
 
                     decimal wastageAmount = (product.BasePrice * wastagePercentage) / 100;
                     decimal makingAmount = (product.BasePrice * makingCharges) / 100;

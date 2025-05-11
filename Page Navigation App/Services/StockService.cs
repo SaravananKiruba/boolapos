@@ -421,13 +421,10 @@ namespace Page_Navigation_App.Services
                 await transaction.RollbackAsync();
                 return false;
             }
-        }
-
-        public async Task<IEnumerable<Stock>> GetStockByCategoryValue(decimal minValue)
+        }        public async Task<IEnumerable<Stock>> GetStockByCategoryValue(decimal minValue)
         {
             return await _context.Stocks
                 .Include(s => s.Product)
-                    .ThenInclude(p => p.Category)
                 .Where(s => s.Quantity > 0 && 
                            (s.Quantity * s.Product.BasePrice) >= minValue)
                 .OrderByDescending(s => s.Quantity * s.Product.BasePrice)

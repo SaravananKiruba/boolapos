@@ -73,9 +73,7 @@ namespace Page_Navigation_App.Services
         // Get order details
         public async Task<IEnumerable<OrderDetail>> GetOrderDetails(int orderId)
         {
-            return await _context.OrderDetails
-                .Include(od => od.Product)
-                .ThenInclude(p => p.Category)
+            return await _context.OrderDetails                .Include(od => od.Product)
                 .Where(od => od.OrderID == orderId)
                 .ToListAsync();
         }
@@ -136,31 +134,13 @@ namespace Page_Navigation_App.Services
                     // Calculate base metal amount
                     // metalRate is now a decimal, not an object with SaleRate property
                     detail.MetalRate = metalRate;
-                    detail.BaseAmount = detail.NetWeight * detail.MetalRate;
-
-                    // Calculate wastage
+                    detail.BaseAmount = detail.NetWeight * detail.MetalRate;                    // Calculate wastage
                     decimal wastagePercentage = detail.Product.WastagePercentage;
-                    if (detail.Product.Subcategory?.SpecialWastage != null)
-                    {
-                        wastagePercentage = detail.Product.Subcategory.SpecialWastage.Value;
-                    }
-                    else if (detail.Product.Category?.DefaultWastage != null)
-                    {
-                        wastagePercentage = detail.Product.Category.DefaultWastage;
-                    }
                     
                     decimal wastageAmount = (detail.BaseAmount * wastagePercentage) / 100;
 
                     // Calculate making charges
                     decimal makingChargePercentage = detail.Product.MakingCharges;
-                    if (detail.Product.Subcategory?.SpecialMakingCharges != null)
-                    {
-                        makingChargePercentage = detail.Product.Subcategory.SpecialMakingCharges.Value;
-                    }
-                    else if (detail.Product.Category?.DefaultMakingCharges != null)
-                    {
-                        makingChargePercentage = detail.Product.Category.DefaultMakingCharges;
-                    }
                     
                     decimal makingAmount = (detail.BaseAmount * makingChargePercentage) / 100;
 
