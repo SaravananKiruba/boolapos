@@ -41,7 +41,6 @@ namespace Page_Navigation_App.ViewModel
         public ICommand RateMasterCommand { get; set; }
         public ICommand RepairJobsCommand { get; set; }
         public ICommand StockCommand { get; set; }
-        public ICommand CategoryCommand { get; set; }
         public ICommand UserCommand { get; set; }
         public ICommand ReportCommand { get; set; }
         public ICommand SettingsCommand { get; set; }
@@ -56,7 +55,6 @@ namespace Page_Navigation_App.ViewModel
             RateMasterVM rateMasterVM,
             RepairJobVM repairJobVM,
             StockVM stockVM,
-            CategoryVM categoryVM,
             UserVM userVM,
             ReportVM reportVM,
             SettingsVM settingsVM,
@@ -74,7 +72,6 @@ namespace Page_Navigation_App.ViewModel
             RateMasterCommand = new RelayCommand<object>(_ => NavigateTo(rateMasterVM));
             RepairJobsCommand = new RelayCommand<object>(_ => NavigateTo(repairJobVM));
             StockCommand = new RelayCommand<object>(_ => NavigateTo(stockVM));
-            CategoryCommand = new RelayCommand<object>(_ => NavigateTo(categoryVM));
             UserCommand = new RelayCommand<object>(_ => NavigateTo(userVM), _ => CanAccessUserManagement());
             ReportCommand = new RelayCommand<object>(_ => NavigateTo(reportVM));
             SettingsCommand = new RelayCommand<object>(_ => NavigateTo(settingsVM));

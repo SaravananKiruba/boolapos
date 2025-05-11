@@ -26,18 +26,21 @@ namespace Page_Navigation_App.Model
         [StringLength(100)]
         public string ItemDescription { get; set; }
         
-        // Add alias property for compatibility
-        [NotMapped]
+        // Add alias property for compatibility        [NotMapped]
         public string ItemDetails { get => ItemDescription; set => ItemDescription = value; }
 
         [Required]
-        public DateTime ReceiptDate { get; set; } = DateTime.Now;
+        [Column(TypeName = "Date")]
+        public DateTime ReceiptDate { get; set; } = DateTime.Now.Date;
 
+        [Column(TypeName = "Date")]
         public DateTime? CompletionDate { get; set; }
 
+        [Column(TypeName = "Date")]
         public DateTime? DeliveryDate { get; set; }
         
         // Add WorkStartDate property
+        [Column(TypeName = "Date")]
         public DateTime? WorkStartDate { get; set; }
         
         // Add expected delivery date property

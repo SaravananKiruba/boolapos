@@ -11,12 +11,12 @@
         <Setter Property="Margin" Value="20,0"/>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
-                <Setter Property="Foreground" Value="{StaticResource SurfaceBrush}"/>
+                <Setter Property="Background" Value="{StaticResource MahApps.Brushes.Accent}"/>
+                <Setter Property="Foreground" Value="{StaticResource MahApps.Brushes.ThemeForeground}"/>
             </Trigger>
             <Trigger Property="IsPressed" Value="True">
-                <Setter Property="Background" Value="{StaticResource PrimaryDarkBrush}"/>
-                <Setter Property="Foreground" Value="{StaticResource SurfaceBrush}"/>
+                <Setter Property="Background" Value="{StaticResource MahApps.Brushes.Accent2}"/>
+                <Setter Property="Foreground" Value="{StaticResource MahApps.Brushes.ThemeForeground}"/>
             </Trigger>
         </Style.Triggers>
     </Style>
@@ -28,7 +28,7 @@
         <Setter Property="Height" Value="32" />
     </Style>
     
-    <Style x:Key="MultilineTextBox" TargetType="{x:Type TextBox}" BasedOn="{StaticResource StandardTextBox}">
+    <Style x:Key="MultilineTextBox" TargetType="{x:Type TextBox}" BasedOn="{StaticResource MahApps.Styles.TextBox}">
         <Setter Property="AcceptsReturn" Value="True" />
         <Setter Property="TextWrapping" Value="Wrap" />
         <Setter Property="Height" Value="60" />
@@ -41,26 +41,57 @@
         <Setter Property="Height" Value="32" />
     </Style>
     
-    <Style x:Key="ActionButton" TargetType="{x:Type Button}" BasedOn="{StaticResource MahApps.Styles.Button.Square}">
+    <Style x:Key="ActionButton" TargetType="{x:Type Button}" BasedOn="{StaticResource MahApps.Styles.Button}">
         <Setter Property="Margin" Value="0,0,10,0" />
         <Setter Property="MinWidth" Value="100" />
         <Setter Property="Height" Value="35" />
     </Style>
     
-    <Style x:Key="PrimaryActionButton" TargetType="{x:Type Button}" BasedOn="{StaticResource MahApps.Styles.Button.Square.Accent}">
+    <Style x:Key="PrimaryActionButton" TargetType="{x:Type Button}" BasedOn="{StaticResource MahApps.Styles.Button.Accent}">
         <Setter Property="MinWidth" Value="100" />
         <Setter Property="Height" Value="35" />
     </Style>
     
     <!-- MetroWindow Default Style -->
     <Style x:Key="AppWindowStyle" TargetType="{x:Type mah:MetroWindow}" BasedOn="{StaticResource {x:Type mah:MetroWindow}}">
-        <Setter Property="GlowBrush" Value="{StaticResource PrimaryBrush}"/>
+        <Setter Property="GlowBrush" Value="{StaticResource MahApps.Brushes.Accent}"/>
         <Setter Property="WindowTransitionsEnabled" Value="False"/>
-        <Setter Property="WindowTitleBrush" Value="{StaticResource SurfaceBrush}"/>
-        <Setter Property="NonActiveGlowBrush" Value="{StaticResource SurfaceBrush}"/>
-        <Setter Property="TitleForeground" Value="{StaticResource TextOnSurfaceBrush}"/>
-        <Setter Property="Background" Value="{StaticResource BackgroundBrush}"/>
+        <Setter Property="WindowTitleBrush" Value="{StaticResource MahApps.Brushes.Accent}"/>
+        <Setter Property="NonActiveGlowBrush" Value="{StaticResource MahApps.Brushes.Accent3}"/>
+        <Setter Property="TitleForeground" Value="{StaticResource MahApps.Brushes.ThemeForeground}"/>
+        <Setter Property="Background" Value="{StaticResource MahApps.Brushes.ThemeBackground}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="TitleCharacterCasing" Value="Normal"/>
+    </Style>
+    
+    <!-- DataGrid Style -->
+    <Style x:Key="StandardDataGrid" TargetType="{x:Type DataGrid}" BasedOn="{StaticResource MahApps.Styles.DataGrid}">
+        <Setter Property="AutoGenerateColumns" Value="False"/>
+        <Setter Property="CanUserAddRows" Value="False"/>
+        <Setter Property="CanUserDeleteRows" Value="False"/>
+        <Setter Property="RowHeaderWidth" Value="0"/>
+        <Setter Property="SelectionMode" Value="Single"/>
+        <Setter Property="SelectionUnit" Value="FullRow"/>
+        <Setter Property="IsReadOnly" Value="True"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderBrush" Value="{StaticResource MahApps.Brushes.Gray}"/>
+        <Setter Property="HeadersVisibility" Value="Column"/>
+        <Setter Property="VerticalGridLinesBrush" Value="{StaticResource MahApps.Brushes.Gray}"/>
+        <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource MahApps.Brushes.Gray}"/>
+    </Style>
+    
+    <!-- Card Style for sections -->
+    <Style x:Key="CardPanel" TargetType="{x:Type Border}">
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="BorderBrush" Value="{StaticResource MahApps.Brushes.Gray}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="5"/>
+        <Setter Property="Padding" Value="15"/>
+        <Setter Property="Margin" Value="0,0,0,15"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect BlurRadius="5" ShadowDepth="1" Direction="270" Opacity="0.2"/>
+            </Setter.Value>
+        </Setter>
     </Style>
 </ResourceDictionary>

@@ -41,9 +41,7 @@ namespace Page_Navigation_App.Services
             _context.Entry(existingOrder).CurrentValues.SetValues(order);
             await _context.SaveChangesAsync();
             return true;
-        }
-
-        // Add new method for filtering orders by date
+        }        // Add new method for filtering orders by date
         public async Task<IEnumerable<Order>> FilterOrdersByDate(DateTime startDate, DateTime endDate)
         {
             return await _context.Orders
@@ -104,12 +102,11 @@ namespace Page_Navigation_App.Services
         }
 
         public async Task<Order> CreateOrder(Order order, List<OrderDetail> details)
-        {
-            using var transaction = await _context.Database.BeginTransactionAsync();
+        {            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 // Add order
-                order.OrderDate = DateTime.Now;
+                order.OrderDate = DateTime.Now.Date;
                 
                 // Generate invoice number if not provided
                 if (string.IsNullOrEmpty(order.InvoiceNumber))
@@ -205,9 +202,8 @@ namespace Page_Navigation_App.Services
                 await _context.SaveChangesAsync();
                 
                 // Create finance entry for the sale
-                var financeEntry = new Finance
-                {
-                    TransactionDate = DateTime.Now,
+                var financeEntry = new Finance                {
+                    TransactionDate = DateTime.Now.Date,
                     Amount = order.GrandTotal,
                     Type = "Income",
                     Category = "Sales",

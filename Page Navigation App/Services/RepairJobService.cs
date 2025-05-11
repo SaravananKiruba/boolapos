@@ -17,9 +17,8 @@ namespace Page_Navigation_App.Services
             _context = context;
         }
 
-        public async Task<RepairJob> CreateRepairJob(RepairJob job)
-        {
-            job.ReceiptDate = DateTime.Now;
+        public async Task<RepairJob> CreateRepairJob(RepairJob job)        {
+            job.ReceiptDate = DateTime.Now.Date;
             job.Status = "Pending";
             await _context.RepairJobs.AddAsync(job);
             await _context.SaveChangesAsync();
@@ -32,13 +31,11 @@ namespace Page_Navigation_App.Services
                 .Include(r => r.Customer)
                 .FirstOrDefaultAsync(r => r.RepairID == jobId);
 
-            if (job == null) return null;
-
-            job.Status = newStatus;
+            if (job == null) return null;            job.Status = newStatus;
             
             if (newStatus == "Delivered")
             {
-                job.CompletionDate = DateTime.Now;
+                job.CompletionDate = DateTime.Now.Date;
             }
 
             await _context.SaveChangesAsync();

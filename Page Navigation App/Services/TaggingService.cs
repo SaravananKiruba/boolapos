@@ -33,16 +33,16 @@ namespace Page_Navigation_App.Services
                 if (product == null)
                     return null;
 
-                // Format: MMYY-CATID-XXXX where:
+                // Format: MMYY-PROD-XXXX where:
                 // MMYY = Month and Year
-                // CATID = Category ID
+                // PROD = Product identifier
                 // XXXX = Sequential number
                 
                 string monthYear = DateTime.Now.ToString("MMyy");
-                string categoryId = product.CategoryID.ToString("D2");
+                string prodId = product.ProductID.ToString("D3");
                 
                 // Find latest tag with same prefix
-                string prefix = $"{monthYear}-{categoryId}-";
+                string prefix = $"{monthYear}-{prodId}-";
                 var latestProduct = await _context.Products
                     .Where(p => p.TagNumber != null && p.TagNumber.StartsWith(prefix))
                     .OrderByDescending(p => p.TagNumber)
@@ -51,21 +51,18 @@ namespace Page_Navigation_App.Services
                 int sequence = 1;
                 if (latestProduct != null && latestProduct.TagNumber.Length > prefix.Length)
                 {
-                    if (int.TryParse(latestProduct.TagNumber.Substring(prefix.Length), out int lastSequence))
-                    {
-                        sequence = lastSequence + 1;
-                    }
+                    string sequencePart = latestProduct.TagNumber.Substring(prefix.Length);
+                    int.TryParse(sequencePart, out sequence);
+                    sequence++;
                 }
                 
                 string tagNumber = $"{prefix}{sequence:D4}";
                 
-                // Assign tag number to product
+                // Update product with tag number
                 product.TagNumber = tagNumber;
-                product.Barcode = tagNumber; // Use same number for barcode
-                
                 await _context.SaveChangesAsync();
-                await _logService.LogInformationAsync($"Tag {tagNumber} assigned to product {product.ProductName}");
                 
+                await _logService.LogInfoAsync($"Generated tag number {tagNumber} for product ID {productId}");
                 return tagNumber;
             }
             catch (Exception ex)
@@ -76,78 +73,76 @@ namespace Page_Navigation_App.Services
         }
 
         /// <summary>
-        /// Looks up a product by its tag number
+        /// Gets product information by tag number
         /// </summary>
-        public async Task<Product> FindByTagNumberAsync(string tagNumber)
+        public async Task<Product> GetProductByTagAsync(string tagNumber)
         {
             try
             {
                 return await _context.Products
-                    .Include(p => p.Category)
                     .Include(p => p.Supplier)
                     .FirstOrDefaultAsync(p => p.TagNumber == tagNumber);
             }
             catch (Exception ex)
             {
-                await _logService.LogErrorAsync($"Error finding product by tag: {ex.Message}");
+                await _logService.LogErrorAsync($"Error retrieving product by tag: {ex.Message}");
                 return null;
             }
         }
 
         /// <summary>
-        /// Generates and prints a barcode/tag label
+        /// Prints tag for product (simulated)
         /// </summary>
-        public async Task<bool> GenerateTagLabelAsync(int productId)
+        public async Task<bool> PrintTagAsync(int productId)
         {
             try
             {
                 var product = await _context.Products
-                    .Include(p => p.Category)
+                    .Include(p => p.Supplier)
                     .FirstOrDefaultAsync(p => p.ProductID == productId);
-                    
+                
                 if (product == null)
                     return false;
                     
-                // Ensure product has a tag number
                 if (string.IsNullOrEmpty(product.TagNumber))
                 {
-                    await GenerateTagNumberAsync(productId);
-                    // Refresh product data
-                    product = await _context.Products
-                        .Include(p => p.Category)
-                        .FirstOrDefaultAsync(p => p.ProductID == productId);
+                    product.TagNumber = await GenerateTagNumberAsync(productId);
                 }
                 
-                // This would connect to a printer service
-                // For now, just log it
-                await _logService.LogInformationAsync($"Tag label generated for product {product.ProductName} with tag {product.TagNumber}");
+                // Refresh product data
+                product = await _context.Products
+                    .Include(p => p.Supplier)
+                    .FirstOrDefaultAsync(p => p.ProductID == productId);
+                
+                // Simulate tag printing here (in a real app would connect to a printer)
+                await _logService.LogInfoAsync($"Tag printed for {product.ProductName}, Tag: {product.TagNumber}");
                 
                 return true;
             }
             catch (Exception ex)
             {
-                await _logService.LogErrorAsync($"Error generating tag label: {ex.Message}");
+                await _logService.LogErrorAsync($"Error printing tag: {ex.Message}");
                 return false;
             }
         }
 
         /// <summary>
-        /// Gets a list of products with their RFID/Barcode tags
+        /// Verifies tag authenticity
         /// </summary>
-        public async Task<List<Product>> GetTaggedProductsAsync()
+        public async Task<bool> VerifyTagAsync(string tagNumber)
         {
             try
             {
-                return await _context.Products
-                    .Include(p => p.Category)
+                var product = await _context.Products
                     .Include(p => p.Supplier)
-                    .Where(p => !string.IsNullOrEmpty(p.TagNumber))
-                    .ToListAsync();
+                    .FirstOrDefaultAsync(p => p.TagNumber == tagNumber);
+                
+                return product != null;
             }
             catch (Exception ex)
             {
-                await _logService.LogErrorAsync($"Error getting tagged products: {ex.Message}");
-                return new List<Product>();
+                await _logService.LogErrorAsync($"Error verifying tag: {ex.Message}");
+                return false;
             }
         }
     }

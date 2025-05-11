@@ -17,12 +17,12 @@ namespace Page_Navigation_App.Model
 
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int RateID { get; set; }
-
-        // Properties referenced in RateManagementService and RateMasterService
+        public int RateID { get; set; }        // Properties referenced in RateManagementService and RateMasterService
         public decimal RatePerGram { get => Rate; set => Rate = value; }
         public decimal MakingChargePercentage { get; set; }
+        [Column(TypeName = "Date")]
         public DateTime UpdatedDate { get; set; }
+        [Column(TypeName = "Date")]
         public DateTime RateDate { get => EffectiveDate; set => EffectiveDate = value; }
 
         private string _metalType;
@@ -71,11 +71,11 @@ namespace Page_Navigation_App.Model
                     _rate = value;
                     OnPropertyChanged();
                 }
-            }
-        }
+            }        }
 
         private DateTime _effectiveDate;
         [Required]
+        [Column(TypeName = "Date")]
         public DateTime EffectiveDate
         {
             get => _effectiveDate;
@@ -90,6 +90,7 @@ namespace Page_Navigation_App.Model
         }
 
         private DateTime? _validUntil;
+        [Column(TypeName = "Date")]
         public DateTime? ValidUntil
         {
             get => _validUntil;

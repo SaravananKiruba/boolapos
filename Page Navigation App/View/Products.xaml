@@ -182,26 +182,7 @@
                                              FontWeight="Bold"
                                              Foreground="#2D3748"
                                              Margin="0,0,0,10"/>
-                                    
-                                    <ComboBox ItemsSource="{Binding Categories}"
-                                           DisplayMemberPath="CategoryName"
-                                           SelectedValuePath="CategoryID"
-                                           SelectedValue="{Binding SelectedProduct.CategoryID, UpdateSourceTrigger=PropertyChanged}"
-                                           Margin="0,5"
-                                           mah:TextBoxHelper.Watermark="Select Category"
-                                           mah:ControlsHelper.CornerRadius="5"
-                                           Style="{StaticResource MahApps.Styles.ComboBox}"/>
-                                    
-                                    <ComboBox ItemsSource="{Binding Subcategories}"
-                                           DisplayMemberPath="SubcategoryName"
-                                           SelectedValuePath="SubcategoryID"
-                                           SelectedValue="{Binding SelectedProduct.SubcategoryID, UpdateSourceTrigger=PropertyChanged}"
-                                           Margin="0,5"
-                                           mah:TextBoxHelper.Watermark="Select Subcategory"
-                                           mah:ControlsHelper.CornerRadius="5"
-                                           Style="{StaticResource MahApps.Styles.ComboBox}"/>
-                                    
-                                    <ComboBox ItemsSource="{Binding Suppliers}"
+                                      <ComboBox ItemsSource="{Binding Suppliers}"
                                            SelectedItem="{Binding SelectedProduct.Supplier}"
                                            Margin="0,5"
                                            mah:TextBoxHelper.Watermark="Supplier"
@@ -328,13 +309,12 @@
                                               Width="80"/>
                             <DataGridTextColumn Header="Net (g)" 
                                               Binding="{Binding NetWeight, StringFormat=N3}"
-                                              Width="80"/>
+                                              Width="80"/>                            <DataGridTextColumn Header="Stock" 
+                                              Binding="{Binding StockQuantity}"
+                                              Width="60"/>
                             <DataGridTextColumn Header="Price" 
                                               Binding="{Binding FinalPrice, StringFormat=C}"
                                               Width="100"/>
-                            <DataGridTextColumn Header="Category" 
-                                              Binding="{Binding Category.CategoryName}"
-                                              Width="120"/>
                             <DataGridTemplateColumn Width="Auto">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>

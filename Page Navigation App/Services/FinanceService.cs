@@ -437,16 +437,15 @@ namespace Page_Navigation_App.Services
                                 !f.IsPaymentReceived)
                     .SumAsync(f => f.Amount);
 
-                // Get sales by category
-                var salesByCategory = await _context.OrderDetails
+                // Get sales by product category (replaced with sales by metal type)
+                var salesByMetal = await _context.OrderDetails
                     .Include(od => od.Order)
                     .Include(od => od.Product)
-                    .ThenInclude(p => p.Category)
                     .Where(od => od.Order.OrderDate >= fromDate && od.Order.OrderDate <= toDate)
-                    .GroupBy(od => od.Product.Category.CategoryName)
-                    .Select(g => new CategorySalesReport
+                    .GroupBy(od => od.Product.MetalType)
+                    .Select(g => new MetalSalesReport
                     {
-                        CategoryName = g.Key,
+                        MetalType = g.Key,
                         SalesAmount = g.Sum(od => od.TotalPrice)
                     })
                     .ToListAsync();
@@ -471,7 +470,7 @@ namespace Page_Navigation_App.Services
                     TotalSales = totalSales,
                     TotalExpenses = totalExpenses,
                     GrossProfit = totalSales - totalExpenses,
-                    SalesByCategory = salesByCategory,
+                    SalesByMetal = salesByMetal,
                     ExpensesByCategory = expensesByCategory
                 };
             }
@@ -485,7 +484,7 @@ namespace Page_Navigation_App.Services
                     TotalSales = 0,
                     TotalExpenses = 0,
                     GrossProfit = 0,
-                    SalesByCategory = new List<CategorySalesReport>(),
+                    SalesByMetal = new List<MetalSalesReport>(),
                     ExpensesByCategory = new List<CategoryExpenseReport>()
                 };
             }
@@ -659,13 +658,13 @@ namespace Page_Navigation_App.Services
         public decimal TotalSales { get; set; }
         public decimal TotalExpenses { get; set; }
         public decimal GrossProfit { get; set; }
-        public List<CategorySalesReport> SalesByCategory { get; set; } = new List<CategorySalesReport>();
+        public List<MetalSalesReport> SalesByMetal { get; set; } = new List<MetalSalesReport>();
         public List<CategoryExpenseReport> ExpensesByCategory { get; set; } = new List<CategoryExpenseReport>();
     }
 
-    public class CategorySalesReport
+    public class MetalSalesReport
     {
-        public string CategoryName { get; set; }
+        public string MetalType { get; set; }
         public decimal SalesAmount { get; set; }
     }
 

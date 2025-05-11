@@ -13,9 +13,8 @@ namespace Page_Navigation_App.Model
 
         [Required]
         [ForeignKey("Customer")]
-        public int CustomerID { get; set; }
-
-        [Required]
+        public int CustomerID { get; set; }        [Required]
+        [Column(TypeName = "Date")]
         public DateTime OrderDate { get; set; }
 
         [StringLength(20)]
@@ -120,9 +119,8 @@ namespace Page_Navigation_App.Model
         public decimal ExchangeValue { get; set; }
 
         [StringLength(500)]
-        public string Notes { get; set; }
-
-        public bool IsDelivered { get; set; }
+        public string Notes { get; set; }        public bool IsDelivered { get; set; }
+        [Column(TypeName = "Date")]
         public DateTime? DeliveryDate { get; set; }
 
         [StringLength(100)]

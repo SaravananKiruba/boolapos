@@ -7,46 +7,46 @@
              xmlns:vm="clr-namespace:Page_Navigation_App.ViewModel"
              xmlns:utilities="clr-namespace:Page_Navigation_App.Utilities"
              xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
-             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks">
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:sys="clr-namespace:System;assembly=System.Runtime">
     <Application.Resources>
         <ResourceDictionary>
-            <!-- MahApps.Metro ResourceDictionaries -->
             <ResourceDictionary.MergedDictionaries>
-                <!-- MahApps Base Styles -->
+                <!-- MahApps Core Resources -->
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml"/>
+                
+                <!-- MahApps Themes -->
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Light.Blue.xaml"/>
+                
+                <!-- MahApps Control Styles -->
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.Buttons.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.ComboBox.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.TextBox.xaml"/>
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.DateTimePicker.xaml"/>
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.PasswordBox.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.DateTimePicker.xaml"/>                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.PasswordBox.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.DataGrid.xaml"/>
                 
-                <!-- Include application color resources -->
+                <!-- Application Resources -->
+                <ResourceDictionary Source="/Resources/Converters.xaml"/>
                 <ResourceDictionary Source="/Resources/Colors.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-
-            <!-- Theme colors - using MahApps brushes where possible -->
-            <SolidColorBrush x:Key="MahApps.Brushes.Highlight" Color="#b2bd8c"/>
-            <SolidColorBrush x:Key="MahApps.Brushes.AccentBase" Color="#d0aa59"/>
-            <SolidColorBrush x:Key="MahApps.Brushes.Accent" Color="#b2bd8c"/>
-            <SolidColorBrush x:Key="MahApps.Brushes.Accent2" Color="#d0aa59"/>
-            <SolidColorBrush x:Key="MahApps.Brushes.Accent3" Color="#dacba9"/>
-            <SolidColorBrush x:Key="MahApps.Brushes.Accent4" Color="#d8ba61"/>
-            <SolidColorBrush x:Key="MahApps.Brushes.ThemeBackground" Color="#f9f4ed"/>
-            <SolidColorBrush x:Key="MahApps.Brushes.ThemeForeground" Color="#333333"/>
-
-            <!-- Maintain backward compatibility with your custom brushes -->
-            <SolidColorBrush x:Key="BackgroundBrush" Color="#f9f4ed"/>
-            <SolidColorBrush x:Key="PrimaryBrush" Color="#b2bd8c"/>
-            <SolidColorBrush x:Key="SurfaceBrush" Color="#dacba9"/>
-            <SolidColorBrush x:Key="TextPrimaryBrush" Color="#333333"/>
-            <SolidColorBrush x:Key="TextSecondaryBrush" Color="#d0aa59"/>
-            <SolidColorBrush x:Key="TextOnSurfaceBrush" Color="#444444"/>
-            <SolidColorBrush x:Key="ErrorBrush" Color="#d8ba61"/>
-
-            <!-- Use MahApps style extensions for consistent look -->
-            <!-- Button styles -->
+            </ResourceDictionary.MergedDictionaries><!-- MahApps Standard Colors -->
+            <SolidColorBrush x:Key="MahApps.Brushes.Accent" Color="{StaticResource MahApps.Colors.Accent}"/>
+            <SolidColorBrush x:Key="MahApps.Brushes.Highlight" Color="{StaticResource MahApps.Colors.Highlight}"/>
+            <SolidColorBrush x:Key="MahApps.Brushes.AccentBase" Color="{StaticResource MahApps.Colors.AccentBase}"/>
+            <SolidColorBrush x:Key="MahApps.Brushes.Accent2" Color="{StaticResource MahApps.Colors.Accent2}"/>
+            <SolidColorBrush x:Key="MahApps.Brushes.Accent3" Color="{StaticResource MahApps.Colors.Accent3}"/>
+            <SolidColorBrush x:Key="MahApps.Brushes.Accent4" Color="{StaticResource MahApps.Colors.Accent4}"/>
+            <SolidColorBrush x:Key="MahApps.Brushes.ThemeBackground" Color="{StaticResource MahApps.Colors.ThemeBackground}"/>
+            <SolidColorBrush x:Key="MahApps.Brushes.ThemeForeground" Color="{StaticResource MahApps.Colors.ThemeForeground}"/>
+            
+            <!-- Application Compatibility Brushes -->
+            <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource MahApps.Colors.ThemeBackground}"/>
+            <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource MahApps.Colors.Accent}"/>
+            <SolidColorBrush x:Key="SurfaceBrush" Color="White"/>
+            <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource MahApps.Colors.ThemeForeground}"/>
+            <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource MahApps.Colors.Accent2}"/>
+            <SolidColorBrush x:Key="TextOnSurfaceBrush" Color="{StaticResource MahApps.Colors.ThemeForeground}"/>
+            <SolidColorBrush x:Key="ErrorBrush" Color="#E74C3C"/>            <!-- Button Styles - Standard MahApps styles -->
             <Style x:Key="MahApps.Styles.Button.Square" 
                    TargetType="{x:Type Button}" 
                    BasedOn="{StaticResource MahApps.Styles.Button}">
@@ -78,17 +78,17 @@
                 <Setter Property="HorizontalContentAlignment" Value="Left"/>
                 <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="Cursor" Value="Hand"/>
-            </Style>
-
-            <!-- Converters -->
-            <utilities:ViewModelToTitleConverter x:Key="ViewModelToTitleConverter"/>
-            <utilities:LoginStatusTextConverter x:Key="LoginStatusTextConverter"/>
-            <utilities:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-            <utilities:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
-            <utilities:LoginButtonTextConverter x:Key="LoginButtonTextConverter"/>
-            <utilities:BooleanToStatusBrushConverter x:Key="BooleanToStatusBrushConverter"/>
-            <utilities:BooleanToActiveConverter x:Key="BooleanToActiveConverter"/>
-
+                <Setter Property="BorderThickness" Value="0"/>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="{StaticResource MahApps.Brushes.Accent3}"/>
+                        <Setter Property="Foreground" Value="{StaticResource MahApps.Brushes.ThemeForeground}"/>
+                    </Trigger>
+                    <Trigger Property="IsPressed" Value="True">
+                        <Setter Property="Background" Value="{StaticResource MahApps.Brushes.Accent4}"/>
+                        <Setter Property="Foreground" Value="{StaticResource MahApps.Brushes.ThemeForeground}"/>
+                    </Trigger>                </Style.Triggers>
+            </Style>            
             <!-- View-ViewModel Mappings -->
             <DataTemplate DataType="{x:Type vm:HomeVM}">
                 <view:Home/>
@@ -113,12 +113,8 @@
             </DataTemplate>
             <DataTemplate DataType="{x:Type vm:RepairJobVM}">
                 <view:RepairJobs/>
-            </DataTemplate>
-            <DataTemplate DataType="{x:Type vm:StockVM}">
+            </DataTemplate>            <DataTemplate DataType="{x:Type vm:StockVM}">
                 <view:Stock/>
-            </DataTemplate>
-            <DataTemplate DataType="{x:Type vm:CategoryVM}">
-                <view:Categories/>
             </DataTemplate>
             <DataTemplate DataType="{x:Type vm:UserVM}">
                 <view:Users/>

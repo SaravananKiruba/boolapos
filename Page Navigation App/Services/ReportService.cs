@@ -55,8 +55,7 @@ namespace Page_Navigation_App.Services
                     GoldSalesAmount = await GetMetalSalesAsync(fromDate, toDate, "Gold"),
                     SilverSalesAmount = await GetMetalSalesAsync(fromDate, toDate, "Silver"),
                     TopSellingProducts = await GetTopSellingProductsAsync(fromDate, toDate, 5),
-                    MonthlySalesData = await GetMonthlySalesAsync(fromDate, toDate),
-                    SalesByCategory = await GetSalesByCategoryAsync(fromDate, toDate)
+                    MonthlySalesData = await GetMonthlySalesAsync(fromDate, toDate)
                 };
             }
             catch (Exception ex)
@@ -145,28 +144,6 @@ namespace Page_Navigation_App.Services
         }
 
         /// <summary>
-        /// Get sales data by product category
-        /// </summary>
-        private async Task<List<CategorySales>> GetSalesByCategoryAsync(DateTime fromDate, DateTime toDate)
-        {
-            var categorySales = await _context.OrderDetails
-                .Include(od => od.Order)
-                .Include(od => od.Product)
-                .ThenInclude(p => p.Category)
-                .Where(od => od.Order.OrderDate >= fromDate && od.Order.OrderDate <= toDate)
-                .GroupBy(od => new { od.Product.CategoryID, od.Product.Category.CategoryName })
-                .Select(g => new CategorySales
-                {
-                    CategoryName = g.Key.CategoryName,
-                    Amount = g.Sum(od => od.TotalPrice)
-                })
-                .OrderByDescending(c => c.Amount)
-                .ToListAsync();
-                
-            return categorySales;
-        }
-
-        /// <summary>
         /// Generate inventory report with valuation
         /// </summary>
         public async Task<InventoryReport> GenerateInventoryReportAsync()
@@ -174,7 +151,6 @@ namespace Page_Navigation_App.Services
             try
             {
                 var products = await _context.Products
-                    .Include(p => p.Category)
                     .Include(p => p.Supplier)
                     .ToListAsync();
                 
@@ -196,7 +172,6 @@ namespace Page_Navigation_App.Services
                     {
                         ProductID = p.ProductID,
                         ProductName = p.ProductName,
-                        Category = p.Category.CategoryName,
                         MetalType = p.MetalType,
                         Purity = p.Purity,
                         GrossWeight = p.GrossWeight,
@@ -469,7 +444,6 @@ namespace Page_Navigation_App.Services
         public decimal SilverSalesAmount { get; set; }
         public List<TopSellingProduct> TopSellingProducts { get; set; } = new List<TopSellingProduct>();
         public List<MonthlySales> MonthlySalesData { get; set; } = new List<MonthlySales>();
-        public List<CategorySales> SalesByCategory { get; set; } = new List<CategorySales>();
     }
 
     public class TopSellingProduct
@@ -482,12 +456,6 @@ namespace Page_Navigation_App.Services
     public class MonthlySales
     {
         public string Month { get; set; }
-        public decimal Amount { get; set; }
-    }
-
-    public class CategorySales
-    {
-        public string CategoryName { get; set; }
         public decimal Amount { get; set; }
     }
 
@@ -509,7 +477,6 @@ namespace Page_Navigation_App.Services
     {
         public int ProductID { get; set; }
         public string ProductName { get; set; }
-        public string Category { get; set; }
         public string MetalType { get; set; }
         public string Purity { get; set; }
         public decimal GrossWeight { get; set; }

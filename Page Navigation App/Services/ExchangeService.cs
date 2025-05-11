@@ -94,12 +94,10 @@ namespace Page_Navigation_App.Services
                     exchangeOrder.CGST = 0;
                     exchangeOrder.SGST = 0;
                     exchangeOrder.GrandTotal = 0;
-                }
-
-                // Set exchange-specific fields
+                }                // Set exchange-specific fields
                 exchangeOrder.HasMetalExchange = true;
-                exchangeOrder.ExchangeMetalType = returnedProduct.CategoryID == newProduct.CategoryID ? 
-                    returnedProduct.CategoryID.ToString() : "Mixed";
+                exchangeOrder.ExchangeMetalType = returnedProduct.MetalType == newProduct.MetalType ? 
+                    returnedProduct.MetalType : "Mixed";
                 exchangeOrder.ExchangeMetalPurity = returnedProduct.Purity;
                 exchangeOrder.ExchangeMetalWeight = returnedProduct.NetWeight * returnedQuantity;
                 exchangeOrder.ExchangeValue = returnValue;

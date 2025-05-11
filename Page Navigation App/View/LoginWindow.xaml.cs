@@ -82,11 +82,9 @@ namespace Page_Navigation_App.View
             services.AddSingleton<StockLedgerService>();
             services.AddSingleton<RateMasterService>();
             services.AddSingleton<StockService>();
-            services.AddSingleton<FinanceService>();
-            services.AddSingleton<ProductService>();
+            services.AddSingleton<FinanceService>();            services.AddSingleton<ProductService>();
             services.AddSingleton<OrderService>();
             services.AddSingleton<CustomerService>();
-            services.AddSingleton<CategoryService>();
             services.AddSingleton<SupplierService>();
             services.AddSingleton<RepairJobService>();
             services.AddSingleton<BackupService>();
@@ -103,11 +101,9 @@ namespace Page_Navigation_App.View
             services.AddSingleton<ProductVM>();
             services.AddSingleton<OrderVM>();
             services.AddSingleton<TransactionVM>();
-            services.AddSingleton<SupplierVM>();
-            services.AddSingleton<RateMasterVM>();
+            services.AddSingleton<SupplierVM>();            services.AddSingleton<RateMasterVM>();
             services.AddSingleton<RepairJobVM>();
             services.AddSingleton<StockVM>();
-            services.AddSingleton<CategoryVM>();
             services.AddSingleton<UserVM>();
             services.AddSingleton<ReportVM>();
             services.AddSingleton<SettingsVM>();

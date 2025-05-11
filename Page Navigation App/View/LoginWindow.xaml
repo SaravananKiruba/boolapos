@@ -6,13 +6,12 @@
         xmlns:local="clr-namespace:Page_Navigation_App.View"
         xmlns:viewModel="clr-namespace:Page_Navigation_App.ViewModel"
         xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
-        mc:Ignorable="d"
-        Title="Boola POS Login" 
+        mc:Ignorable="d"        Title="Boola POS Login" 
         Height="450" 
         Width="600"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
-        Background="{DynamicResource BackgroundBrush}">
+        Background="{StaticResource MahApps.Brushes.ThemeBackground}">
     
     <mah:MetroWindow.Resources>
         <Style x:Key="LoginTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource MahApps.Styles.TextBox}">
@@ -42,9 +41,8 @@
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="350"/>
         </Grid.ColumnDefinitions>
-        
-        <!-- Left side with logo and welcome message -->
-        <Grid Grid.Column="0" Background="{DynamicResource PrimaryBrush}">
+          <!-- Left side with logo and welcome message -->
+        <Grid Grid.Column="0" Background="{StaticResource MahApps.Brushes.Accent}">
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                 <Image Source="/Images/BOOLA LOGO.png" Width="150" Height="150" Margin="0,0,0,20"/>
                 <TextBlock Text="Welcome to" FontSize="22" Foreground="White" HorizontalAlignment="Center"/>

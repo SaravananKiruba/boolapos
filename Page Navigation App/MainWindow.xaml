@@ -11,15 +11,14 @@
         Height="720" 
         Width="1280"
         WindowStartupLocation="CenterScreen"
-        Background="{StaticResource BackgroundBrush}"
-        GlowBrush="{StaticResource PrimaryBrush}"
+        Background="{StaticResource MahApps.Brushes.ThemeBackground}"
+        GlowBrush="{StaticResource MahApps.Brushes.Accent}"
         BorderThickness="1"
-        NonActiveGlowBrush="{StaticResource SurfaceBrush}"
+        NonActiveGlowBrush="{StaticResource MahApps.Brushes.Accent3}"
         TitleCharacterCasing="Normal"
-        TitleForeground="{StaticResource TextPrimaryBrush}"
-        WindowTitleBrush="{StaticResource SurfaceBrush}"
-        WindowButtonCommandsOverlayBehavior="Never"
-        SaveWindowPosition="True">
+        TitleForeground="{StaticResource MahApps.Brushes.ThemeForeground}"
+        WindowTitleBrush="{StaticResource MahApps.Brushes.Accent4}"
+        WindowButtonCommandsOverlayBehavior="Never"        SaveWindowPosition="True">
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -28,7 +27,7 @@
         </Grid.ColumnDefinitions>
 
         <!-- Left Navigation Panel -->
-        <Border Background="{StaticResource SurfaceBrush}"
+        <Border Background="{StaticResource MahApps.Brushes.Accent3}"
                 CornerRadius="0 15 15 0">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="10" ShadowDepth="2" Direction="0" Color="#40000000"/>
@@ -38,9 +37,7 @@
                     <RowDefinition Height="80"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="60"/>
-                </Grid.RowDefinitions>
-
-                <!-- Logo & Title -->
+                </Grid.RowDefinitions>                <!-- Logo & Title -->
                 <StackPanel Orientation="Horizontal" 
                           HorizontalAlignment="Center" 
                           VerticalAlignment="Center">
@@ -51,7 +48,7 @@
                     <TextBlock Text="Boola POS"
                              FontSize="22"
                              FontWeight="SemiBold"
-                             Foreground="{StaticResource TextOnSurfaceBrush}"
+                             Foreground="{StaticResource MahApps.Brushes.ThemeForeground}"
                              VerticalAlignment="Center"/>
                 </StackPanel>
 
@@ -67,15 +64,14 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <iconPacks:PackIconMaterial Kind="Home"
+                                </Grid.ColumnDefinitions>                                <iconPacks:PackIconMaterial Kind="Home"
                                                        Width="20"
                                                        Height="20"
-                                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                                       Foreground="{StaticResource MahApps.Brushes.ThemeForeground}"/>
                                 <TextBlock Grid.Column="1"
                                        Text="Home"
                                        Margin="15,0,0,0"
-                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                       Foreground="{StaticResource MahApps.Brushes.ThemeForeground}"/>
                             </Grid>
                         </Button>
 
@@ -85,15 +81,14 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <iconPacks:PackIconMaterial Kind="AccountGroup"
+                                </Grid.ColumnDefinitions>                                <iconPacks:PackIconMaterial Kind="AccountGroup"
                                                        Width="20"
                                                        Height="20"
-                                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                                       Foreground="{StaticResource MahApps.Brushes.ThemeForeground}"/>
                                 <TextBlock Grid.Column="1"
                                        Text="Customers"
                                        Margin="15,0,0,0"
-                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                       Foreground="{StaticResource MahApps.Brushes.ThemeForeground}"/>
                             </Grid>
                         </Button>
 
@@ -103,15 +98,14 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <iconPacks:PackIconMaterial Kind="Package"
+                                </Grid.ColumnDefinitions>                                <iconPacks:PackIconMaterial Kind="Package"
                                                        Width="20"
                                                        Height="20"
-                                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                                       Foreground="{StaticResource MahApps.Brushes.ThemeForeground}"/>
                                 <TextBlock Grid.Column="1"
                                        Text="Products"
                                        Margin="15,0,0,0"
-                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                       Foreground="{StaticResource MahApps.Brushes.ThemeForeground}"/>
                             </Grid>
                         </Button>
 
@@ -121,15 +115,14 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <iconPacks:PackIconMaterial Kind="CartOutline"
+                                </Grid.ColumnDefinitions>                                <iconPacks:PackIconMaterial Kind="CartOutline"
                                                        Width="20"
                                                        Height="20"
-                                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                                       Foreground="{StaticResource MahApps.Brushes.ThemeForeground}"/>
                                 <TextBlock Grid.Column="1"
                                        Text="Orders"
                                        Margin="15,0,0,0"
-                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                       Foreground="{StaticResource MahApps.Brushes.ThemeForeground}"/>
                             </Grid>
                         </Button>
 
@@ -139,15 +132,14 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <iconPacks:PackIconMaterial Kind="CashRegister"
+                                </Grid.ColumnDefinitions>                                <iconPacks:PackIconMaterial Kind="CashRegister"
                                                        Width="20"
                                                        Height="20"
-                                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                                       Foreground="{StaticResource MahApps.Brushes.ThemeForeground}"/>
                                 <TextBlock Grid.Column="1"
                                        Text="Transactions"
                                        Margin="15,0,0,0"
-                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                       Foreground="{StaticResource MahApps.Brushes.ThemeForeground}"/>
                             </Grid>
                         </Button>
 
@@ -157,15 +149,14 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <iconPacks:PackIconMaterial Kind="TruckDelivery"
+                                </Grid.ColumnDefinitions>                                <iconPacks:PackIconMaterial Kind="TruckDelivery"
                                                        Width="20"
                                                        Height="20"
-                                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                                       Foreground="{StaticResource MahApps.Brushes.ThemeForeground}"/>
                                 <TextBlock Grid.Column="1"
                                        Text="Suppliers"
                                        Margin="15,0,0,0"
-                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                       Foreground="{StaticResource MahApps.Brushes.ThemeForeground}"/>
                             </Grid>
                         </Button>
 
@@ -175,15 +166,14 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <iconPacks:PackIconMaterial Kind="ChartLineVariant"
+                                </Grid.ColumnDefinitions>                                <iconPacks:PackIconMaterial Kind="ChartLineVariant"
                                                        Width="20"
                                                        Height="20"
-                                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                                       Foreground="{StaticResource MahApps.Brushes.ThemeForeground}"/>
                                 <TextBlock Grid.Column="1"
                                        Text="Rate Master"
                                        Margin="15,0,0,0"
-                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                       Foreground="{StaticResource MahApps.Brushes.ThemeForeground}"/>
                             </Grid>
                         </Button>
 
@@ -193,15 +183,14 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <iconPacks:PackIconMaterial Kind="Tools"
+                                </Grid.ColumnDefinitions>                                <iconPacks:PackIconMaterial Kind="Tools"
                                                        Width="20"
                                                        Height="20"
-                                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                                       Foreground="{StaticResource MahApps.Brushes.ThemeForeground}"/>
                                 <TextBlock Grid.Column="1"
                                        Text="Repair Jobs"
                                        Margin="15,0,0,0"
-                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                       Foreground="{StaticResource MahApps.Brushes.ThemeForeground}"/>
                             </Grid>
                         </Button>
 
@@ -211,35 +200,15 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <iconPacks:PackIconMaterial Kind="PackageVariant"
+                                </Grid.ColumnDefinitions>                                <iconPacks:PackIconMaterial Kind="PackageVariant"
                                                        Width="20"
                                                        Height="20"
-                                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                                       Foreground="{StaticResource MahApps.Brushes.ThemeForeground}"/>
                                 <TextBlock Grid.Column="1"
                                        Text="Stock"
                                        Margin="15,0,0,0"
-                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
-                            </Grid>
-                        </Button>
-
-                        <Button Style="{StaticResource NavigationButton}"
-                                Command="{Binding CategoryCommand}">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <iconPacks:PackIconMaterial Kind="ShapeOutline"
-                                                       Width="20"
-                                                       Height="20"
-                                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
-                                <TextBlock Grid.Column="1"
-                                       Text="Categories"
-                                       Margin="15,0,0,0"
-                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
-                            </Grid>
-                        </Button>
+                                       Foreground="{StaticResource MahApps.Brushes.ThemeForeground}"/>
+                            </Grid>                        </Button>
 
                         <Button Style="{StaticResource NavigationButton}"
                                 Command="{Binding UserCommand}">
@@ -247,15 +216,14 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <iconPacks:PackIconMaterial Kind="AccountCog"
+                                </Grid.ColumnDefinitions>                                <iconPacks:PackIconMaterial Kind="AccountCog"
                                                        Width="20"
                                                        Height="20"
-                                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                                       Foreground="{StaticResource MahApps.Brushes.ThemeForeground}"/>
                                 <TextBlock Grid.Column="1"
                                        Text="Users"
                                        Margin="15,0,0,0"
-                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                       Foreground="{StaticResource MahApps.Brushes.ThemeForeground}"/>
                             </Grid>
                         </Button>
 
@@ -265,15 +233,14 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <iconPacks:PackIconMaterial Kind="ChartBox"
+                                </Grid.ColumnDefinitions>                                <iconPacks:PackIconMaterial Kind="ChartBox"
                                                        Width="20"
                                                        Height="20"
-                                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                                       Foreground="{StaticResource MahApps.Brushes.ThemeForeground}"/>
                                 <TextBlock Grid.Column="1"
                                        Text="Reports"
                                        Margin="15,0,0,0"
-                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                       Foreground="{StaticResource MahApps.Brushes.ThemeForeground}"/>
                             </Grid>
                         </Button>
 
@@ -283,15 +250,14 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <iconPacks:PackIconMaterial Kind="Cog"
+                                </Grid.ColumnDefinitions>                                <iconPacks:PackIconMaterial Kind="Cog"
                                                        Width="20"
                                                        Height="20"
-                                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                                       Foreground="{StaticResource MahApps.Brushes.ThemeForeground}"/>
                                 <TextBlock Grid.Column="1"
                                        Text="Settings"
                                        Margin="15,0,0,0"
-                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
+                                       Foreground="{StaticResource MahApps.Brushes.ThemeForeground}"/>
                             </Grid>
                         </Button>
 
@@ -305,25 +271,22 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <iconPacks:PackIconMaterial Kind="Logout"
+                                </Grid.ColumnDefinitions>                                <iconPacks:PackIconMaterial Kind="Logout"
                                                        Width="20"
                                                        Height="20"
-                                                       Foreground="{StaticResource ErrorBrush}"/>
+                                                       Foreground="{StaticResource MahApps.Brushes.Accent2}"/>
                                 <TextBlock Grid.Column="1"
                                        Text="Close"
                                        Margin="15,0,0,0"
-                                       Foreground="{StaticResource ErrorBrush}"/>
+                                       Foreground="{StaticResource MahApps.Brushes.Accent2}"/>
                             </Grid>
                         </Button>
                     </StackPanel>
                 </ScrollViewer>
             </Grid>
-        </Border>
-
-        <!-- Main Content Area -->
+        </Border>        <!-- Main Content Area -->
         <Border Grid.Column="1"
-                Background="{StaticResource BackgroundBrush}"
+                Background="{StaticResource MahApps.Brushes.ThemeBackground}"
                 CornerRadius="15 0 0 15"
                 Margin="0 0 0 0">
             <Grid>
@@ -338,37 +301,31 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-
-                    <!-- Page Title -->
+                    </Grid.ColumnDefinitions>                    <!-- Page Title -->
                     <TextBlock Text="{Binding CurrentView, Converter={StaticResource ViewModelToTitleConverter}}"
                              FontSize="24"
                              FontWeight="Medium"
-                             Foreground="{StaticResource TextPrimaryBrush}"
-                             VerticalAlignment="Center"/>
-
-                    <!-- User Profile -->
+                             Foreground="{StaticResource MahApps.Brushes.ThemeForeground}"
+                             VerticalAlignment="Center"/>                    <!-- User Profile -->
                     <StackPanel Grid.Column="1" 
                               Orientation="Horizontal" 
                               VerticalAlignment="Center">
                         <TextBlock Text="{Binding CurrentUser}"
-                                 Foreground="{StaticResource TextPrimaryBrush}"
+                                 Foreground="{StaticResource MahApps.Brushes.ThemeForeground}"
                                  VerticalAlignment="Center"
                                  Margin="0 0 10 0"/>
                         <Button Style="{StaticResource MahApps.Styles.Button.Circle}"
                                 Width="40"
                                 Height="40"
-                                Background="{StaticResource SurfaceBrush}"
+                                Background="{StaticResource MahApps.Brushes.Accent3}"
                                 BorderThickness="0">
                             <iconPacks:PackIconMaterial Kind="AccountCircle"
                                                      Width="24"
                                                      Height="24"
-                                                     Foreground="{StaticResource PrimaryBrush}"/>
+                                                     Foreground="{StaticResource MahApps.Brushes.Accent}"/>
                         </Button>
                     </StackPanel>
-                </Grid>
-
-                <!-- Main Content -->
+                </Grid>                <!-- Main Content -->
                 <ContentControl Grid.Row="1" 
                               Content="{Binding CurrentView}"
                               Margin="20">

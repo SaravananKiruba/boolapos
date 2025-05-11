@@ -110,24 +110,23 @@ namespace Page_Navigation_App.ViewModel
             }
         }
 
-        private DateTime _startDate = DateTime.Now.AddMonths(-1);
+        private DateTime _startDate = DateTime.Now.Date.AddMonths(-1);
         public DateTime StartDate
         {
             get => _startDate;
             set
             {
-                _startDate = value;
+                _startDate = value.Date;
                 OnPropertyChanged();
-            }
-        }
+            }        }
 
-        private DateTime _endDate = DateTime.Now;
+        private DateTime _endDate = DateTime.Now.Date;
         public DateTime EndDate
         {
             get => _endDate;
             set
             {
-                _endDate = value;
+                _endDate = value.Date;
                 OnPropertyChanged();
             }
         }
@@ -278,17 +277,16 @@ namespace Page_Navigation_App.ViewModel
         }
 
         private void ClearForm()
-        {
-            SelectedTransaction = new Finance
+        {            SelectedTransaction = new Finance
             {
-                TransactionDate = DateTime.Now,
+                TransactionDate = DateTime.Now.Date,
                 TransactionType = TransactionTypes.First()
             };
             SelectedCustomer = null;
             SelectedOrder = null;
             TransactionType = string.Empty;
-            StartDate = DateTime.Now.AddMonths(-1);
-            EndDate = DateTime.Now;
+            StartDate = DateTime.Now.Date.AddMonths(-1);
+            EndDate = DateTime.Now.Date;
         }
 
         private bool CanAddOrUpdateTransaction()

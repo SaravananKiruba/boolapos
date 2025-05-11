@@ -47,8 +47,6 @@ namespace Page_Navigation_App.Services
         public async Task<Product> GetProductById(int id)
         {
             return await _context.Products
-                .Include(p => p.Category)
-                .Include(p => p.Subcategory)
                 .Include(p => p.Supplier)
                 .Include(p => p.Stocks)
                 .FirstOrDefaultAsync(p => p.ProductID == id);
@@ -57,8 +55,6 @@ namespace Page_Navigation_App.Services
         public async Task<Product> GetProductByBarcode(string barcode)
         {
             return await _context.Products
-                .Include(p => p.Category)
-                .Include(p => p.Subcategory)
                 .Include(p => p.Supplier)
                 .Include(p => p.Stocks)
                 .FirstOrDefaultAsync(p => p.Barcode == barcode);
@@ -67,8 +63,6 @@ namespace Page_Navigation_App.Services
         public async Task<IEnumerable<Product>> GetAllProducts(bool includeInactive = false)
         {
             var query = _context.Products
-                .Include(p => p.Category)
-                .Include(p => p.Subcategory)
                 .Include(p => p.Supplier)
                 .Include(p => p.Stocks)
                 .AsQueryable();
@@ -82,13 +76,9 @@ namespace Page_Navigation_App.Services
         public async Task<IEnumerable<Product>> SearchProducts(
             string searchTerm = null,
             string metalType = null,
-            string purity = null,
-            int? categoryId = null,
-            int? subcategoryId = null)
+            string purity = null)
         {
             var query = _context.Products
-                .Include(p => p.Category)
-                .Include(p => p.Subcategory)
                 .Include(p => p.Stocks)
                 .Where(p => p.IsActive)
                 .AsQueryable();
@@ -109,16 +99,6 @@ namespace Page_Navigation_App.Services
             if (!string.IsNullOrWhiteSpace(purity))
             {
                 query = query.Where(p => p.Purity == purity);
-            }
-
-            if (categoryId.HasValue)
-            {
-                query = query.Where(p => p.CategoryID == categoryId.Value);
-            }
-
-            if (subcategoryId.HasValue)
-            {
-                query = query.Where(p => p.SubcategoryID == subcategoryId.Value);
             }
 
             return await query.ToListAsync();
@@ -164,22 +144,6 @@ namespace Page_Navigation_App.Services
         }
 
         // Additional helper methods
-        public async Task<Dictionary<string, decimal>> GetProductValueByCategory()
-        {
-            var products = await _context.Products
-                .Include(p => p.Category)
-                .Include(p => p.Stocks)
-                .Where(p => p.IsActive && p.Stocks.Any(s => s.Quantity > 0))
-                .ToListAsync();
-
-            return products
-                .GroupBy(p => p.Category.CategoryName)
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.Sum(p => p.Stocks.Sum(s => s.Quantity * p.BasePrice))
-                );
-        }
-
         public async Task<Dictionary<string, decimal>> GetProductValueByMetal()
         {
             var products = await _context.Products
@@ -200,76 +164,14 @@ namespace Page_Navigation_App.Services
             decimal maxPrice)
         {
             return await _context.Products
-                .Include(p => p.Category)
-                .Include(p => p.Subcategory)
                 .Include(p => p.Stocks)
                 .Where(p => p.BasePrice >= minPrice && p.BasePrice <= maxPrice && p.IsActive)
                 .ToListAsync();
         }
 
-        public async Task UpdateMakingCharges(
-            int categoryId,
-            decimal makingCharges,
-            bool applyToSubcategories = false)
-        {
-            var products = await _context.Products
-                .Where(p => p.CategoryID == categoryId && p.IsActive)
-                .ToListAsync();
-
-            foreach (var product in products)
-            {
-                product.MakingCharges = makingCharges;
-            }
-
-            if (applyToSubcategories)
-            {
-                var subcategoryProducts = await _context.Products
-                    .Where(p => p.Subcategory.CategoryID == categoryId && p.IsActive)
-                    .ToListAsync();
-
-                foreach (var product in subcategoryProducts)
-                {
-                    product.MakingCharges = makingCharges;
-                }
-            }
-
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task UpdateWastagePercentage(
-            int categoryId,
-            decimal wastagePercentage,
-            bool applyToSubcategories = false)
-        {
-            var products = await _context.Products
-                .Where(p => p.CategoryID == categoryId && p.IsActive)
-                .ToListAsync();
-
-            foreach (var product in products)
-            {
-                product.WastagePercentage = wastagePercentage;
-            }
-
-            if (applyToSubcategories)
-            {
-                var subcategoryProducts = await _context.Products
-                    .Where(p => p.Subcategory.CategoryID == categoryId && p.IsActive)
-                    .ToListAsync();
-
-                foreach (var product in subcategoryProducts)
-                {
-                    product.WastagePercentage = wastagePercentage;
-                }
-            }
-
-            await _context.SaveChangesAsync();
-        }
-
         public async Task<IEnumerable<Product>> FilterProducts(string searchTerm)
         {
             return await _context.Products
-                .Include(p => p.Category)
-                .Include(p => p.Subcategory)
                 .Include(p => p.Supplier)
                 .Where(p => 
                     p.IsActive && (
@@ -283,8 +185,6 @@ namespace Page_Navigation_App.Services
         public async Task<IEnumerable<Product>> GetProductsByMetal(string metalType, string purity)
         {
             return await _context.Products
-                .Include(p => p.Category)
-                .Include(p => p.Subcategory)
                 .Where(p => p.MetalType == metalType && 
                            p.Purity == purity && 
                            p.IsActive)

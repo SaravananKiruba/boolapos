@@ -19,12 +19,10 @@ namespace Page_Navigation_App.ViewModel
         public ICommand SearchCommand { get; }
         public ICommand ClearCommand { get; }
         public ICommand UploadImageCommand { get; }
-        public ICommand UpdateStatusCommand { get; }
-
-        public ObservableCollection<RepairJob> RepairJobs { get; set; } = new ObservableCollection<RepairJob>();
+        public ICommand UpdateStatusCommand { get; }        public ObservableCollection<RepairJob> RepairJobs { get; set; } = new ObservableCollection<RepairJob>();
         public ObservableCollection<Customer> Customers { get; set; } = new ObservableCollection<Customer>();
 
-        private RepairJob _selectedJob = new RepairJob { ReceiptDate = DateTime.Now };
+        private RepairJob _selectedJob = new RepairJob { ReceiptDate = DateTime.Now.Date };
         public RepairJob SelectedJob
         {
             get => _selectedJob;

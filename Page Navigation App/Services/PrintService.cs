@@ -342,7 +342,7 @@ namespace Page_Navigation_App.Services
             try
             {
                 var product = await _context.Products
-                    .Include(p => p.Category)
+                    .Include(p => p.Supplier)
                     .FirstOrDefaultAsync(p => p.ProductID == productId);
 
                 if (product == null)
@@ -407,7 +407,7 @@ namespace Page_Navigation_App.Services
 </head>
 <body>
     <div class='tag-container'>
-        <div class='tag-header'>{product.Category?.CategoryName ?? "Jewelry"}</div>
+        <div class='tag-header'>{product.ProductName}</div>
         <div class='tag-content'>
             <p><strong>Name:</strong> {product.ProductName}</p>
             <p><strong>Metal:</strong> {product.MetalType} {product.Purity}</p>
@@ -498,7 +498,6 @@ namespace Page_Navigation_App.Services
                 <tr>
                     <td>{product.ProductID}</td>
                     <td>{product.ProductName}</td>
-                    <td>{product.Category}</td>
                     <td>{product.MetalType} {product.Purity}</td>
                     <td>{product.GrossWeight:N3}g</td>
                     <td>{product.NetWeight:N3}g</td>
@@ -558,7 +557,6 @@ namespace Page_Navigation_App.Services
             <tr>
                 <th>ID</th>
                 <th>Name</th>
-                <th>Category</th>
                 <th>Metal & Purity</th>
                 <th>Gross Weight</th>
                 <th>Net Weight</th>
@@ -594,8 +592,7 @@ namespace Page_Navigation_App.Services
                     <td>{product.Quantity}</td>
                     <td>₹{product.Amount:N2}</td>
                 </tr>";
-            }
-
+            }            
             // Generate monthly sales rows
             string monthlySalesRows = "";
             foreach (var month in report.MonthlySalesData)
@@ -604,17 +601,6 @@ namespace Page_Navigation_App.Services
                 <tr>
                     <td>{month.Month}</td>
                     <td>₹{month.Amount:N2}</td>
-                </tr>";
-            }
-
-            // Generate category sales rows
-            string categorySalesRows = "";
-            foreach (var category in report.SalesByCategory)
-            {
-                categorySalesRows += $@"
-                <tr>
-                    <td>{category.CategoryName}</td>
-                    <td>₹{category.Amount:N2}</td>
                 </tr>";
             }
 
@@ -690,21 +676,6 @@ namespace Page_Navigation_App.Services
             </thead>
             <tbody>
                 {monthlySalesRows}
-            </tbody>
-        </table>
-    </div>
-    
-    <div class='report-section'>
-        <h2>Sales by Category</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Category</th>
-                    <th>Amount</th>
-                </tr>
-            </thead>
-            <tbody>
-                {categorySalesRows}
             </tbody>
         </table>
     </div>
@@ -929,7 +900,6 @@ namespace Page_Navigation_App.Services
             {
                 // Find product by HUID
                 var product = await _context.Products
-                    .Include(p => p.Category)
                     .Include(p => p.Supplier)
                     .FirstOrDefaultAsync(p => p.HUID == huid);
 
@@ -1023,8 +993,8 @@ namespace Page_Navigation_App.Services
                     <td>{product.ProductName}</td>
                 </tr>
                 <tr>
-                    <td>Category:</td>
-                    <td>{product.Category?.CategoryName ?? "Jewelry"}</td>
+                    <td>Type:</td>
+                    <td>Jewelry</td>
                 </tr>
                 <tr>
                     <td>Metal Type:</td>

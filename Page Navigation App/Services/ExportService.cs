@@ -101,18 +101,20 @@ namespace Page_Navigation_App.Services
                         headerRow.Style.Font.Bold = true;
                         headerRow.Style.Fill.BackgroundColor = XLColor.LightBlue;
 
-                        worksheet.Cell(1, 1).Value = "Category";
+                        worksheet.Cell(1, 1).Value = "Metal Type";
                         worksheet.Cell(1, 2).Value = "Amount";
 
-                        // Add data
+                        // Add data for metal type
                         var row = 2;
-                        foreach (var item in analytics.SalesByCategory)
-                        {
-                            worksheet.Cell(row, 1).Value = item.CategoryName;
-                            worksheet.Cell(row, 2).Value = item.Amount;
-                            worksheet.Cell(row, 2).Style.NumberFormat.Format = "₹#,##0.00";
-                            row++;
-                        }
+                        worksheet.Cell(row, 1).Value = "Gold";
+                        worksheet.Cell(row, 2).Value = analytics.GoldSalesAmount;
+                        worksheet.Cell(row, 2).Style.NumberFormat.Format = "₹#,##0.00";
+                        row++;
+                        
+                        worksheet.Cell(row, 1).Value = "Silver";
+                        worksheet.Cell(row, 2).Value = analytics.SilverSalesAmount;
+                        worksheet.Cell(row, 2).Style.NumberFormat.Format = "₹#,##0.00";
+                        row++;
 
                         // Add summary section
                         row += 2;
@@ -149,17 +151,18 @@ namespace Page_Navigation_App.Services
                         csv.NextRecord();
                         csv.NextRecord(); // Empty line
 
-                        // Write category sales data
-                        csv.WriteField("Category");
+                        // Write metal type sales data
+                        csv.WriteField("Metal Type");
                         csv.WriteField("Amount");
                         csv.NextRecord();
 
-                        foreach (var item in analytics.SalesByCategory)
-                        {
-                            csv.WriteField(item.CategoryName);
-                            csv.WriteField(item.Amount.ToString("F2"));
-                            csv.NextRecord();
-                        }
+                        csv.WriteField("Gold");
+                        csv.WriteField(analytics.GoldSalesAmount.ToString("F2"));
+                        csv.NextRecord();
+                        
+                        csv.WriteField("Silver");
+                        csv.WriteField(analytics.SilverSalesAmount.ToString("F2"));
+                        csv.NextRecord();
 
                         // Write summary
                         csv.NextRecord();
@@ -413,14 +416,14 @@ namespace Page_Navigation_App.Services
 
                         // Category sales breakdown header
                         var row = 4;
-                        worksheet.Cell(3, 1).Value = "By Category";
+                        worksheet.Cell(3, 1).Value = "By Metal Type";
                         worksheet.Cell(3, 1).Style.Font.Bold = true;
                         
-                        // Add category sales data
-                        foreach (var category in gstData.SalesByCategory)
+                        // Add metal type sales data
+                        foreach (var metal in gstData.SalesByMetal)
                         {
-                            worksheet.Cell(row, 1).Value = category.CategoryName;
-                            worksheet.Cell(row, 2).Value = category.SalesAmount;
+                            worksheet.Cell(row, 1).Value = metal.MetalType;
+                            worksheet.Cell(row, 2).Value = metal.SalesAmount;
                             worksheet.Cell(row, 2).Style.NumberFormat.Format = "₹#,##0.00";
                             row++;
                         }
@@ -481,14 +484,14 @@ namespace Page_Navigation_App.Services
                         csv.NextRecord();
                         csv.NextRecord();
                         
-                        // Write sales by category
-                        csv.WriteField("By Category");
+                        // Write sales by metal type
+                        csv.WriteField("By Metal Type");
                         csv.NextRecord();
 
-                        foreach (var category in gstData.SalesByCategory)
+                        foreach (var metal in gstData.SalesByMetal)
                         {
-                            csv.WriteField(category.CategoryName);
-                            csv.WriteField(category.SalesAmount.ToString("F2"));
+                            csv.WriteField(metal.MetalType);
+                            csv.WriteField(metal.SalesAmount.ToString("F2"));
                             csv.NextRecord();
                         }
                         csv.NextRecord();

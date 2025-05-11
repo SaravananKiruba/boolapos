@@ -112,11 +112,10 @@ namespace Page_Navigation_App.Services
                 // Create new rate entry
                 var newRate = new RateMaster
                 {
-                    MetalType = metalType,
-                    Purity = purity,
+                    MetalType = metalType,                    Purity = purity,
                     RatePerGram = ratePerGram,
                     MakingChargePercentage = makingChargePercentage,
-                    UpdatedDate = DateTime.Now,
+                    UpdatedDate = DateTime.Now.Date,
                     IsActive = true
                 };
                 
@@ -188,10 +187,9 @@ namespace Page_Navigation_App.Services
                     
                     // Save the price components
                     product.MetalPrice = metalValue;
-                    product.MakingCharge = makingCharge;
-                    product.StoneValue = stoneValue;
+                    product.MakingCharge = makingCharge;                    product.StoneValue = stoneValue;
                     product.FinalPrice = finalPrice;
-                    product.LastPriceUpdate = DateTime.Now;
+                    product.LastPriceUpdate = DateTime.Now.Date;
                     
                     _context.Products.Update(product);
                 }
@@ -249,9 +247,8 @@ namespace Page_Navigation_App.Services
                     MetalValue = metalValue,
                     MakingChargePercentage = currentRate.MakingChargePercentage,
                     MakingCharge = makingCharge,
-                    StoneValue = stoneValue,
-                    FinalPrice = finalPrice,
-                    CalculationDate = DateTime.Now
+                    StoneValue = stoneValue,                    FinalPrice = finalPrice,
+                    CalculationDate = DateTime.Now.Date
                 };
             }
             catch (Exception ex)
@@ -325,11 +322,10 @@ namespace Page_Navigation_App.Services
                     DeductionPercentage = deductionPercentage,
                     
                     NewItemProductId = newItemProductId,
-                    NewItemName = newItem.ProductName,
-                    NewItemPrice = newItem.FinalPrice,
+                    NewItemName = newItem.ProductName,                    NewItemPrice = newItem.FinalPrice,
                     
                     AmountToPay = amountToPay,
-                    ExchangeDate = DateTime.Now
+                    ExchangeDate = DateTime.Now.Date
                 };
             }
             catch (Exception ex)

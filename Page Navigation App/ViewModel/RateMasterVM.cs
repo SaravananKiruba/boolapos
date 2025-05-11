@@ -210,26 +210,7 @@ namespace Page_Navigation_App.ViewModel
                 {
                     product.BasePrice = product.NetWeight * newRate.Rate;
                     
-                    // Recalculate final price with all components
-                    decimal makingCharges = product.MakingCharges;
-                    if (product.Subcategory?.SpecialMakingCharges != null)
-                    {
-                        makingCharges = product.Subcategory.SpecialMakingCharges.Value;
-                    }
-                    else if (product.Category?.DefaultMakingCharges != null)
-                    {
-                        makingCharges = product.Category.DefaultMakingCharges;
-                    }
-
-                    decimal wastagePercentage = product.WastagePercentage;
-                    if (product.Subcategory?.SpecialWastage != null)
-                    {
-                        wastagePercentage = product.Subcategory.SpecialWastage.Value;
-                    }
-                    else if (product.Category?.DefaultWastage != null)
-                    {
-                        wastagePercentage = product.Category.DefaultWastage;
-                    }
+                    // Recalculate final price with all components                    decimal makingCharges = product.MakingCharges;                    decimal wastagePercentage = product.WastagePercentage;
 
                     decimal wastageAmount = (product.BasePrice * wastagePercentage) / 100;
                     decimal makingAmount = (product.BasePrice * makingCharges) / 100;
