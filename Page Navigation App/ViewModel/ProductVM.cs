@@ -161,7 +161,7 @@ namespace Page_Navigation_App.ViewModel
                     }
                     
                     // Calculate prices based on current gold/silver rates
-                    await CalculateProductPrices(SelectedProduct);
+                    CalculateProductPrices(SelectedProduct);
                     
                     var newProduct = await _productService.AddProduct(SelectedProduct);
                     if (newProduct != null)
@@ -178,7 +178,7 @@ namespace Page_Navigation_App.ViewModel
             }
         }
 
-        private async Task CalculateProductPrices(Product product)
+        private void CalculateProductPrices(Product product)
         {
             try 
             {
@@ -194,31 +194,27 @@ namespace Page_Navigation_App.ViewModel
                 }
                 
                 // Get current rate for the metal
-                var currentRate = await _rateService.GetCurrentRate(product.MetalType, product.Purity);
-                if (currentRate != null)
-                {
-                    decimal ratePerGram = currentRate.Rate;
-                    decimal netWeight = product.NetWeight;
-                    decimal makingChargePercent = product.MakingCharges;
-                    decimal wastagePercent = product.WastagePercentage;
-                    
-                    // Calculate base price based on weight and current rate
-                    decimal basePrice = netWeight * ratePerGram;
-                    
-                    // Calculate making charges
-                    decimal makingAmount = basePrice * (makingChargePercent / 100);
-                    
-                    // Calculate wastage
-                    decimal wastageAmount = basePrice * (wastagePercent / 100);
-                    
-                    // Calculate final price
-                    decimal finalPrice = basePrice + makingAmount + wastageAmount + product.StoneValue;
-                    
-                    product.BasePrice = Math.Round(basePrice, 2);
-                    product.FinalPrice = Math.Round(finalPrice, 2);
-                    product.MetalPrice = ratePerGram;
-                    product.LastPriceUpdate = DateTime.Now.Date;
-                }
+                decimal ratePerGram = _rateService.GetCurrentRate(product.MetalType, product.Purity);
+                decimal netWeight = product.NetWeight;
+                decimal makingChargePercent = product.MakingCharges;
+                decimal wastagePercent = product.WastagePercentage;
+                
+                // Calculate base price based on weight and current rate
+                decimal basePrice = netWeight * ratePerGram;
+                
+                // Calculate making charges
+                decimal makingAmount = basePrice * (makingChargePercent / 100);
+                
+                // Calculate wastage
+                decimal wastageAmount = basePrice * (wastagePercent / 100);
+                
+                // Calculate final price
+                decimal finalPrice = basePrice + makingAmount + wastageAmount + product.StoneValue;
+                
+                product.BasePrice = Math.Round(basePrice, 2);
+                product.FinalPrice = Math.Round(finalPrice, 2);
+                product.MetalPrice = ratePerGram;
+                product.LastPriceUpdate = DateTime.Now.Date;
             }
             catch (Exception ex)
             {
