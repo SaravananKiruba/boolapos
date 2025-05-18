@@ -70,24 +70,6 @@ namespace Page_Navigation_App.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Categories",
-                columns: table => new
-                {
-                    CategoryID = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    CategoryName = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    Description = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
-                    DefaultMakingCharges = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
-                    DefaultWastage = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
-                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false),
-                    DisplayOrder = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Categories", x => x.CategoryID);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Customers",
                 columns: table => new
                 {
@@ -175,13 +157,13 @@ namespace Page_Navigation_App.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     RatePerGram = table.Column<decimal>(type: "TEXT", nullable: false),
                     MakingChargePercentage = table.Column<decimal>(type: "TEXT", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    RateDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "Date", nullable: false),
+                    RateDate = table.Column<DateTime>(type: "Date", nullable: false),
                     MetalType = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
                     Purity = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false),
                     Rate = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    EffectiveDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    ValidUntil = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    EffectiveDate = table.Column<DateTime>(type: "Date", nullable: false),
+                    ValidUntil = table.Column<DateTime>(type: "Date", nullable: true),
                     IsActive = table.Column<bool>(type: "INTEGER", nullable: false),
                     Source = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
                     EnteredBy = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
@@ -272,6 +254,7 @@ namespace Page_Navigation_App.Migrations
                     Key = table.Column<string>(type: "TEXT", nullable: true),
                     Value = table.Column<string>(type: "TEXT", nullable: true),
                     Description = table.Column<string>(type: "TEXT", nullable: true),
+                    LastUpdated = table.Column<DateTime>(type: "TEXT", nullable: false),
                     UpdatedDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     LowStockAlerts = table.Column<bool>(type: "INTEGER", nullable: false),
                     PaymentReminders = table.Column<bool>(type: "INTEGER", nullable: false),
@@ -316,59 +299,13 @@ namespace Page_Navigation_App.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Users",
-                columns: table => new
-                {
-                    UserID = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Username = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    PasswordHash = table.Column<byte[]>(type: "BLOB", nullable: false),
-                    PasswordSalt = table.Column<byte[]>(type: "BLOB", nullable: false),
-                    FullName = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    Email = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
-                    Phone = table.Column<string>(type: "TEXT", maxLength: 15, nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    LastLoginDate = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Users", x => x.UserID);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Subcategories",
-                columns: table => new
-                {
-                    SubcategoryID = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    SubcategoryName = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    Description = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
-                    CategoryID = table.Column<int>(type: "INTEGER", nullable: false),
-                    SpecialMakingCharges = table.Column<decimal>(type: "decimal(5,2)", nullable: true),
-                    SpecialWastage = table.Column<decimal>(type: "decimal(5,2)", nullable: true),
-                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false),
-                    DisplayOrder = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Subcategories", x => x.SubcategoryID);
-                    table.ForeignKey(
-                        name: "FK_Subcategories_Categories_CategoryID",
-                        column: x => x.CategoryID,
-                        principalTable: "Categories",
-                        principalColumn: "CategoryID",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Orders",
                 columns: table => new
                 {
                     OrderID = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     CustomerID = table.Column<int>(type: "INTEGER", nullable: false),
-                    OrderDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    OrderDate = table.Column<DateTime>(type: "Date", nullable: false),
                     InvoiceNumber = table.Column<string>(type: "TEXT", maxLength: 20, nullable: true),
                     HUIDReferences = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
                     TagReferences = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
@@ -396,7 +333,7 @@ namespace Page_Navigation_App.Migrations
                     ExchangeValue = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
                     IsDelivered = table.Column<bool>(type: "INTEGER", nullable: false),
-                    DeliveryDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    DeliveryDate = table.Column<DateTime>(type: "Date", nullable: true),
                     DeliveryAddress = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true)
                 },
                 constraints: table =>
@@ -418,10 +355,11 @@ namespace Page_Navigation_App.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     CustomerId = table.Column<int>(type: "INTEGER", nullable: false),
                     ItemDescription = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    ReceiptDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    CompletionDate = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    DeliveryDate = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    WorkStartDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    ItemDetails = table.Column<string>(type: "TEXT", nullable: true),
+                    ReceiptDate = table.Column<DateTime>(type: "Date", nullable: false),
+                    CompletionDate = table.Column<DateTime>(type: "Date", nullable: true),
+                    DeliveryDate = table.Column<DateTime>(type: "Date", nullable: true),
+                    WorkStartDate = table.Column<DateTime>(type: "Date", nullable: true),
                     EstimatedDeliveryDate = table.Column<DateTime>(type: "TEXT", nullable: true),
                     ItemWeight = table.Column<decimal>(type: "decimal(10,3)", nullable: false),
                     MetalType = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
@@ -454,46 +392,6 @@ namespace Page_Navigation_App.Migrations
                         column: x => x.CustomerId,
                         principalTable: "Customers",
                         principalColumn: "CustomerID",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Roles",
-                columns: table => new
-                {
-                    RoleID = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    RoleName = table.Column<string>(type: "TEXT", nullable: true),
-                    Description = table.Column<string>(type: "TEXT", nullable: true),
-                    UserID = table.Column<int>(type: "INTEGER", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Roles", x => x.RoleID);
-                    table.ForeignKey(
-                        name: "FK_Roles_Users_UserID",
-                        column: x => x.UserID,
-                        principalTable: "Users",
-                        principalColumn: "UserID");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "UserRoles",
-                columns: table => new
-                {
-                    UserRoleID = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    UserID = table.Column<int>(type: "INTEGER", nullable: false),
-                    RoleName = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserRoles", x => x.UserRoleID);
-                    table.ForeignKey(
-                        name: "FK_UserRoles_Users_UserID",
-                        column: x => x.UserID,
-                        principalTable: "Users",
-                        principalColumn: "UserID",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -531,31 +429,20 @@ namespace Page_Navigation_App.Migrations
                     ReorderLevel = table.Column<int>(type: "int", nullable: false),
                     Design = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
                     Size = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
-                    CategoryID = table.Column<int>(type: "INTEGER", nullable: false),
-                    SubcategoryID = table.Column<int>(type: "INTEGER", nullable: true),
                     SupplierID = table.Column<int>(type: "INTEGER", nullable: false),
                     AHCCode = table.Column<string>(type: "TEXT", nullable: true),
                     JewelType = table.Column<string>(type: "TEXT", nullable: true),
-                    HUIDRegistrationDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    HUIDRegistrationDate = table.Column<DateTime>(type: "Date", nullable: true),
                     Wastage = table.Column<decimal>(type: "TEXT", nullable: false),
                     MetalPrice = table.Column<decimal>(type: "TEXT", nullable: false),
                     MakingCharge = table.Column<decimal>(type: "TEXT", nullable: false),
-                    LastPriceUpdate = table.Column<DateTime>(type: "TEXT", nullable: true)
+                    LastPriceUpdate = table.Column<DateTime>(type: "Date", nullable: true),
+                    DateAdded = table.Column<DateTime>(type: "Date", nullable: true),
+                    DateRemoved = table.Column<DateTime>(type: "Date", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Products", x => x.ProductID);
-                    table.ForeignKey(
-                        name: "FK_Products_Categories_CategoryID",
-                        column: x => x.CategoryID,
-                        principalTable: "Categories",
-                        principalColumn: "CategoryID",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Products_Subcategories_SubcategoryID",
-                        column: x => x.SubcategoryID,
-                        principalTable: "Subcategories",
-                        principalColumn: "SubcategoryID");
                     table.ForeignKey(
                         name: "FK_Products_Suppliers_SupplierID",
                         column: x => x.SupplierID,
@@ -802,6 +689,72 @@ namespace Page_Navigation_App.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Roles",
+                columns: table => new
+                {
+                    RoleID = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    RoleName = table.Column<string>(type: "TEXT", nullable: true),
+                    Description = table.Column<string>(type: "TEXT", nullable: true),
+                    Name = table.Column<string>(type: "TEXT", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false),
+                    UserID = table.Column<int>(type: "INTEGER", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Roles", x => x.RoleID);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    UserID = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Username = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    PasswordHash = table.Column<byte[]>(type: "BLOB", nullable: false),
+                    PasswordSalt = table.Column<byte[]>(type: "BLOB", nullable: false),
+                    FullName = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    Email = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    Phone = table.Column<string>(type: "TEXT", maxLength: 15, nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    LastLoginDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    LastPasswordChangeDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false),
+                    RoleId = table.Column<int>(type: "INTEGER", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.UserID);
+                    table.ForeignKey(
+                        name: "FK_Users_Roles_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "Roles",
+                        principalColumn: "RoleID");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserRoles",
+                columns: table => new
+                {
+                    UserRoleID = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    UserID = table.Column<int>(type: "INTEGER", nullable: false),
+                    RoleName = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserRoles", x => x.UserRoleID);
+                    table.ForeignKey(
+                        name: "FK_UserRoles_Users_UserID",
+                        column: x => x.UserID,
+                        principalTable: "Users",
+                        principalColumn: "UserID",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Customers_PhoneNumber",
                 table: "Customers",
@@ -853,19 +806,9 @@ namespace Page_Navigation_App.Migrations
                 column: "OrderDate");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Products_CategoryID",
-                table: "Products",
-                column: "CategoryID");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Products_HUID",
                 table: "Products",
                 column: "HUID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Products_SubcategoryID",
-                table: "Products",
-                column: "SubcategoryID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_SupplierID",
@@ -908,18 +851,29 @@ namespace Page_Navigation_App.Migrations
                 column: "SupplierID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Subcategories_CategoryID",
-                table: "Subcategories",
-                column: "CategoryID");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_UserRoles_UserID",
                 table: "UserRoles",
                 column: "UserID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_RoleId",
+                table: "Users",
+                column: "RoleId");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Roles_Users_UserID",
+                table: "Roles",
+                column: "UserID",
+                principalTable: "Users",
+                principalColumn: "UserID");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_Roles_Users_UserID",
+                table: "Roles");
+
             migrationBuilder.DropTable(
                 name: "AuditLogs");
 
@@ -954,9 +908,6 @@ namespace Page_Navigation_App.Migrations
                 name: "ReportData");
 
             migrationBuilder.DropTable(
-                name: "Roles");
-
-            migrationBuilder.DropTable(
                 name: "SecurityLogs");
 
             migrationBuilder.DropTable(
@@ -978,19 +929,16 @@ namespace Page_Navigation_App.Migrations
                 name: "Products");
 
             migrationBuilder.DropTable(
-                name: "Users");
-
-            migrationBuilder.DropTable(
                 name: "Customers");
-
-            migrationBuilder.DropTable(
-                name: "Subcategories");
 
             migrationBuilder.DropTable(
                 name: "Suppliers");
 
             migrationBuilder.DropTable(
-                name: "Categories");
+                name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "Roles");
         }
     }
 }

@@ -159,39 +159,6 @@ namespace Page_Navigation_App.Migrations
                     b.ToTable("BusinessInfo");
                 });
 
-            modelBuilder.Entity("Page_Navigation_App.Model.Category", b =>
-                {
-                    b.Property<int>("CategoryID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("CategoryName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("DefaultMakingCharges")
-                        .HasColumnType("decimal(5,2)");
-
-                    b.Property<decimal>("DefaultWastage")
-                        .HasColumnType("decimal(5,2)");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("DisplayOrder")
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("CategoryID");
-
-                    b.ToTable("Categories");
-                });
-
             modelBuilder.Entity("Page_Navigation_App.Model.Customer", b =>
                 {
                     b.Property<int>("CustomerID")
@@ -643,7 +610,7 @@ namespace Page_Navigation_App.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("DeliveryDate")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("Date");
 
                     b.Property<decimal>("DiscountAmount")
                         .HasColumnType("decimal(18,2)");
@@ -709,7 +676,7 @@ namespace Page_Navigation_App.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("OrderDate")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("Date");
 
                     b.Property<string>("OrderType")
                         .HasMaxLength(50)
@@ -849,18 +816,15 @@ namespace Page_Navigation_App.Migrations
                     b.Property<decimal>("BasePrice")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("CategoryID")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("Collection")
                         .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("DateAdded")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("Date");
 
                     b.Property<DateTime?>("DateRemoved")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("Date");
 
                     b.Property<string>("Description")
                         .HasMaxLength(500)
@@ -881,7 +845,7 @@ namespace Page_Navigation_App.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("HUIDRegistrationDate")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("Date");
 
                     b.Property<string>("HallmarkNumber")
                         .HasColumnType("TEXT");
@@ -902,7 +866,7 @@ namespace Page_Navigation_App.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("LastPriceUpdate")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("Date");
 
                     b.Property<decimal>("MakingCharge")
                         .HasColumnType("TEXT");
@@ -951,9 +915,6 @@ namespace Page_Navigation_App.Migrations
                     b.Property<decimal>("StoneWeight")
                         .HasColumnType("decimal(10,3)");
 
-                    b.Property<int?>("SubcategoryID")
-                        .HasColumnType("INTEGER");
-
                     b.Property<int>("SupplierID")
                         .HasColumnType("INTEGER");
 
@@ -972,11 +933,7 @@ namespace Page_Navigation_App.Migrations
 
                     b.HasKey("ProductID");
 
-                    b.HasIndex("CategoryID");
-
                     b.HasIndex("HUID");
-
-                    b.HasIndex("SubcategoryID");
 
                     b.HasIndex("SupplierID");
 
@@ -999,7 +956,7 @@ namespace Page_Navigation_App.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("EffectiveDate")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("Date");
 
                     b.Property<string>("EnteredBy")
                         .IsRequired()
@@ -1046,7 +1003,7 @@ namespace Page_Navigation_App.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("RateDate")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("Date");
 
                     b.Property<decimal>("RatePerGram")
                         .HasColumnType("TEXT");
@@ -1063,10 +1020,10 @@ namespace Page_Navigation_App.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("Date");
 
                     b.Property<DateTime?>("ValidUntil")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("Date");
 
                     b.HasKey("RateID");
 
@@ -1093,7 +1050,7 @@ namespace Page_Navigation_App.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("CompletionDate")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("Date");
 
                     b.Property<string>("CustomerComments")
                         .HasMaxLength(500)
@@ -1103,7 +1060,7 @@ namespace Page_Navigation_App.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime?>("DeliveryDate")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("Date");
 
                     b.Property<decimal>("EstimatedCost")
                         .HasColumnType("decimal(18,2)");
@@ -1127,6 +1084,9 @@ namespace Page_Navigation_App.Migrations
                     b.Property<string>("ItemDescription")
                         .IsRequired()
                         .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ItemDetails")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ItemPhotoUrl")
@@ -1158,7 +1118,7 @@ namespace Page_Navigation_App.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("ReceiptDate")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("Date");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -1178,7 +1138,7 @@ namespace Page_Navigation_App.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("WorkStartDate")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("Date");
 
                     b.Property<string>("WorkType")
                         .IsRequired()
@@ -1298,7 +1258,16 @@ namespace Page_Navigation_App.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("RoleName")
@@ -1396,6 +1365,9 @@ namespace Page_Navigation_App.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Language")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("LastUpdated")
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("LowStockAlerts")
@@ -1533,44 +1505,6 @@ namespace Page_Navigation_App.Migrations
                     b.ToTable("StockLedgers");
                 });
 
-            modelBuilder.Entity("Page_Navigation_App.Model.Subcategory", b =>
-                {
-                    b.Property<int>("SubcategoryID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("CategoryID")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("DisplayOrder")
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal?>("SpecialMakingCharges")
-                        .HasColumnType("decimal(5,2)");
-
-                    b.Property<decimal?>("SpecialWastage")
-                        .HasColumnType("decimal(5,2)");
-
-                    b.Property<string>("SubcategoryName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("SubcategoryID");
-
-                    b.HasIndex("CategoryID");
-
-                    b.ToTable("Subcategories");
-                });
-
             modelBuilder.Entity("Page_Navigation_App.Model.Supplier", b =>
                 {
                     b.Property<int>("SupplierID")
@@ -1663,6 +1597,9 @@ namespace Page_Navigation_App.Migrations
                     b.Property<DateTime?>("LastLoginDate")
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime?>("LastPasswordChangeDate")
+                        .HasColumnType("TEXT");
+
                     b.Property<byte[]>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("BLOB");
@@ -1675,12 +1612,17 @@ namespace Page_Navigation_App.Migrations
                         .HasMaxLength(15)
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("RoleId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
                     b.HasKey("UserID");
+
+                    b.HasIndex("RoleId");
 
                     b.ToTable("Users");
                 });
@@ -1787,25 +1729,11 @@ namespace Page_Navigation_App.Migrations
 
             modelBuilder.Entity("Page_Navigation_App.Model.Product", b =>
                 {
-                    b.HasOne("Page_Navigation_App.Model.Category", "Category")
-                        .WithMany("Products")
-                        .HasForeignKey("CategoryID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Page_Navigation_App.Model.Subcategory", "Subcategory")
-                        .WithMany("Products")
-                        .HasForeignKey("SubcategoryID");
-
                     b.HasOne("Page_Navigation_App.Model.Supplier", "Supplier")
                         .WithMany("Products")
                         .HasForeignKey("SupplierID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Category");
-
-                    b.Navigation("Subcategory");
 
                     b.Navigation("Supplier");
                 });
@@ -1858,15 +1786,13 @@ namespace Page_Navigation_App.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("Page_Navigation_App.Model.Subcategory", b =>
+            modelBuilder.Entity("Page_Navigation_App.Model.User", b =>
                 {
-                    b.HasOne("Page_Navigation_App.Model.Category", "Category")
-                        .WithMany("Subcategories")
-                        .HasForeignKey("CategoryID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("Page_Navigation_App.Model.Role", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleId");
 
-                    b.Navigation("Category");
+                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("Page_Navigation_App.Model.UserRole", b =>
@@ -1878,13 +1804,6 @@ namespace Page_Navigation_App.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Page_Navigation_App.Model.Category", b =>
-                {
-                    b.Navigation("Products");
-
-                    b.Navigation("Subcategories");
                 });
 
             modelBuilder.Entity("Page_Navigation_App.Model.Customer", b =>
@@ -1908,11 +1827,6 @@ namespace Page_Navigation_App.Migrations
                     b.Navigation("OrderDetails");
 
                     b.Navigation("Stocks");
-                });
-
-            modelBuilder.Entity("Page_Navigation_App.Model.Subcategory", b =>
-                {
-                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("Page_Navigation_App.Model.Supplier", b =>

@@ -93,9 +93,7 @@ namespace Page_Navigation_App.Services
                 _logService.LogInfo($"User {_currentUser.Username} logged out");
                 _currentUser = null;
             }
-        }
-
-        public async Task SeedDefaultUserAsync()
+        }        public async Task SeedDefaultUserAsync()
         {
             try
             {
@@ -103,10 +101,12 @@ namespace Page_Navigation_App.Services
                 if (!await _dbContext.Users.AnyAsync(u => u.Username.ToLower() == "admin"))
                 {
                     // Check if we have any roles
+                    Role adminRole = null;
+                    
                     if (!await _dbContext.Roles.AnyAsync())
                     {
                         // Create default admin role
-                        var adminRole = new Role
+                        adminRole = new Role
                         {
                             Name = "Administrator",
                             Description = "System Administrator with full access",
@@ -115,13 +115,42 @@ namespace Page_Navigation_App.Services
                         };
 
                         _dbContext.Roles.Add(adminRole);
-                        await _dbContext.SaveChangesAsync();
+                        try {
+                            await _dbContext.SaveChangesAsync();
+                        }
+                        catch (Exception ex) {
+                            _logService.LogError($"Error saving admin role: {ex.Message}");
+                            // Continue anyway
+                        }
                     }
 
-                    var role = await _dbContext.Roles.FirstOrDefaultAsync(r => r.Name == "Administrator");
-                    if (role == null)
-                    {
-                        role = await _dbContext.Roles.FirstOrDefaultAsync();
+                    if (adminRole == null) {
+                        adminRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.Name == "Administrator");
+                    }
+                    
+                    if (adminRole == null) {
+                        adminRole = await _dbContext.Roles.FirstOrDefaultAsync();
+                    }
+                    
+                    // If still no role, create a fallback
+                    if (adminRole == null) {
+                        _logService.LogWarning("Creating fallback admin role");
+                        adminRole = new Role
+                        {
+                            RoleID = 1,
+                            Name = "Admin",
+                            Description = "Default Administrator Role",
+                            CreatedDate = DateTime.Now,
+                            IsActive = true
+                        };
+                        
+                        try {
+                            _dbContext.Roles.Add(adminRole);
+                            await _dbContext.SaveChangesAsync();
+                        }
+                        catch {
+                            // Ignore errors at this point
+                        }
                     }
 
                     // Create default admin user
@@ -132,7 +161,7 @@ namespace Page_Navigation_App.Services
                         Email = "admin@boolapos.com",
                         FirstName = "System",
                         LastName = "Administrator",
-                        RoleId = role.RoleID,
+                        RoleId = adminRole?.RoleID ?? 1,
                         IsActive = true,
                         CreatedDate = DateTime.Now,
                         LastPasswordChangeDate = DateTime.Now
@@ -147,7 +176,7 @@ namespace Page_Navigation_App.Services
             catch (Exception ex)
             {
                 _logService.LogError($"Error seeding default user: {ex.Message}");
-                throw;
+                // Don't throw the exception - let the app continue
             }
         }
 

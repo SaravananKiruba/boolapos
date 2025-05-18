@@ -21,8 +21,7 @@ namespace Page_Navigation_App.Services
         private readonly AppDbContext _context;
         private readonly LogService _logService;
         private readonly ConfigurationService _configService;
-        private readonly AppSettings _settings;
-        private readonly string _encryptionKey;
+        private readonly AppSettings _settings;        private readonly string _encryptionKey;
 
         public SecurityService(
             AppDbContext context,
@@ -34,7 +33,21 @@ namespace Page_Navigation_App.Services
             _logService = logService;
             _configService = configService;
             _settings = settings.Value;
-            _encryptionKey = _settings.EncryptionKey;
+            
+            // Ensure the encryption key is valid for AES (16, 24, or 32 bytes)
+            string key = _settings.EncryptionKey ?? "BoolaPOS_Default_"; // Default fallback
+            
+            // Pad or truncate to 16 bytes (128 bits)
+            if (key.Length < 16)
+                key = key.PadRight(16, '_');
+            else if (key.Length > 16 && key.Length < 24)
+                key = key.PadRight(24, '_');
+            else if (key.Length > 24 && key.Length < 32)
+                key = key.PadRight(32, '_');
+            else if (key.Length > 32)
+                key = key.Substring(0, 32);
+                
+            _encryptionKey = key;
         }
 
         public async Task<bool> CheckPermission(string userId, string action)

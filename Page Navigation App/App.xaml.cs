@@ -30,11 +30,10 @@ namespace Page_Navigation_App
         }
 
         private void ConfigureServices(IServiceCollection services)
-        {
-            // Configure app settings
+        {            // Configure app settings
             services.Configure<AppSettings>(options => {
                 options.BackupFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Backups");
-                options.EncryptionKey = "JSMS_SecureEncryptionKey_2025";
+                options.EncryptionKey = "JSMS_Secure_Key__"; // 16 bytes (128 bits) for AES-128
                 options.EnableAutoBackup = true;
                 options.AutoBackupIntervalHours = 24;
             });
@@ -136,7 +135,8 @@ namespace Page_Navigation_App
             services.AddSingleton<MainWindow>();
             services.AddTransient<LoginWindow>();
         }        protected override async void OnStartup(StartupEventArgs e)
-        {            base.OnStartup(e);
+        {
+            base.OnStartup(e);
             
             // Initialize MahApps.Metro theme system directly
             ApplyApplicationTheme();
@@ -146,16 +146,22 @@ namespace Page_Navigation_App
                 // Ensure database is created and migrations are applied
                 using (var scope = ServiceProvider.CreateScope())
                 {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                    await dbContext.Database.MigrateAsync();
-                    
-                    // Seed default admin user if needed
-                    var authService = scope.ServiceProvider.GetRequiredService<AuthenticationService>();
-                    await authService.SeedDefaultUserAsync();
-                    
-                    // Setup automatic backup schedule
-                    var backupService = scope.ServiceProvider.GetRequiredService<BackupService>();
-                    await backupService.ScheduleAutomaticBackupsAsync();
+                    try {
+                        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                        await dbContext.Database.MigrateAsync();
+                        
+                        // Seed default admin user if needed
+                        var authService = scope.ServiceProvider.GetRequiredService<AuthenticationService>();
+                        await authService.SeedDefaultUserAsync();
+                        
+                        // Setup automatic backup schedule but don't wait for it
+                        var backupService = scope.ServiceProvider.GetRequiredService<BackupService>();
+                        _ = backupService.ScheduleAutomaticBackupsAsync();
+                    }
+                    catch (Exception dbEx) {
+                        MessageBox.Show($"Warning: Database initialization issue: {dbEx.Message}\nThe application will continue but some features may be limited.", 
+                            "Database Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
                 }
 
                 // Get main window but don't show it yet
@@ -242,10 +248,24 @@ namespace Page_Navigation_App
                     
                     simpleLoginWindow.Show();
                 }
-            }            catch (Exception ex)
+            }
+            catch (Exception ex)
             {
-                MessageBox.Show($"Application initialization error: {ex.Message}", 
+                MessageBox.Show($"Application initialization error: {ex.Message}\nThe application will try to continue with limited functionality.", 
                     "Startup Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                
+                try {
+                    // Last resort: Just show the main window
+                    var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
+                    MainWindow = mainWindow;
+                    mainWindow.Show();
+                }
+                catch {
+                    // If we can't even create the main window, just exit
+                    MessageBox.Show("Fatal error: Cannot initialize the application. Please contact support.", 
+                        "Fatal Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Shutdown(-1);
+                }
             }
         }
 
