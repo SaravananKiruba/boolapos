@@ -330,7 +330,7 @@
                                               Binding="{Binding NetWeight, StringFormat=N3}"
                                               Width="80"/>
                             <DataGridTextColumn Header="Price" 
-                                              Binding="{Binding FinalPrice, StringFormat=C}"
+                                              Binding="{Binding FinalPrice, StringFormat=₹ {0:N2}}"
                                               Width="100"/>
                             <DataGridTextColumn Header="Category" 
                                               Binding="{Binding Category.CategoryName}"

@@ -185,7 +185,7 @@
                                       Binding="{Binding WorkType}"
                                       Width="120"/>
                     <DataGridTextColumn Header="Est. Amount" 
-                                      Binding="{Binding EstimatedAmount, StringFormat=C}"
+                                      Binding="{Binding EstimatedAmount, StringFormat=₹ {0:N2}}"
                                       Width="100"/>
                     <DataGridTextColumn Header="Promised Date" 
                                       Binding="{Binding PromisedDate, StringFormat=d}"

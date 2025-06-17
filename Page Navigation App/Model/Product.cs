@@ -117,33 +117,25 @@ namespace Page_Navigation_App.Model
         public string Design { get; set; } = "Antique finish with temple work";
 
         [StringLength(50)]
-        public string Size { get; set; } = "16 inches";
-
-        [Required]
-        [ForeignKey("Category")]
-        public int CategoryID { get; set; } = 1;  // Refers to our "Necklaces" category
-
-        [ForeignKey("Subcategory")]
-        public int? SubcategoryID { get; set; }
-
-        [Required]
+        public string Size { get; set; } = "16 inches";        [Required]
         [ForeignKey("Supplier")]
         public int SupplierID { get; set; } = 1;  // Refers to "Ratanlal Jewellers"
 
+        [ForeignKey("Category")]
+        public int CategoryID { get; set; } = 1;
+
         // Navigation properties
-        public virtual Category Category { get; set; }
-        public virtual Subcategory Subcategory { get; set; }
         public virtual Supplier Supplier { get; set; }
+        public virtual Category Category { get; set; }
         public virtual ICollection<Stock> Stocks { get; set; }
         public virtual ICollection<OrderDetail> OrderDetails { get; set; }
 
-        // Properties referenced in HUIDTrackingService and RateManagementService
-        public string AHCCode { get; set; }
+        // Properties referenced in HUIDTrackingService and RateManagementService        public string AHCCode { get; set; }
         public string JewelType { get; set; }
-        public DateTime? HUIDRegistrationDate { get; set; }
+        public DateOnly? HUIDRegistrationDate { get; set; }
         public decimal Wastage { get => WastagePercentage; set => WastagePercentage = value; }
         public decimal MetalPrice { get; set; }
         public decimal MakingCharge { get => MakingCharges; set => MakingCharges = value; }
-        public DateTime? LastPriceUpdate { get; set; }
+        public DateOnly? LastPriceUpdate { get; set; }
     }
 }

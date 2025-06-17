@@ -359,9 +359,8 @@
                                         Foreground="#2D3748"
                                         FontWeight="SemiBold"
                                         Margin="0,0,10,0"/>
-                                        
-                                <mah:DateTimePicker Grid.Column="1"
-                                                SelectedDateTime="{Binding StartDate}"
+                                          <mah:DateTimePicker Grid.Column="1"
+                                                SelectedDateTime="{Binding StartDateUI}"
                                                 mah:ControlsHelper.CornerRadius="5"
                                                 Margin="0,0,10,0"/>
                                                 
@@ -371,9 +370,8 @@
                                         Foreground="#2D3748"
                                         FontWeight="SemiBold"
                                         Margin="0,0,10,0"/>
-                                        
-                                <mah:DateTimePicker Grid.Column="3"
-                                                SelectedDateTime="{Binding EndDate}"
+                                          <mah:DateTimePicker Grid.Column="3"
+                                                SelectedDateTime="{Binding EndDateUI}"
                                                 mah:ControlsHelper.CornerRadius="5"
                                                 Margin="0,0,10,0"/>
 
@@ -448,7 +446,7 @@
                                                     Binding="{Binding PaymentType}"
                                                     Width="100"/>
                                     <DataGridTextColumn Header="Total" 
-                                                    Binding="{Binding GrandTotal, StringFormat=C}"
+                                                    Binding="{Binding GrandTotal, StringFormat=₹ {0:N2}}"
                                                     Width="120"/>
                                     <DataGridTemplateColumn Width="Auto">
                                         <DataGridTemplateColumn.CellTemplate>

@@ -306,7 +306,7 @@
                                             Binding="{Binding ContactPerson}"
                                             Width="150"/>
                             <DataGridTextColumn Header="Balance" 
-                                            Binding="{Binding CurrentBalance, StringFormat=C2}"
+                                            Binding="{Binding CurrentBalance, StringFormat=₹ {0:N2}}"
                                             Width="120"/>
                             <DataGridTemplateColumn Header="Status" Width="100">
                                 <DataGridTemplateColumn.CellTemplate>

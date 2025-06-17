@@ -155,7 +155,7 @@
                                                       Binding="{Binding PaymentType}"
                                                       Width="100"/>
                                     <DataGridTextColumn Header="Amount" 
-                                                      Binding="{Binding GrandTotal, StringFormat=C}"
+                                                      Binding="{Binding GrandTotal, StringFormat=₹ {0:N2}}"
                                                       Width="120"/>
                                 </DataGrid.Columns>
                             </DataGrid>
@@ -304,7 +304,7 @@
                                                   Binding="{Binding TransactionType}"
                                                   Width="100"/>
                                 <DataGridTextColumn Header="Amount" 
-                                                  Binding="{Binding Amount, StringFormat=C}"
+                                                  Binding="{Binding Amount, StringFormat=₹ {0:N2}}"
                                                   Width="110"/>
                                 <DataGridTextColumn Header="Payment Method" 
                                                   Binding="{Binding PaymentMethod}"

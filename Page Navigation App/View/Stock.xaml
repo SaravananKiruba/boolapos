@@ -300,7 +300,7 @@
                                             Binding="{Binding Quantity, StringFormat=N3}"
                                             Width="100"/>
                             <DataGridTextColumn Header="Purchase Price" 
-                                            Binding="{Binding PurchasePrice, StringFormat=C2}"
+                                            Binding="{Binding PurchasePrice, StringFormat=₹ {0:N2}}"
                                             Width="120"/>
                             <DataGridTextColumn Header="Days in Stock" 
                                             Binding="{Binding DaysInStock}"

@@ -39,9 +39,7 @@ namespace Page_Navigation_App.ViewModel
         public ICommand TransactionsCommand { get; set; }
         public ICommand SuppliersCommand { get; set; }
         public ICommand RateMasterCommand { get; set; }
-        public ICommand RepairJobsCommand { get; set; }
-        public ICommand StockCommand { get; set; }
-        public ICommand CategoryCommand { get; set; }
+        public ICommand RepairJobsCommand { get; set; }        public ICommand StockCommand { get; set; }
         public ICommand UserCommand { get; set; }
         public ICommand ReportCommand { get; set; }
         public ICommand SettingsCommand { get; set; }
@@ -54,9 +52,7 @@ namespace Page_Navigation_App.ViewModel
             TransactionVM transactionVM,
             SupplierVM supplierVM,
             RateMasterVM rateMasterVM,
-            RepairJobVM repairJobVM,
-            StockVM stockVM,
-            CategoryVM categoryVM,
+            RepairJobVM repairJobVM,            StockVM stockVM,
             UserVM userVM,
             ReportVM reportVM,
             SettingsVM settingsVM,
@@ -72,9 +68,7 @@ namespace Page_Navigation_App.ViewModel
             TransactionsCommand = new RelayCommand<object>(_ => NavigateTo(transactionVM));
             SuppliersCommand = new RelayCommand<object>(_ => NavigateTo(supplierVM));
             RateMasterCommand = new RelayCommand<object>(_ => NavigateTo(rateMasterVM));
-            RepairJobsCommand = new RelayCommand<object>(_ => NavigateTo(repairJobVM));
-            StockCommand = new RelayCommand<object>(_ => NavigateTo(stockVM));
-            CategoryCommand = new RelayCommand<object>(_ => NavigateTo(categoryVM));
+            RepairJobsCommand = new RelayCommand<object>(_ => NavigateTo(repairJobVM));            StockCommand = new RelayCommand<object>(_ => NavigateTo(stockVM));
             UserCommand = new RelayCommand<object>(_ => NavigateTo(userVM), _ => CanAccessUserManagement());
             ReportCommand = new RelayCommand<object>(_ => NavigateTo(reportVM));
             SettingsCommand = new RelayCommand<object>(_ => NavigateTo(settingsVM));

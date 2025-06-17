@@ -7,6 +7,7 @@ using System.Windows.Input;
 using Page_Navigation_App.Services;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Threading.Tasks;
 
 namespace Page_Navigation_App.ViewModel
@@ -126,10 +127,8 @@ namespace Page_Navigation_App.ViewModel
                     CalculateOrderItemTotal();
                 }
             }
-        }
-
-        private DateTime _startDate = DateTime.Now.AddMonths(-1);
-        public DateTime StartDate
+        }        private DateOnly _startDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(-1));
+        public DateOnly StartDate
         {
             get => _startDate;
             set
@@ -139,8 +138,8 @@ namespace Page_Navigation_App.ViewModel
             }
         }
 
-        private DateTime _endDate = DateTime.Now;
-        public DateTime EndDate
+        private DateOnly _endDate = DateOnly.FromDateTime(DateTime.Now);
+        public DateOnly EndDate
         {
             get => _endDate;
             set
@@ -148,6 +147,21 @@ namespace Page_Navigation_App.ViewModel
                 _endDate = value;
                 OnPropertyChanged();
             }
+        }
+        
+        // UI helper properties for DateTime pickers
+        [NotMapped]
+        public DateTime StartDateUI
+        {
+            get => StartDate.ToDateTime(TimeOnly.MinValue);
+            set => StartDate = DateOnly.FromDateTime(value);
+        }
+        
+        [NotMapped]
+        public DateTime EndDateUI
+        {
+            get => EndDate.ToDateTime(TimeOnly.MinValue);
+            set => EndDate = DateOnly.FromDateTime(value);
         }
 
         private int _customerId;
@@ -276,10 +290,8 @@ namespace Page_Navigation_App.ViewModel
             {
                 System.Windows.MessageBox.Show("Please add at least one item to the order");
                 return;
-            }
-
-            // Set order details
-            SelectedOrder.OrderDate = DateTime.Now;
+            }            // Set order details
+            SelectedOrder.OrderDate = DateOnly.FromDateTime(DateTime.Now);
             SelectedOrder.CustomerID = SelectedCustomer.CustomerID;
 
             // Prepare order details list
@@ -381,17 +393,15 @@ namespace Page_Navigation_App.ViewModel
         }
 
         private void ClearForm()
-        {
-            SelectedOrder = new Order
+        {            SelectedOrder = new Order
             {
-                OrderDate = DateTime.Now,
+                OrderDate = DateOnly.FromDateTime(DateTime.Now),
                 PaymentType = PaymentTypes.First()
             };
             SelectedCustomer = null;
             SelectedProduct = null;
-            OrderItems.Clear();
-            StartDate = DateTime.Now.AddMonths(-1);
-            EndDate = DateTime.Now;
+            OrderItems.Clear();            StartDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(-1));
+            EndDate = DateOnly.FromDateTime(DateTime.Now);
             CustomerId = 0;
         }
 

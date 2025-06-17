@@ -28,24 +28,22 @@ namespace Page_Navigation_App.Model
         
         // Add alias property for compatibility
         [NotMapped]
-        public string ItemDetails { get => ItemDescription; set => ItemDescription = value; }
+        public string ItemDetails { get => ItemDescription; set => ItemDescription = value; }        [Required]
+        public DateOnly ReceiptDate { get; set; } = DateOnly.FromDateTime(DateTime.Now);
 
-        [Required]
-        public DateTime ReceiptDate { get; set; } = DateTime.Now;
+        public DateOnly? CompletionDate { get; set; }
 
-        public DateTime? CompletionDate { get; set; }
-
-        public DateTime? DeliveryDate { get; set; }
+        public DateOnly? DeliveryDate { get; set; }
         
         // Add WorkStartDate property
-        public DateTime? WorkStartDate { get; set; }
+        public DateOnly? WorkStartDate { get; set; }
         
         // Add expected delivery date property
-        public DateTime? EstimatedDeliveryDate { get; set; }
+        public DateOnly? EstimatedDeliveryDate { get; set; }
         
         // Add expected delivery date alias
         [NotMapped]
-        public DateTime? PromisedDate { get => EstimatedDeliveryDate; set => EstimatedDeliveryDate = value; }
+        public DateOnly? PromisedDate { get => EstimatedDeliveryDate; set => EstimatedDeliveryDate = value; }
 
         [Required]
         [Column(TypeName = "decimal(10,3)")]

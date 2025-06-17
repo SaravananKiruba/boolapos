@@ -66,14 +66,12 @@ namespace Page_Navigation_App
             services.AddScoped<CustomerService>();
             services.AddScoped<ProductService>();
             services.AddScoped<OrderService>();
-            services.AddScoped<FinanceService>();
-            services.AddScoped<StockLedgerService>();
+            services.AddScoped<FinanceService>();            services.AddScoped<StockLedgerService>();
             services.AddScoped<SupplierService>();
             services.AddScoped<RateMasterService>();
             services.AddScoped<RepairJobService>();
             services.AddScoped<StockService>();
             services.AddScoped<ExchangeService>();
-            services.AddScoped<CategoryService>();
             services.AddScoped<UserService>();
             services.AddScoped<PrintService>();
 
@@ -83,12 +81,10 @@ namespace Page_Navigation_App
             services.AddTransient<CustomerVM>();
             services.AddTransient<ProductVM>();
             services.AddTransient<OrderVM>();
-            services.AddTransient<TransactionVM>();
-            services.AddTransient<SupplierVM>();
+            services.AddTransient<TransactionVM>();            services.AddTransient<SupplierVM>();
             services.AddTransient<RateMasterVM>();
             services.AddTransient<RepairJobVM>();
             services.AddTransient<StockVM>();
-            services.AddTransient<CategoryVM>();
             services.AddTransient<UserVM>();
             services.AddTransient<ReportVM>();
             services.AddTransient<SettingsVM>();

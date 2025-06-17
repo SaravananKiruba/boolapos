@@ -139,12 +139,8 @@
             </DataTemplate>
             <DataTemplate DataType="{x:Type vm:RepairJobVM}">
                 <view:RepairJobs/>
-            </DataTemplate>
-            <DataTemplate DataType="{x:Type vm:StockVM}">
+            </DataTemplate>            <DataTemplate DataType="{x:Type vm:StockVM}">
                 <view:Stock/>
-            </DataTemplate>
-            <DataTemplate DataType="{x:Type vm:CategoryVM}">
-                <view:Categories/>
             </DataTemplate>
             <DataTemplate DataType="{x:Type vm:UserVM}">
                 <view:Users/>

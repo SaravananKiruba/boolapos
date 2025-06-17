@@ -40,15 +40,14 @@ namespace Page_Navigation_App.Services
 
             _context.Entry(existingOrder).CurrentValues.SetValues(order);
             await _context.SaveChangesAsync();
-            return true;
-        }
-
+            return true;        }
+        
         // Add new method for filtering orders by date
-        public async Task<IEnumerable<Order>> FilterOrdersByDate(DateTime startDate, DateTime endDate)
+        public async Task<IEnumerable<Order>> FilterOrdersByDate(DateOnly startDate, DateOnly endDate)
         {
             return await _context.Orders
                 .Include(o => o.Customer)
-                .Where(o => o.OrderDate.Date >= startDate.Date && o.OrderDate.Date <= endDate.Date)
+                .Where(o => o.OrderDate >= startDate && o.OrderDate <= endDate)
                 .OrderByDescending(o => o.OrderDate)
                 .ToListAsync();
         }
@@ -109,7 +108,7 @@ namespace Page_Navigation_App.Services
             try
             {
                 // Add order
-                order.OrderDate = DateTime.Now;
+                order.OrderDate = DateOnly.FromDateTime(DateTime.Now);
                 
                 // Generate invoice number if not provided
                 if (string.IsNullOrEmpty(order.InvoiceNumber))
@@ -139,31 +138,11 @@ namespace Page_Navigation_App.Services
                     // Calculate base metal amount
                     // metalRate is now a decimal, not an object with SaleRate property
                     detail.MetalRate = metalRate;
-                    detail.BaseAmount = detail.NetWeight * detail.MetalRate;
-
-                    // Calculate wastage
+                    detail.BaseAmount = detail.NetWeight * detail.MetalRate;                    // Calculate wastage
                     decimal wastagePercentage = detail.Product.WastagePercentage;
-                    if (detail.Product.Subcategory?.SpecialWastage != null)
-                    {
-                        wastagePercentage = detail.Product.Subcategory.SpecialWastage.Value;
-                    }
-                    else if (detail.Product.Category?.DefaultWastage != null)
-                    {
-                        wastagePercentage = detail.Product.Category.DefaultWastage;
-                    }
                     
-                    decimal wastageAmount = (detail.BaseAmount * wastagePercentage) / 100;
-
-                    // Calculate making charges
+                    decimal wastageAmount = (detail.BaseAmount * wastagePercentage) / 100;                    // Calculate making charges
                     decimal makingChargePercentage = detail.Product.MakingCharges;
-                    if (detail.Product.Subcategory?.SpecialMakingCharges != null)
-                    {
-                        makingChargePercentage = detail.Product.Subcategory.SpecialMakingCharges.Value;
-                    }
-                    else if (detail.Product.Category?.DefaultMakingCharges != null)
-                    {
-                        makingChargePercentage = detail.Product.Category.DefaultMakingCharges;
-                    }
                     
                     decimal makingAmount = (detail.BaseAmount * makingChargePercentage) / 100;
 
@@ -247,13 +226,14 @@ namespace Page_Navigation_App.Services
                 .Where(o => o.CustomerID == customerId)
                 .OrderByDescending(o => o.OrderDate)
                 .ToListAsync();
-        }
-
-        public async Task<Dictionary<string, decimal>> GetSalesSummary(DateTime startDate, DateTime endDate)
-        {
+        }        public async Task<Dictionary<string, decimal>> GetSalesSummary(DateTime startDate, DateTime endDate)        {
+            // Convert DateTime to DateOnly for query
+            var startDateOnly = DateOnly.FromDateTime(startDate);
+            var endDateOnly = DateOnly.FromDateTime(endDate);
+            
             var orders = await _context.Orders
                 .Include(o => o.OrderDetails)
-                .Where(o => o.OrderDate >= startDate && o.OrderDate <= endDate)
+                .Where(o => o.OrderDate >= startDateOnly && o.OrderDate <= endDateOnly)
                 .ToListAsync();
 
             return new Dictionary<string, decimal>
@@ -270,10 +250,9 @@ namespace Page_Navigation_App.Services
         }
 
         public async Task<string> GenerateInvoiceNumber()
-        {
-            var today = DateTime.Today;
+        {            var today = DateOnly.FromDateTime(DateTime.Today);
             var lastOrder = await _context.Orders
-                .Where(o => o.OrderDate.Date == today)
+                .Where(o => o.OrderDate == today)
                 .OrderByDescending(o => o.OrderID)
                 .FirstOrDefaultAsync();
 
@@ -285,16 +264,17 @@ namespace Page_Navigation_App.Services
             }
 
             return $"{today:yyyyMMdd}-{sequence:D4}";
-        }
-
-        public async Task<IEnumerable<Order>> GetOrdersByDate(DateTime startDate, DateTime endDate)
+        }        public async Task<IEnumerable<Order>> GetOrdersByDate(DateTime startDate, DateTime endDate)
         {
+            // Convert DateTime to DateOnly for query
+            var startDateOnly = DateOnly.FromDateTime(startDate);
+            var endDateOnly = DateOnly.FromDateTime(endDate);
+            
             return await _context.Orders
                 .Include(o => o.Customer)
                 .Include(o => o.OrderDetails)
                     .ThenInclude(od => od.Product)
-                .Where(o => o.OrderDate.Date >= startDate.Date && 
-                           o.OrderDate.Date <= endDate.Date)
+                .Where(o => o.OrderDate >= startDateOnly && o.OrderDate <= endDateOnly)
                 .OrderByDescending(o => o.OrderDate)
                 .ToListAsync();
         }

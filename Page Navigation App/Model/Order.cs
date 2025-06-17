@@ -13,10 +13,8 @@ namespace Page_Navigation_App.Model
 
         [Required]
         [ForeignKey("Customer")]
-        public int CustomerID { get; set; }
-
-        [Required]
-        public DateTime OrderDate { get; set; }
+        public int CustomerID { get; set; }        [Required]
+        public DateOnly OrderDate { get; set; } = DateOnly.FromDateTime(DateTime.Now);
 
         [StringLength(20)]
         public string InvoiceNumber { get; set; }
