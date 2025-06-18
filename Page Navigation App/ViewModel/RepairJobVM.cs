@@ -46,8 +46,9 @@ namespace Page_Navigation_App.ViewModel
             }
         }
 
-        private DateTime _startDate = DateTime.Now.AddMonths(-1);
-        public DateTime StartDate
+        private DateOnly _startDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(-1));
+
+        public DateOnly StartDate
         {
             get => _startDate;
             set
@@ -57,8 +58,9 @@ namespace Page_Navigation_App.ViewModel
             }
         }
 
-        private DateTime _endDate = DateTime.Now;
-        public DateTime EndDate
+
+        private DateOnly _endDate = DateOnly.FromDateTime(DateTime.Now);
+        public DateOnly EndDate
         {
             get => _endDate;
             set
@@ -188,8 +190,8 @@ namespace Page_Navigation_App.ViewModel
         {
             SelectedJob = new RepairJob { ReceiptDate = DateOnly.FromDateTime(DateTime.Now) };
             SearchTerm = string.Empty;
-            StartDate = DateTime.Now.AddMonths(-1);
-            EndDate = DateTime.Now;
+            StartDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(-1));
+            EndDate = DateOnly.FromDateTime(DateTime.Now);
             SelectedStatus = null;
         }
 
