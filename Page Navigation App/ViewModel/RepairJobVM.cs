@@ -24,7 +24,7 @@ namespace Page_Navigation_App.ViewModel
         public ObservableCollection<RepairJob> RepairJobs { get; set; } = new ObservableCollection<RepairJob>();
         public ObservableCollection<Customer> Customers { get; set; } = new ObservableCollection<Customer>();
 
-        private RepairJob _selectedJob = new RepairJob { ReceiptDate = DateTime.Now };
+        private RepairJob _selectedJob = new RepairJob { ReceiptDate = DateOnly.FromDateTime(DateTime.Now) };
         public RepairJob SelectedJob
         {
             get => _selectedJob;
@@ -186,7 +186,7 @@ namespace Page_Navigation_App.ViewModel
 
         private void ClearForm()
         {
-            SelectedJob = new RepairJob { ReceiptDate = DateTime.Now };
+            SelectedJob = new RepairJob { ReceiptDate = DateOnly.FromDateTime(DateTime.Now) };
             SearchTerm = string.Empty;
             StartDate = DateTime.Now.AddMonths(-1);
             EndDate = DateTime.Now;

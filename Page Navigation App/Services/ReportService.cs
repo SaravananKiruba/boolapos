@@ -270,7 +270,7 @@ namespace Page_Navigation_App.Services
                         CustomerName = rj.Customer.CustomerName,
                         ItemDescription = rj.ItemDescription,
                         ReceiptDate = rj.ReceiptDate,
-                        DeliveryDate = rj.DeliveryDate,
+                        DeliveryDate = rj.DeliveryDate ?? default(DateOnly),
                         Status = rj.Status,
                         EstimatedCost = rj.EstimatedCost,
                         FinalAmount = rj.FinalAmount,

@@ -39,10 +39,9 @@ namespace Page_Navigation_App.Services
                 // XXXX = Sequential number
                 
                 string monthYear = DateTime.Now.ToString("MMyy");
-                string categoryId = product.CategoryID.ToString("D2");
                 
                 // Find latest tag with same prefix
-                string prefix = $"{monthYear}-{categoryId}-";
+                string prefix = $"{monthYear}-KAM-";
                 var latestProduct = await _context.Products
                     .Where(p => p.TagNumber != null && p.TagNumber.StartsWith(prefix))
                     .OrderByDescending(p => p.TagNumber)
@@ -83,7 +82,6 @@ namespace Page_Navigation_App.Services
             try
             {
                 return await _context.Products
-                    .Include(p => p.Category)
                     .Include(p => p.Supplier)
                     .FirstOrDefaultAsync(p => p.TagNumber == tagNumber);
             }
@@ -102,7 +100,6 @@ namespace Page_Navigation_App.Services
             try
             {
                 var product = await _context.Products
-                    .Include(p => p.Category)
                     .FirstOrDefaultAsync(p => p.ProductID == productId);
                     
                 if (product == null)
@@ -114,7 +111,6 @@ namespace Page_Navigation_App.Services
                     await GenerateTagNumberAsync(productId);
                     // Refresh product data
                     product = await _context.Products
-                        .Include(p => p.Category)
                         .FirstOrDefaultAsync(p => p.ProductID == productId);
                 }
                 
@@ -139,7 +135,6 @@ namespace Page_Navigation_App.Services
             try
             {
                 return await _context.Products
-                    .Include(p => p.Category)
                     .Include(p => p.Supplier)
                     .Where(p => !string.IsNullOrEmpty(p.TagNumber))
                     .ToListAsync();

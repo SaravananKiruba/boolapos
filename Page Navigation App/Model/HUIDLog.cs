@@ -29,7 +29,7 @@ namespace Page_Navigation_App.Model
         public string Description { get; set; }
         
         [Required]
-        public DateTime ActivityDate { get; set; }
+        public DateOnly ActivityDate { get; set; }
         
         // Navigation property
         [ForeignKey("ProductID")]

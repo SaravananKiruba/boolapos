@@ -22,7 +22,7 @@ namespace Page_Navigation_App.Services
         {
             try
             {
-                repairJob.ReceiptDate = DateTime.Now;
+                repairJob.ReceiptDate = DateOnly.FromDateTime(DateTime.Now);
                 repairJob.Status = "Pending";
                 
                 await _context.RepairJobs.AddAsync(repairJob);
@@ -47,8 +47,8 @@ namespace Page_Navigation_App.Services
         // Get all repair jobs with filtering options
         public async Task<IEnumerable<RepairJob>> GetRepairJobs(
             string status = null,
-            DateTime? fromDate = null,
-            DateTime? toDate = null)
+            DateOnly? fromDate = null,
+            DateOnly? toDate = null)
         {
             var query = _context.RepairJobs
                 .Include(r => r.Customer)
@@ -111,15 +111,15 @@ namespace Page_Navigation_App.Services
                 // Set appropriate dates based on status
                 if (newStatus == "In Process" && oldStatus == "Pending")
                 {
-                    repairJob.WorkStartDate = DateTime.Now;
+                    repairJob.WorkStartDate = DateOnly.FromDateTime(DateTime.Now);
                 }
                 else if (newStatus == "Completed" && (oldStatus == "Pending" || oldStatus == "In Process"))
                 {
-                    repairJob.CompletionDate = DateTime.Now;
+                    repairJob.CompletionDate = DateOnly.FromDateTime(DateTime.Now);
                 }
                 else if (newStatus == "Delivered")
                 {
-                    repairJob.DeliveryDate = DateTime.Now;
+                    repairJob.DeliveryDate = DateOnly.FromDateTime(DateTime.Now);
                 }
                 
                 await _context.SaveChangesAsync();
@@ -171,7 +171,7 @@ namespace Page_Navigation_App.Services
                 if (repairJob == null) return false;
                 
                 repairJob.Status = "Delivered";
-                repairJob.DeliveryDate = DateTime.Now;
+                repairJob.DeliveryDate = DateOnly.FromDateTime(DateTime.Now);
                 repairJob.FinalAmount = finalCost;
                 repairJob.PaymentMethod = paymentMethod;
                 
@@ -194,28 +194,30 @@ namespace Page_Navigation_App.Services
 
         // Get repair statistics
         public async Task<Dictionary<string, object>> GetRepairStatistics(
-            DateTime fromDate,
-            DateTime toDate)
+            DateOnly fromDate,
+            DateOnly toDate)
         {
             var repairJobs = await _context.RepairJobs
                 .Where(r => r.ReceiptDate >= fromDate && r.ReceiptDate <= toDate)
                 .ToListAsync();
-                
+
             return new Dictionary<string, object>
             {
                 ["TotalRepairs"] = repairJobs.Count,
-                ["PendingRepairs"] = repairJobs.Count(r => r.Status == "Pending"),
-                ["InProcessRepairs"] = repairJobs.Count(r => r.Status == "In Process"),
-                ["CompletedRepairs"] = repairJobs.Count(r => r.Status == "Completed" || r.Status == "Delivered"),
+                ["PendingRepairs"] = repairJobs.Count(r => r.Status?.Equals("Pending", StringComparison.OrdinalIgnoreCase) == true),
+                ["InProcessRepairs"] = repairJobs.Count(r => r.Status?.Equals("In Process", StringComparison.OrdinalIgnoreCase) == true),
+                ["CompletedRepairs"] = repairJobs.Count(r => r.Status?.Equals("Completed", StringComparison.OrdinalIgnoreCase) == true
+                                                           || r.Status?.Equals("Delivered", StringComparison.OrdinalIgnoreCase) == true),
                 ["AverageCompletionTime"] = repairJobs
-                    .Where(r => r.CompletionDate != null && r.ReceiptDate != DateTime.MinValue)
-                    .Select(r => (r.CompletionDate.Value - r.ReceiptDate).TotalDays)
-                    .DefaultIfEmpty(0)
-                    .Average(),
+         .Where(r => r.CompletionDate != null && r.ReceiptDate != DateOnly.MinValue)
+         .Select(r => (r.CompletionDate.Value.ToDateTime(TimeOnly.MinValue) - r.ReceiptDate.ToDateTime(TimeOnly.MinValue)).TotalDays)
+         .DefaultIfEmpty(0)
+         .Average(),
                 ["TotalRevenue"] = repairJobs
-                    .Where(r => r.Status == "Delivered")
-                    .Sum(r => r.FinalAmount)
+         .Where(r => r.Status?.Equals("Delivered", StringComparison.OrdinalIgnoreCase) == true)
+         .Sum(r => r.FinalAmount)
             };
+
         }
     }
 }

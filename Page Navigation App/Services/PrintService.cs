@@ -342,7 +342,6 @@ namespace Page_Navigation_App.Services
             try
             {
                 var product = await _context.Products
-                    .Include(p => p.Category)
                     .FirstOrDefaultAsync(p => p.ProductID == productId);
 
                 if (product == null)
@@ -407,7 +406,6 @@ namespace Page_Navigation_App.Services
 </head>
 <body>
     <div class='tag-container'>
-        <div class='tag-header'>{product.Category?.CategoryName ?? "Jewelry"}</div>
         <div class='tag-content'>
             <p><strong>Name:</strong> {product.ProductName}</p>
             <p><strong>Metal:</strong> {product.MetalType} {product.Purity}</p>
@@ -607,16 +605,7 @@ namespace Page_Navigation_App.Services
                 </tr>";
             }
 
-            // Generate category sales rows
-            string categorySalesRows = "";
-            foreach (var category in report.SalesByCategory)
-            {
-                categorySalesRows += $@"
-                <tr>
-                    <td>{category.CategoryName}</td>
-                    <td>₹{category.Amount:N2}</td>
-                </tr>";
-            }
+         
 
             return $@"
 <!DOCTYPE html>
@@ -653,14 +642,7 @@ namespace Page_Navigation_App.Services
             <h3>New Customers</h3>
             <p>{report.NewCustomers}</p>
         </div>
-        <div class='summary-item'>
-            <h3>Gold Sales</h3>
-            <p>₹{report.GoldSalesAmount:N2}</p>
-        </div>
-        <div class='summary-item'>
-            <h3>Silver Sales</h3>
-            <p>₹{report.SilverSalesAmount:N2}</p>
-        </div>
+       
     </div>
     
     <div class='report-section'>
@@ -703,9 +685,7 @@ namespace Page_Navigation_App.Services
                     <th>Amount</th>
                 </tr>
             </thead>
-            <tbody>
-                {categorySalesRows}
-            </tbody>
+           
         </table>
     </div>
     
@@ -929,7 +909,6 @@ namespace Page_Navigation_App.Services
             {
                 // Find product by HUID
                 var product = await _context.Products
-                    .Include(p => p.Category)
                     .Include(p => p.Supplier)
                     .FirstOrDefaultAsync(p => p.HUID == huid);
 
@@ -1022,10 +1001,7 @@ namespace Page_Navigation_App.Services
                     <td>Product Description:</td>
                     <td>{product.ProductName}</td>
                 </tr>
-                <tr>
-                    <td>Category:</td>
-                    <td>{product.Category?.CategoryName ?? "Jewelry"}</td>
-                </tr>
+               
                 <tr>
                     <td>Metal Type:</td>
                     <td>{product.MetalType}</td>

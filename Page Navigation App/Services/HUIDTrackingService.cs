@@ -106,7 +106,7 @@ namespace Page_Navigation_App.Services
                     ProductID = productId,
                     ActivityType = activityType,
                     Description = description,
-                    ActivityDate = DateTime.Now
+                    ActivityDate = DateOnly.FromDateTime(DateTime.Now)
                 };
                 
                 // Add to HUID log
@@ -281,7 +281,6 @@ namespace Page_Navigation_App.Services
                     VerificationDate = DateTime.Now,
                     JewelType = product.JewelType,
                     Purity = product.Purity,
-                    AHCCode = product.AHCCode,
                     ProductID = product.ProductID,
                     ProductName = product.ProductName
                 };
@@ -302,7 +301,7 @@ namespace Page_Navigation_App.Services
         /// <summary>
         /// Generate BIS compliance report for auditing
         /// </summary>
-        public async Task<HUIDComplianceReport> GenerateHUIDComplianceReportAsync(DateTime fromDate, DateTime toDate)
+        public async Task<HUIDComplianceReport> GenerateHUIDComplianceReportAsync(DateOnly fromDate, DateOnly toDate)
         {
             try
             {
@@ -329,15 +328,7 @@ namespace Page_Navigation_App.Services
                     })
                     .ToList();
                 
-                // Group products by AHC
-                var ahcStats = products
-                    .GroupBy(p => p.AHCCode)
-                    .Select(g => new AHCStats
-                    {
-                        AHCCode = g.Key,
-                        Count = g.Count()
-                    })
-                    .ToList();
+               
                 
                 // Group activity logs by type
                 var activityStats = huidLogs
@@ -357,7 +348,6 @@ namespace Page_Navigation_App.Services
                     GeneratedDate = DateTime.Now,
                     TotalHUIDsRegistered = products.Count,
                     JewelryTypeStatistics = jewelryTypeStats,
-                    AHCStatistics = ahcStats,
                     ActivityStatistics = activityStats,
                     RecentActivities = huidLogs.Take(50).ToList() // Recent 50 activities
                 };
@@ -400,13 +390,12 @@ namespace Page_Navigation_App.Services
     /// </summary>
     public class HUIDComplianceReport
     {
-        public DateTime FromDate { get; set; }
-        public DateTime ToDate { get; set; }
+        public DateOnly FromDate { get; set; }
+        public DateOnly ToDate { get; set; }
         public DateTime GeneratedDate { get; set; }
         public string ErrorMessage { get; set; }
         public int TotalHUIDsRegistered { get; set; }
         public List<JewelryTypeStats> JewelryTypeStatistics { get; set; } = new List<JewelryTypeStats>();
-        public List<AHCStats> AHCStatistics { get; set; } = new List<AHCStats>();
         public List<ActivityStats> ActivityStatistics { get; set; } = new List<ActivityStats>();
         public List<Model.HUIDLog> RecentActivities { get; set; } = new List<Model.HUIDLog>();
     }

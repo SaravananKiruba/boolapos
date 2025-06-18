@@ -103,15 +103,6 @@ namespace Page_Navigation_App.Services
                 query = query.Where(p => p.Purity == purity);
             }
 
-            if (categoryId.HasValue)
-            {
-                query = query.Where(p => p.CategoryID == categoryId.Value);
-            }
-
-            if (subcategoryId.HasValue)
-            {
-                query = query.Where(p => p.SubcategoryID == subcategoryId.Value);
-            }
 
             return await query.ToListAsync();
         }
@@ -156,21 +147,6 @@ namespace Page_Navigation_App.Services
         }
 
         // Additional helper methods
-        public async Task<Dictionary<string, decimal>> GetProductValueByCategory()
-        {
-            var products = await _context.Products
-                .Include(p => p.Category)
-                .Include(p => p.Stocks)
-                .Where(p => p.IsActive && p.Stocks.Any(s => s.Quantity > 0))
-                .ToListAsync();
-
-            return products
-                .GroupBy(p => p.Category.CategoryName)
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.Sum(p => p.Stocks.Sum(s => s.Quantity * p.BasePrice))
-                );
-        }
 
         public async Task<Dictionary<string, decimal>> GetProductValueByMetal()
         {
@@ -192,8 +168,6 @@ namespace Page_Navigation_App.Services
             decimal maxPrice)
         {
             return await _context.Products
-                .Include(p => p.Category)
-                .Include(p => p.Subcategory)
                 .Include(p => p.Stocks)
                 .Where(p => p.BasePrice >= minPrice && p.BasePrice <= maxPrice && p.IsActive)
                 .ToListAsync();
@@ -205,7 +179,7 @@ namespace Page_Navigation_App.Services
             bool applyToSubcategories = false)
         {
             var products = await _context.Products
-                .Where(p => p.CategoryID == categoryId && p.IsActive)
+                .Where(p =>  p.IsActive)
                 .ToListAsync();
 
             foreach (var product in products)
@@ -216,7 +190,7 @@ namespace Page_Navigation_App.Services
             if (applyToSubcategories)
             {
                 var subcategoryProducts = await _context.Products
-                    .Where(p => p.Subcategory.CategoryID == categoryId && p.IsActive)
+                    .Where(p => p.IsActive)
                     .ToListAsync();
 
                 foreach (var product in subcategoryProducts)
@@ -234,7 +208,7 @@ namespace Page_Navigation_App.Services
             bool applyToSubcategories = false)
         {
             var products = await _context.Products
-                .Where(p => p.CategoryID == categoryId && p.IsActive)
+                .Where(p => p.IsActive)
                 .ToListAsync();
 
             foreach (var product in products)
@@ -245,7 +219,7 @@ namespace Page_Navigation_App.Services
             if (applyToSubcategories)
             {
                 var subcategoryProducts = await _context.Products
-                    .Where(p => p.Subcategory.CategoryID == categoryId && p.IsActive)
+                    .Where(p => p.IsActive)
                     .ToListAsync();
 
                 foreach (var product in subcategoryProducts)
@@ -260,8 +234,6 @@ namespace Page_Navigation_App.Services
         public async Task<IEnumerable<Product>> FilterProducts(string searchTerm)
         {
             return await _context.Products
-                .Include(p => p.Category)
-                .Include(p => p.Subcategory)
                 .Include(p => p.Supplier)
                 .Where(p => 
                     p.IsActive && (
@@ -275,8 +247,6 @@ namespace Page_Navigation_App.Services
         public async Task<IEnumerable<Product>> GetProductsByMetal(string metalType, string purity)
         {
             return await _context.Products
-                .Include(p => p.Category)
-                .Include(p => p.Subcategory)
                 .Where(p => p.MetalType == metalType && 
                            p.Purity == purity && 
                            p.IsActive)

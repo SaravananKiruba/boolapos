@@ -19,7 +19,7 @@ namespace Page_Navigation_App.Services
 
         public async Task<RepairJob> CreateRepairJob(RepairJob job)
         {
-            job.ReceiptDate = DateTime.Now;
+            job.ReceiptDate = DateOnly.FromDateTime(DateTime.Now);
             job.Status = "Pending";
             await _context.RepairJobs.AddAsync(job);
             await _context.SaveChangesAsync();
@@ -38,7 +38,7 @@ namespace Page_Navigation_App.Services
             
             if (newStatus == "Delivered")
             {
-                job.CompletionDate = DateTime.Now;
+                job.CompletionDate = DateOnly.FromDateTime(DateTime.Now);
             }
 
             await _context.SaveChangesAsync();
@@ -95,8 +95,8 @@ namespace Page_Navigation_App.Services
 
         public async Task<IEnumerable<RepairJob>> SearchJobs(
             string searchTerm,
-            DateTime? startDate = null,
-            DateTime? endDate = null,
+            DateOnly? startDate = null,
+            DateOnly? endDate = null,
             string status = null)
         {
             var query = _context.RepairJobs
@@ -112,10 +112,10 @@ namespace Page_Navigation_App.Services
             }
 
             if (startDate != null)
-                query = query.Where(r => r.ReceiptDate.Date >= startDate.Value.Date);
+                query = query.Where(r => r.ReceiptDate >= startDate.Value);
 
             if (endDate != null)
-                query = query.Where(r => r.ReceiptDate.Date <= endDate.Value.Date);
+                query = query.Where(r => r.ReceiptDate <= endDate.Value);
 
             if (!string.IsNullOrWhiteSpace(status))
                 query = query.Where(r => r.Status == status);
@@ -132,12 +132,12 @@ namespace Page_Navigation_App.Services
                 .FirstOrDefaultAsync(r => r.RepairID == jobId);
         }
 
-        public async Task<IEnumerable<RepairJob>> GetRepairsByDate(DateTime startDate, DateTime endDate)
+        public async Task<IEnumerable<RepairJob>> GetRepairsByDate(DateOnly startDate, DateOnly endDate)
         {
             return await _context.RepairJobs
                 .Include(r => r.Customer)
-                .Where(r => r.ReceiptDate.Date >= startDate.Date && 
-                           r.ReceiptDate.Date <= endDate.Date)
+                .Where(r => r.ReceiptDate >= startDate && 
+                           r.ReceiptDate <= endDate)
                 .OrderByDescending(r => r.ReceiptDate)
                 .ToListAsync();
         }

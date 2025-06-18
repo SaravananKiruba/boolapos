@@ -63,7 +63,7 @@ namespace Page_Navigation_App.ViewModel
 
             // Initialize new customer with default type and registration date
             SelectedCustomer.CustomerType = CustomerTypes.First();
-            SelectedCustomer.RegistrationDate = DateTime.Now;
+            SelectedCustomer.RegistrationDate = DateOnly.FromDateTime(DateTime.Now);
 
             AddOrUpdateCommand = new RelayCommand<object>(_ => AddOrUpdateCustomer(), _ => CanAddOrUpdateCustomer());
             ClearCommand = new RelayCommand<object>(_ => ClearForm(), _ => true);
@@ -87,7 +87,7 @@ namespace Page_Navigation_App.ViewModel
             // If this is a new customer, set the registration date
             if (SelectedCustomer.CustomerID == 0)
             {
-                SelectedCustomer.RegistrationDate = DateTime.Now;
+                SelectedCustomer.RegistrationDate = DateOnly.FromDateTime(DateTime.Now);
             }
 
             // Validate the customer before saving
@@ -200,7 +200,7 @@ namespace Page_Navigation_App.ViewModel
             SelectedCustomer = new Customer
             {
                 CustomerType = CustomerTypes.First(), // Set default customer type when clearing form
-                RegistrationDate = DateTime.Now // Set current date as registration date for new customers
+                RegistrationDate = DateOnly.FromDateTime(DateTime.Now)   // Set current date as registration date for new customers
             };
             SearchTerm = string.Empty;
         }

@@ -315,7 +315,6 @@ namespace Page_Navigation_App.Services
             try
             {
                 return await _context.Products
-                    .Include(p => p.Category)
                     .Include(p => p.Supplier)
                     .Where(p => p.StockQuantity <= p.ReorderLevel && p.IsActive)
                     .OrderBy(p => p.StockQuantity)

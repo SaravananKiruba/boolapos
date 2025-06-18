@@ -191,7 +191,7 @@ namespace Page_Navigation_App.Services
                     product.MakingCharge = makingCharge;
                     product.StoneValue = stoneValue;
                     product.FinalPrice = finalPrice;
-                    product.LastPriceUpdate = DateTime.Now;
+                    product.LastPriceUpdate = DateOnly.FromDateTime(DateTime.Now);
                     
                     _context.Products.Update(product);
                 }

@@ -23,7 +23,6 @@ namespace Page_Navigation_App.Utilities
                 RateMasterVM => "Rate Master",
                 RepairJobVM => "Repair Jobs",
                 StockVM => "Stock",
-                CategoryVM => "Categories",
                 UserVM => "Users",
                 ReportVM => "Reports",
                 SettingsVM => "Settings",
