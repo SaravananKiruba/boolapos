@@ -121,12 +121,8 @@ namespace Page_Navigation_App.Model
         [ForeignKey("Supplier")]
         public int SupplierID { get; set; } = 1;  // Refers to "Ratanlal Jewellers"
 
-        [ForeignKey("Category")]
-        public int CategoryID { get; set; } = 1;
-
         // Navigation properties
         public virtual Supplier Supplier { get; set; }
-        public virtual Category Category { get; set; }
         public virtual ICollection<Stock> Stocks { get; set; }
         public virtual ICollection<OrderDetail> OrderDetails { get; set; }
 

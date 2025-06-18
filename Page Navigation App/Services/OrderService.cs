@@ -76,7 +76,6 @@ namespace Page_Navigation_App.Services
         {
             return await _context.OrderDetails
                 .Include(od => od.Product)
-                .ThenInclude(p => p.Category)
                 .Where(od => od.OrderID == orderId)
                 .ToListAsync();
         }

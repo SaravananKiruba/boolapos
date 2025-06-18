@@ -47,8 +47,6 @@ namespace Page_Navigation_App.Services
         public async Task<Product> GetProductById(int id)
         {
             return await _context.Products
-                .Include(p => p.Category)
-                .Include(p => p.Subcategory)
                 .Include(p => p.Supplier)
                 .Include(p => p.Stocks)
                 .FirstOrDefaultAsync(p => p.ProductID == id);
@@ -57,8 +55,6 @@ namespace Page_Navigation_App.Services
         public async Task<Product> GetProductByBarcode(string barcode)
         {
             return await _context.Products
-                .Include(p => p.Category)
-                .Include(p => p.Subcategory)
                 .Include(p => p.Supplier)
                 .Include(p => p.Stocks)
                 .FirstOrDefaultAsync(p => p.Barcode == barcode);
@@ -66,9 +62,7 @@ namespace Page_Navigation_App.Services
 
         public async Task<IEnumerable<Product>> GetAllProducts(bool includeInactive = false)
         {
-            var query = _context.Products
-                .Include(p => p.Category)
-                .Include(p => p.Subcategory)
+            var query = _context.Products               
                 .Include(p => p.Supplier)
                 .Include(p => p.Stocks)
                 .AsQueryable();
@@ -87,8 +81,6 @@ namespace Page_Navigation_App.Services
             int? subcategoryId = null)
         {
             var query = _context.Products
-                .Include(p => p.Category)
-                .Include(p => p.Subcategory)
                 .Include(p => p.Stocks)
                 .Where(p => p.IsActive)
                 .AsQueryable();
