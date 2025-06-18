@@ -107,21 +107,29 @@
                                         Foreground="#2D3748"
                                         Margin="0,0,0,10"/>
                                         
-                                <ComboBox Margin="0,5"
-                                        ItemsSource="{Binding MetalTypes}"
-                                        SelectedItem="{Binding SelectedRate.MetalType}"
-                                        mah:TextBoxHelper.Watermark="Metal Type"
-                                        mah:TextBoxHelper.UseFloatingWatermark="True"
-                                        mah:ControlsHelper.CornerRadius="5"
-                                        Style="{StaticResource MahApps.Styles.ComboBox}"/>
+                                <!-- Metal Type with Label -->
+                                <StackPanel Margin="0,5">
+                                    <TextBlock Text="Metal Type" 
+                                             FontSize="12" 
+                                             Foreground="#4A5568"
+                                             Margin="0,0,0,2"/>
+                                    <ComboBox ItemsSource="{Binding MetalTypes}"
+                                            SelectedItem="{Binding SelectedRate.MetalType}"
+                                            mah:ControlsHelper.CornerRadius="5"
+                                            Style="{StaticResource MahApps.Styles.ComboBox}"/>
+                                </StackPanel>
 
-                                <ComboBox Margin="0,5"
-                                        ItemsSource="{Binding Purities}"
-                                        SelectedItem="{Binding SelectedRate.Purity}"
-                                        mah:TextBoxHelper.Watermark="Purity"
-                                        mah:TextBoxHelper.UseFloatingWatermark="True"
-                                        mah:ControlsHelper.CornerRadius="5"
-                                        Style="{StaticResource MahApps.Styles.ComboBox}"/>
+                                <!-- Purity with Label -->
+                                <StackPanel Margin="0,5">
+                                    <TextBlock Text="Purity" 
+                                             FontSize="12" 
+                                             Foreground="#4A5568"
+                                             Margin="0,0,0,2"/>
+                                    <ComboBox ItemsSource="{Binding Purities}"
+                                            SelectedItem="{Binding SelectedRate.Purity}"
+                                            mah:ControlsHelper.CornerRadius="5"
+                                            Style="{StaticResource MahApps.Styles.ComboBox}"/>
+                                </StackPanel>
                             </StackPanel>
                         </Border>
                         
@@ -138,34 +146,63 @@
                                         Margin="0,0,0,10"/>
                                         
                                 <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     
-                                    <mah:NumericUpDown Grid.Column="0"
-                                                    Margin="0,5,5,5"
-                                                    Value="{Binding SelectedRate.Rate}"
-                                                    mah:TextBoxHelper.Watermark="Rate (₹/g)"
-                                                    mah:ControlsHelper.CornerRadius="5"
-                                                    StringFormat="N2"
-                                                    Minimum="0"/>
+                                    <!-- Base Price with Label -->
+                                    <StackPanel Grid.Column="0" Grid.Row="0" Margin="0,5,5,5">
+                                        <TextBlock Text="Base Price (₹/g)" 
+                                                 FontSize="12" 
+                                                 Foreground="#4A5568"
+                                                 Margin="0,0,0,2"/>
+                                        <mah:NumericUpDown Value="{Binding SelectedRate.Rate}"
+                                                        mah:ControlsHelper.CornerRadius="5"
+                                                        StringFormat="N2"
+                                                        Minimum="0"/>
+                                    </StackPanel>
                                     
-                                    <mah:NumericUpDown Grid.Column="1"
-                                                    Margin="5,5,0,5"
-                                                    Value="{Binding SelectedRate.PurchaseRate}"
-                                                    mah:TextBoxHelper.Watermark="Purchase Rate (₹/g)"
-                                                    mah:ControlsHelper.CornerRadius="5"
-                                                    StringFormat="N2"
-                                                    Minimum="0"/>
+                                    <!-- Purchase Rate with Label -->
+                                    <StackPanel Grid.Column="1" Grid.Row="0" Margin="5,5,0,5">
+                                        <TextBlock Text="Purchase Rate (₹/g)" 
+                                                 FontSize="12" 
+                                                 Foreground="#4A5568"
+                                                 Margin="0,0,0,2"/>
+                                        <mah:NumericUpDown Value="{Binding SelectedRate.PurchaseRate}"
+                                                        mah:ControlsHelper.CornerRadius="5"
+                                                        StringFormat="N2"
+                                                        Minimum="0"/>
+                                    </StackPanel>
+                                    
+                                    <!-- Making Charges with Label -->
+                                    <StackPanel Grid.Column="0" Grid.Row="1" Margin="0,5,5,5">
+                                        <TextBlock Text="Making Charges (%)" 
+                                                 FontSize="12" 
+                                                 Foreground="#4A5568"
+                                                 Margin="0,0,0,2"/>
+                                        <mah:NumericUpDown Value="{Binding SelectedRate.MakingChargePercentage}"
+                                                        mah:ControlsHelper.CornerRadius="5"
+                                                        StringFormat="N2"
+                                                        Minimum="0"/>
+                                    </StackPanel>
+                                    
+                                    <!-- Hallmarking Charge with Label -->
+                                    <StackPanel Grid.Column="1" Grid.Row="1" Margin="5,5,0,5">
+                                        <TextBlock Text="Hallmarking Charge (₹)" 
+                                                 FontSize="12" 
+                                                 Foreground="#4A5568"
+                                                 Margin="0,0,0,2"/>
+                                        <mah:NumericUpDown Value="{Binding SelectedRate.HallmarkingCharge}"
+                                                        mah:ControlsHelper.CornerRadius="5"
+                                                        StringFormat="N2"
+                                                        Minimum="0"/>
+                                    </StackPanel>
                                 </Grid>
-
-                                <mah:NumericUpDown Margin="0,5"
-                                                Value="{Binding SelectedRate.HallmarkingCharge}"
-                                                mah:TextBoxHelper.Watermark="Hallmarking Charge (₹)"
-                                                mah:ControlsHelper.CornerRadius="5"
-                                                StringFormat="N2"
-                                                Minimum="0"/>
                             </StackPanel>
                         </Border>
                         

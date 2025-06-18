@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
@@ -107,21 +108,62 @@ namespace Page_Navigation_App.ViewModel
                     IsActive = true
                 };
             }
-        }
-
-        private async void AddOrUpdateSupplier()
+        }        private async void AddOrUpdateSupplier()
         {
-            if (SelectedSupplier.SupplierID > 0)
+            try
             {
-                await _supplierService.UpdateSupplier(SelectedSupplier);
-            }
-            else
-            {
-                await _supplierService.AddSupplier(SelectedSupplier);
-            }
+                // Validate the supplier object before saving
+                if (string.IsNullOrEmpty(SelectedSupplier.SupplierName))
+                {
+                    System.Windows.MessageBox.Show("Supplier name cannot be empty.", "Validation Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    return;
+                }
 
-            LoadSuppliers();
-            ClearForm();
+                if (string.IsNullOrEmpty(SelectedSupplier.ContactNumber))
+                {
+                    System.Windows.MessageBox.Show("Contact number cannot be empty.", "Validation Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    return;
+                }
+
+                // Save the supplier based on whether it's an update or a new record
+                bool success;
+                if (SelectedSupplier.SupplierID > 0)
+                {
+                    // Update existing supplier
+                    success = await _supplierService.UpdateSupplier(SelectedSupplier);
+                    if (success)
+                    {
+                        System.Windows.MessageBox.Show($"Supplier '{SelectedSupplier.SupplierName}' updated successfully.", "Success", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        System.Windows.MessageBox.Show($"Failed to update supplier '{SelectedSupplier.SupplierName}'.", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                        return;
+                    }
+                }
+                else
+                {
+                    // Add new supplier
+                    var result = await _supplierService.AddSupplier(SelectedSupplier);
+                    if (result != null)
+                    {
+                        System.Windows.MessageBox.Show($"Supplier '{SelectedSupplier.SupplierName}' added successfully.", "Success", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        System.Windows.MessageBox.Show($"Failed to add supplier '{SelectedSupplier.SupplierName}'.", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                        return;
+                    }
+                }
+
+                // Refresh the suppliers list and clear the form
+                LoadSuppliers();
+                ClearForm();
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"An error occurred: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
         }
 
         private void ClearForm()

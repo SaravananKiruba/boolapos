@@ -20,31 +20,28 @@ namespace Page_Navigation_App.Services
         {
             _context = context;
             _securityService = securityService;
-        }
-
-        public async Task<IEnumerable<User>> GetUsers(bool includeInactive = false)
+        }        public async Task<IEnumerable<User>> GetUsers(bool includeInactive = false)
         {
             var query = _context.Users
-                .Include(u => u.Roles)
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
                 .AsQueryable();
                 
             if (!includeInactive)
                 query = query.Where(u => u.IsActive);
                 
             return await query.ToListAsync();
-        }
-
-        public async Task<User> GetUserById(int id)
+        }        public async Task<User> GetUserById(int id)
         {
             return await _context.Users
-                .Include(u => u.Roles)
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
                 .FirstOrDefaultAsync(u => u.UserID == id);
-        }
-
-        public async Task<User> GetUserByUsername(string username)
+        }        public async Task<User> GetUserByUsername(string username)
         {
             return await _context.Users
-                .Include(u => u.Roles)
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
                 .FirstOrDefaultAsync(u => u.Username.ToLower() == username.ToLower());
         }
 
@@ -65,12 +62,11 @@ namespace Page_Navigation_App.Services
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
             return user;
-        }
-
-        public async Task<bool> UpdateUser(User user)
+        }        public async Task<bool> UpdateUser(User user)
         {
             var existingUser = await _context.Users
-                .Include(u => u.Roles)
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
                 .FirstOrDefaultAsync(u => u.UserID == user.UserID);
                 
             if (existingUser == null) return false;
@@ -117,7 +113,6 @@ namespace Page_Navigation_App.Services
                 await _context.Set<UserRole>().AddAsync(new UserRole
                 {
                     UserID = userId,
-                    RoleName = roleName,
                     User = user
                 });
             }

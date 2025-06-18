@@ -11,7 +11,7 @@ using Page_Navigation_App.Data;
 namespace Page_Navigation_App.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250618051808_init")]
+    [Migration("20250618061358_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -381,6 +381,8 @@ namespace Page_Navigation_App.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("EMIID");
+
+                    b.HasIndex("CustomerID");
 
                     b.HasIndex("OrderID");
 
@@ -959,6 +961,9 @@ namespace Page_Navigation_App.Migrations
                     b.Property<decimal>("ExchangeRate")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<decimal>("FinalRate")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("HallmarkingCharge")
                         .HasColumnType("decimal(18,2)");
 
@@ -1017,6 +1022,9 @@ namespace Page_Navigation_App.Migrations
 
                     b.Property<DateTime?>("ValidUntil")
                         .HasColumnType("TEXT");
+
+                    b.Property<decimal>("WastagePercentage")
+                        .HasColumnType("decimal(5,2)");
 
                     b.HasKey("RateID");
 
@@ -1254,12 +1262,7 @@ namespace Page_Navigation_App.Migrations
                     b.Property<string>("RoleName")
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("UserID")
-                        .HasColumnType("INTEGER");
-
                     b.HasKey("RoleID");
-
-                    b.HasIndex("UserID");
 
                     b.ToTable("Roles");
                 });
@@ -1603,15 +1606,15 @@ namespace Page_Navigation_App.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("RoleName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
+                    b.Property<int>("RoleID")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("UserID")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("UserRoleID");
+
+                    b.HasIndex("RoleID");
 
                     b.HasIndex("UserID");
 
@@ -1622,7 +1625,7 @@ namespace Page_Navigation_App.Migrations
                 {
                     b.HasOne("Page_Navigation_App.Model.Customer", "Customer")
                         .WithMany()
-                        .HasForeignKey("OrderID")
+                        .HasForeignKey("CustomerID")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
@@ -1719,13 +1722,6 @@ namespace Page_Navigation_App.Migrations
                     b.Navigation("Customer");
                 });
 
-            modelBuilder.Entity("Page_Navigation_App.Model.Role", b =>
-                {
-                    b.HasOne("Page_Navigation_App.Model.User", null)
-                        .WithMany("Roles")
-                        .HasForeignKey("UserID");
-                });
-
             modelBuilder.Entity("Page_Navigation_App.Model.Stock", b =>
                 {
                     b.HasOne("Page_Navigation_App.Model.Product", "Product")
@@ -1758,11 +1754,19 @@ namespace Page_Navigation_App.Migrations
 
             modelBuilder.Entity("Page_Navigation_App.Model.UserRole", b =>
                 {
-                    b.HasOne("Page_Navigation_App.Model.User", "User")
+                    b.HasOne("Page_Navigation_App.Model.Role", "Role")
                         .WithMany()
+                        .HasForeignKey("RoleID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Page_Navigation_App.Model.User", "User")
+                        .WithMany("UserRoles")
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Role");
 
                     b.Navigation("User");
                 });
@@ -1799,7 +1803,7 @@ namespace Page_Navigation_App.Migrations
 
             modelBuilder.Entity("Page_Navigation_App.Model.User", b =>
                 {
-                    b.Navigation("Roles");
+                    b.Navigation("UserRoles");
                 });
 #pragma warning restore 612, 618
         }

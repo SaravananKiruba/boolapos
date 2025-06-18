@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Page_Navigation_App.ViewModel;
 
 namespace Page_Navigation_App.View
 {
@@ -23,6 +24,14 @@ namespace Page_Navigation_App.View
         public Orders()
         {
             InitializeComponent();
+        }
+        
+        private void ReloadData_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is OrderVM viewModel)
+            {
+                viewModel.ReloadData();
+            }
         }
     }
 }

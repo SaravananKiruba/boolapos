@@ -78,6 +78,14 @@ namespace Page_Navigation_App.Model
         [StringLength(50)]
         public string Status { get; set; } = "Completed"; // Completed, Pending, Failed, In Progress
         
+        // Currency property with default value INR
+        [StringLength(5)]
+        public string Currency { get; set; } = "INR";
+        
+        // Adding CreatedBy field to track who created the entry
+        [StringLength(100)]
+        public string CreatedBy { get; set; }
+
         // EMI payment dates
         public DateTime? StartDate { get; set; }
         public DateTime? LastPaymentDate { get; set; }
@@ -126,10 +134,6 @@ namespace Page_Navigation_App.Model
         public int? NumberOfInstallments { get; set; }
         
         public int? InstallmentNumber { get; set; }
-        
-        // Adding CreatedBy property
-        [StringLength(100)]
-        public string CreatedBy { get; set; }
         
         // Add RecordedBy property alias
         [NotMapped]

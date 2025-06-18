@@ -15,30 +15,48 @@ namespace Page_Navigation_App.Services
         public ProductService(AppDbContext context)
         {
             _context = context;
-        }
-
-        // Create
+        }        // Create
         public async Task<Product> AddProduct(Product product)
         {
             try 
             {
-                // Generate barcode: MMPPWWWW where:
-                // MM = Metal type code (GO=Gold, SI=Silver, PL=Platinum)
-                // PP = Purity code (18=18k, 22=22k, 24=24k)
-                // WWWW = Random number
+                // Generate barcode
                 string metalCode = product.MetalType.Substring(0, 2).ToUpper();
                 string purityCode = product.Purity.Replace("k", "");
                 string randomCode = new Random().Next(1000, 9999).ToString();
                 product.Barcode = $"{metalCode}{purityCode}{randomCode}";
 
                 product.IsActive = true;
+                
+                // Ensure SupplierID is set
+                if (product.SupplierID <= 0)
+                {
+                    // Set a default supplier ID if available
+                    var firstSupplier = await _context.Suppliers.FirstOrDefaultAsync();
+                    if (firstSupplier != null)
+                    {
+                        product.SupplierID = firstSupplier.SupplierID;
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("No supplier available. Please add a supplier first.");
+                    }
+                }
+                
+                // Explicitly setting Supplier to null to avoid EF conflicts when adding
+                product.Supplier = null;
 
                 await _context.Products.AddAsync(product);
                 await _context.SaveChangesAsync();
                 return product;
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"Error adding product: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                }
                 return null;
             }
         }
@@ -102,9 +120,7 @@ namespace Page_Navigation_App.Services
             }
 
             return await query.ToListAsync();
-        }
-
-        // Update
+        }        // Update
         public async Task<bool> UpdateProduct(Product product)
         {
             try
@@ -115,12 +131,41 @@ namespace Page_Navigation_App.Services
                 // Don't update barcode
                 product.Barcode = existingProduct.Barcode;
                 
+                // Ensure SupplierID is set
+                if (product.SupplierID <= 0)
+                {
+                    // Keep existing supplier if available
+                    product.SupplierID = existingProduct.SupplierID;
+                    
+                    // If still not set, try to get a default
+                    if (product.SupplierID <= 0)
+                    {
+                        var firstSupplier = await _context.Suppliers.FirstOrDefaultAsync();
+                        if (firstSupplier != null)
+                        {
+                            product.SupplierID = firstSupplier.SupplierID;
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException("No supplier available. Please add a supplier first.");
+                        }
+                    }
+                }
+                
+                // Explicitly setting Supplier to null to avoid EF conflicts when updating
+                product.Supplier = null;
+                
                 _context.Entry(existingProduct).CurrentValues.SetValues(product);
                 await _context.SaveChangesAsync();
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"Error updating product: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                }
                 return false;
             }
         }

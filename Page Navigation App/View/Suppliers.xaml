@@ -129,9 +129,8 @@
                                                         Style="{StaticResource {x:Type mah:NumericUpDown}}"
                                                         StringFormat="C"
                                                         Minimum="0"/>
-                                        
-                                        <TextBox Grid.Column="1"
-                                                Text="{Binding SelectedSupplier.PaymentTerms}"
+                                          <TextBox Grid.Column="1"
+                                                Text="{Binding SelectedSupplier.PreferredPaymentTerms}"
                                                 Margin="5,5,0,5"
                                                 mah:TextBoxHelper.Watermark="Payment Terms"
                                                 mah:TextBoxHelper.UseFloatingWatermark="True"

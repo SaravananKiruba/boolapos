@@ -36,26 +36,27 @@ namespace Page_Navigation_App.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
-
-            // Configure User-Role relationship through UserRole
+            base.OnModelCreating(modelBuilder);            // Configure User-Role relationships through UserRole
             modelBuilder.Entity<UserRole>()
                 .HasOne(ur => ur.User)
-                .WithMany()
+                .WithMany(u => u.UserRoles)
                 .HasForeignKey(ur => ur.UserID);
+                
+            modelBuilder.Entity<UserRole>()
+                .HasOne(ur => ur.Role)
+                .WithMany()
+                .HasForeignKey(ur => ur.RoleID);
 
             // Configure EMI-Order relationship
             modelBuilder.Entity<EMI>()
                 .HasOne(e => e.Order)
                 .WithMany()
                 .HasForeignKey(e => e.OrderID)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // Configure EMI-Customer relationship
+                .OnDelete(DeleteBehavior.Cascade);            // Configure EMI-Customer relationship
             modelBuilder.Entity<EMI>()
                 .HasOne(e => e.Customer)
                 .WithMany()
-                .HasForeignKey(e => e.OrderID)
+                .HasForeignKey(e => e.CustomerID)
                 .OnDelete(DeleteBehavior.NoAction);
                 
             // Add indexes for faster querying

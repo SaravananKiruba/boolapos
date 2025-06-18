@@ -35,24 +35,24 @@ namespace Page_Navigation_App.Services
             _configService = configService;
             _settings = settings.Value;
             _encryptionKey = _settings.EncryptionKey;
-        }
-
-        public async Task<bool> CheckPermission(string userId, string action)
+        }        public async Task<bool> CheckPermission(string userId, string action)
         {
             var user = await _context.Users
-                .Include(u => u.Roles)
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
                 .FirstOrDefaultAsync(u => u.UserID.ToString() == userId);
 
             if (user == null || !user.IsActive)
                 return false;
 
             // Admin role has all permissions
-            if (user.Roles.Any(r => r.RoleName == "Admin"))
+            if (user.UserRoles.Any(ur => ur.Role.RoleName == "Admin"))
                 return true;
 
             var permissionMatrix = GetPermissionMatrix();
-            foreach (var role in user.Roles)
+            foreach (var userRole in user.UserRoles)
             {
+                var role = userRole.Role;
                 if (permissionMatrix.TryGetValue(role.RoleName, out var permissions) &&
                     (permissions.Contains(action) || permissions.Contains("*")))
                 {

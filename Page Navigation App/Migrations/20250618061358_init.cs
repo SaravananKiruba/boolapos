@@ -176,7 +176,9 @@ namespace Page_Navigation_App.Migrations
                     DefaultGst = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
                     MarketSource = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
                     IsSpecialRate = table.Column<bool>(type: "INTEGER", nullable: false),
-                    Description = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true)
+                    Description = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
+                    WastagePercentage = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
+                    FinalRate = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -221,6 +223,20 @@ namespace Page_Navigation_App.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ReportData", x => x.ReportID);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Roles",
+                columns: table => new
+                {
+                    RoleID = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    RoleName = table.Column<string>(type: "TEXT", nullable: true),
+                    Description = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Roles", x => x.RoleID);
                 });
 
             migrationBuilder.CreateTable(
@@ -468,37 +484,23 @@ namespace Page_Navigation_App.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Roles",
-                columns: table => new
-                {
-                    RoleID = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    RoleName = table.Column<string>(type: "TEXT", nullable: true),
-                    Description = table.Column<string>(type: "TEXT", nullable: true),
-                    UserID = table.Column<int>(type: "INTEGER", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Roles", x => x.RoleID);
-                    table.ForeignKey(
-                        name: "FK_Roles_Users_UserID",
-                        column: x => x.UserID,
-                        principalTable: "Users",
-                        principalColumn: "UserID");
-                });
-
-            migrationBuilder.CreateTable(
                 name: "UserRoles",
                 columns: table => new
                 {
                     UserRoleID = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     UserID = table.Column<int>(type: "INTEGER", nullable: false),
-                    RoleName = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false)
+                    RoleID = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_UserRoles", x => x.UserRoleID);
+                    table.ForeignKey(
+                        name: "FK_UserRoles_Roles_RoleID",
+                        column: x => x.RoleID,
+                        principalTable: "Roles",
+                        principalColumn: "RoleID",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_UserRoles_Users_UserID",
                         column: x => x.UserID,
@@ -539,8 +541,8 @@ namespace Page_Navigation_App.Migrations
                 {
                     table.PrimaryKey("PK_EMIs", x => x.EMIID);
                     table.ForeignKey(
-                        name: "FK_EMIs_Customers_OrderID",
-                        column: x => x.OrderID,
+                        name: "FK_EMIs_Customers_CustomerID",
+                        column: x => x.CustomerID,
                         principalTable: "Customers",
                         principalColumn: "CustomerID");
                     table.ForeignKey(
@@ -751,6 +753,11 @@ namespace Page_Navigation_App.Migrations
                 column: "PhoneNumber");
 
             migrationBuilder.CreateIndex(
+                name: "IX_EMIs_CustomerID",
+                table: "EMIs",
+                column: "CustomerID");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_EMIs_OrderID",
                 table: "EMIs",
                 column: "OrderID");
@@ -821,11 +828,6 @@ namespace Page_Navigation_App.Migrations
                 column: "Status");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Roles_UserID",
-                table: "Roles",
-                column: "UserID");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_StockLedgers_ProductID",
                 table: "StockLedgers",
                 column: "ProductID");
@@ -839,6 +841,11 @@ namespace Page_Navigation_App.Migrations
                 name: "IX_Stocks_SupplierID",
                 table: "Stocks",
                 column: "SupplierID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserRoles_RoleID",
+                table: "UserRoles",
+                column: "RoleID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserRoles_UserID",
@@ -882,9 +889,6 @@ namespace Page_Navigation_App.Migrations
                 name: "ReportData");
 
             migrationBuilder.DropTable(
-                name: "Roles");
-
-            migrationBuilder.DropTable(
                 name: "SecurityLogs");
 
             migrationBuilder.DropTable(
@@ -904,6 +908,9 @@ namespace Page_Navigation_App.Migrations
 
             migrationBuilder.DropTable(
                 name: "Products");
+
+            migrationBuilder.DropTable(
+                name: "Roles");
 
             migrationBuilder.DropTable(
                 name: "Users");

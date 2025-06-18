@@ -71,19 +71,29 @@
                                               Foreground="#2D3748"
                                               Margin="0,0,0,10"/>
                                     
-                                    <ComboBox ItemsSource="{Binding MetalTypes}"
-                                           SelectedItem="{Binding SelectedProduct.MetalType, UpdateSourceTrigger=PropertyChanged}"
-                                           Margin="0,5"
-                                           mah:TextBoxHelper.Watermark="Select Metal Type"
-                                           mah:ControlsHelper.CornerRadius="5"
-                                           Style="{StaticResource MahApps.Styles.ComboBox}"/>
+                                    <!-- Metal Type with Label -->
+                                    <StackPanel Margin="0,5">
+                                        <TextBlock Text="Metal Type" 
+                                                 FontSize="12" 
+                                                 Foreground="#4A5568"
+                                                 Margin="0,0,0,2"/>
+                                        <ComboBox ItemsSource="{Binding MetalTypes}"
+                                               SelectedItem="{Binding SelectedProduct.MetalType, UpdateSourceTrigger=PropertyChanged}"
+                                               mah:ControlsHelper.CornerRadius="5"
+                                               Style="{StaticResource MahApps.Styles.ComboBox}"/>
+                                    </StackPanel>
                                     
-                                    <ComboBox ItemsSource="{Binding Purities}"
-                                           SelectedItem="{Binding SelectedProduct.Purity, UpdateSourceTrigger=PropertyChanged}"
-                                           Margin="0,5"
-                                           mah:TextBoxHelper.Watermark="Select Purity"
-                                           mah:ControlsHelper.CornerRadius="5"
-                                           Style="{StaticResource MahApps.Styles.ComboBox}"/>
+                                    <!-- Purity with Label -->
+                                    <StackPanel Margin="0,5">
+                                        <TextBlock Text="Purity" 
+                                                 FontSize="12" 
+                                                 Foreground="#4A5568"
+                                                 Margin="0,0,0,2"/>
+                                        <ComboBox ItemsSource="{Binding Purities}"
+                                               SelectedItem="{Binding SelectedProduct.Purity, UpdateSourceTrigger=PropertyChanged}"
+                                               mah:ControlsHelper.CornerRadius="5"
+                                               Style="{StaticResource MahApps.Styles.ComboBox}"/>
+                                    </StackPanel>
                                 </StackPanel>
                             </Border>
 
@@ -99,75 +109,110 @@
                                               Foreground="#2D3748"
                                               Margin="0,0,0,10"/>
                                     
+                                    <!-- Weights with Labels -->
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
                                         
-                                        <TextBox Grid.Column="0"
-                                               Text="{Binding SelectedProduct.GrossWeight, StringFormat=N3, UpdateSourceTrigger=PropertyChanged}"
-                                               Margin="0,5,5,5"
-                                               mah:TextBoxHelper.Watermark="Gross Weight (g)"
-                                               mah:TextBoxHelper.UseFloatingWatermark="True"
-                                               mah:ControlsHelper.CornerRadius="5"
-                                               Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                        <!-- Gross Weight with Label -->
+                                        <StackPanel Grid.Column="0" Margin="0,5,5,5">
+                                            <TextBlock Text="Gross Weight (g)" 
+                                                     FontSize="12" 
+                                                     Foreground="#4A5568"
+                                                     Margin="0,0,0,2"/>
+                                            <TextBox Text="{Binding SelectedProduct.GrossWeight, StringFormat=N3, UpdateSourceTrigger=PropertyChanged}"
+                                                   mah:ControlsHelper.CornerRadius="5"
+                                                   Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                        </StackPanel>
                                         
-                                        <TextBox Grid.Column="1"
-                                               Text="{Binding SelectedProduct.NetWeight, StringFormat=N3, UpdateSourceTrigger=PropertyChanged}"
-                                               Margin="5,5,0,5"
-                                               mah:TextBoxHelper.Watermark="Net Weight (g)"
-                                               mah:TextBoxHelper.UseFloatingWatermark="True"
-                                               mah:ControlsHelper.CornerRadius="5"
-                                               Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                        <!-- Net Weight with Label -->
+                                        <StackPanel Grid.Column="1" Margin="5,5,0,5">
+                                            <TextBlock Text="Net Weight (g)" 
+                                                     FontSize="12" 
+                                                     Foreground="#4A5568"
+                                                     Margin="0,0,0,2"/>
+                                            <TextBox Text="{Binding SelectedProduct.NetWeight, StringFormat=N3, UpdateSourceTrigger=PropertyChanged}"
+                                                   mah:ControlsHelper.CornerRadius="5"
+                                                   Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                        </StackPanel>
                                     </Grid>
 
+                                    <!-- Making Charges and Stone Value with Labels -->
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
                                         
-                                        <TextBox Grid.Column="0"
-                                               Text="{Binding SelectedProduct.MakingCharges, StringFormat=N2, UpdateSourceTrigger=PropertyChanged}"
-                                               Margin="0,5,5,5"
-                                               mah:TextBoxHelper.Watermark="Making Charges (INR)"
-                                               mah:TextBoxHelper.UseFloatingWatermark="True"
-                                               mah:ControlsHelper.CornerRadius="5"
-                                               Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                        <!-- Making Charges with Label -->
+                                        <StackPanel Grid.Column="0" Margin="0,5,5,5">
+                                            <TextBlock Text="Making Charges (%)" 
+                                                     FontSize="12" 
+                                                     Foreground="#4A5568"
+                                                     Margin="0,0,0,2"/>
+                                            <TextBox Text="{Binding SelectedProduct.MakingCharges, StringFormat=N2, UpdateSourceTrigger=PropertyChanged}"
+                                                   mah:ControlsHelper.CornerRadius="5"
+                                                   Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                        </StackPanel>
                                         
-                                        <TextBox Grid.Column="1"
-                                               Text="{Binding SelectedProduct.StoneValue, StringFormat=N2, UpdateSourceTrigger=PropertyChanged}"
-                                               Margin="5,5,0,5"
-                                               mah:TextBoxHelper.Watermark="Stone Value (INR)"
-                                               mah:TextBoxHelper.UseFloatingWatermark="True"
-                                               mah:ControlsHelper.CornerRadius="5"
-                                               Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                        <!-- Stone Value with Label -->
+                                        <StackPanel Grid.Column="1" Margin="5,5,0,5">
+                                            <TextBlock Text="Stone Value (₹)" 
+                                                     FontSize="12" 
+                                                     Foreground="#4A5568"
+                                                     Margin="0,0,0,2"/>
+                                            <TextBox Text="{Binding SelectedProduct.StoneValue, StringFormat=N2, UpdateSourceTrigger=PropertyChanged}"
+                                                   mah:ControlsHelper.CornerRadius="5"
+                                                   Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                        </StackPanel>
                                     </Grid>
 
+                                    <!-- Wastage and Final Price with Labels -->
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
                                         
-                                        <TextBox Grid.Column="0"
-                                               Text="{Binding SelectedProduct.WastagePercentage, StringFormat=N2, UpdateSourceTrigger=PropertyChanged}"
-                                               Margin="0,5,5,5"
-                                               mah:TextBoxHelper.Watermark="Wastage %"
-                                               mah:TextBoxHelper.UseFloatingWatermark="True"
-                                               mah:ControlsHelper.CornerRadius="5"
-                                               Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                        <!-- Wastage with Label -->
+                                        <StackPanel Grid.Column="0" Margin="0,5,5,5">
+                                            <TextBlock Text="Wastage (%)" 
+                                                     FontSize="12" 
+                                                     Foreground="#4A5568"
+                                                     Margin="0,0,0,2"/>
+                                            <TextBox Text="{Binding SelectedProduct.WastagePercentage, StringFormat=N2, UpdateSourceTrigger=PropertyChanged}"
+                                                   mah:ControlsHelper.CornerRadius="5"
+                                                   Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                        </StackPanel>
                                         
-                                        <TextBox Grid.Column="1"
-                                               Text="{Binding SelectedProduct.FinalPrice, StringFormat='₹ {0:N2}', UpdateSourceTrigger=PropertyChanged}"
-                                               Margin="5,5,0,5"
+                                        <!-- Final Price with Label -->
+                                        <StackPanel Grid.Column="1" Margin="5,5,0,5">
+                                            <TextBlock Text="Final Price (₹)" 
+                                                     FontSize="12" 
+                                                     Foreground="#4A5568"
+                                                     Margin="0,0,0,2"/>
+                                            <TextBox Text="{Binding SelectedProduct.FinalPrice, StringFormat='₹ {0:N2}', UpdateSourceTrigger=PropertyChanged}"
+                                                   IsReadOnly="True"
+                                                   Background="#F0F9FF"
+                                                   mah:ControlsHelper.CornerRadius="5"
+                                                   Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                        </StackPanel>
+                                    </Grid>
+                                    
+                                    <!-- Base Price with Label (Added) -->
+                                    <StackPanel Margin="0,5">
+                                        <TextBlock Text="Base Price (₹)" 
+                                                 FontSize="12" 
+                                                 Foreground="#4A5568"
+                                                 Margin="0,0,0,2"/>
+                                        <TextBox Text="{Binding SelectedProduct.BasePrice, StringFormat='₹ {0:N2}', UpdateSourceTrigger=PropertyChanged}"
                                                IsReadOnly="True"
-                                               mah:TextBoxHelper.Watermark="Final Price (INR)"
-                                               mah:TextBoxHelper.UseFloatingWatermark="True"
+                                               Background="#F0F9FF"
                                                mah:ControlsHelper.CornerRadius="5"
                                                Style="{StaticResource MahApps.Styles.TextBox}"/>
-                                    </Grid>
+                                    </StackPanel>
                                 </StackPanel>
                             </Border>                            <!-- Product Details with visual grouping -->
                             <Border Background="#F9F9F9"
@@ -180,9 +225,10 @@
                                              FontWeight="Bold"
                                              Foreground="#2D3748"
                                              Margin="0,0,0,10"/>
-                                    
-                                    <ComboBox ItemsSource="{Binding Suppliers}"
-                                           SelectedItem="{Binding SelectedProduct.Supplier}"
+                                      <ComboBox ItemsSource="{Binding Suppliers}"
+                                           SelectedValue="{Binding SelectedProduct.SupplierID}"
+                                           SelectedValuePath="SupplierID"
+                                           DisplayMemberPath="SupplierName"
                                            Margin="0,5"
                                            mah:TextBoxHelper.Watermark="Supplier"
                                            mah:ControlsHelper.CornerRadius="5"

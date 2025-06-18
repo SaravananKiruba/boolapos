@@ -7,21 +7,23 @@ using Page_Navigation_App.Data;
 using Page_Navigation_App.Model;
 
 namespace Page_Navigation_App.Services
-{
-    public class OrderService
+{    public class OrderService
     {
         private readonly AppDbContext _context;
         private readonly StockService _stockService;
         private readonly RateMasterService _rateService;
+        private readonly LogService _logService;
 
         public OrderService(
             AppDbContext context,
             StockService stockService,
-            RateMasterService rateService)
+            RateMasterService rateService,
+            LogService logService)
         {
             _context = context;
             _stockService = stockService;
             _rateService = rateService;
+            _logService = logService;
         }
 
         // Add new method for adding order
@@ -200,11 +202,11 @@ namespace Page_Navigation_App.Services
                 await _context.SaveChangesAsync();
                 
                 await transaction.CommitAsync();
-                return order;
-            }
-            catch
+                return order;            }
+            catch (Exception ex)
             {
                 await transaction.RollbackAsync();
+                await _logService.LogErrorAsync($"Error creating order: {ex.Message}", userId: null, exception: ex);
                 throw;
             }
         }

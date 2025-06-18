@@ -97,15 +97,23 @@ namespace Page_Navigation_App.ViewModel
             {
                 Products.Add(product);
             }
-        }
-
-        private async void LoadSuppliers()
+        }        private async void LoadSuppliers()
         {
-            Suppliers.Clear();
-            var suppliers = await _supplierService.GetAllSuppliers();
-            foreach (var supplier in suppliers)
+            try
             {
-                Suppliers.Add(supplier);
+                Suppliers.Clear();
+                var suppliers = await _supplierService.GetAllSuppliers();
+                foreach (var supplier in suppliers)
+                {
+                    Suppliers.Add(supplier);
+                }
+                
+                // Log supplier count for debugging
+                Console.WriteLine($"Loaded {Suppliers.Count} suppliers");
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Error loading suppliers: {ex.Message}", "Error");
             }
         }
 
@@ -126,9 +134,7 @@ namespace Page_Navigation_App.ViewModel
                     IsActive = true
                 };
             }
-        }
-
-        private async void AddOrUpdateProduct()
+        }        private async void AddOrUpdateProduct()
         {
             try
             {
@@ -139,6 +145,16 @@ namespace Page_Navigation_App.ViewModel
                     System.Windows.MessageBox.Show("Please fill in all required fields", "Validation Error");
                     return;
                 }
+                
+                // Ensure supplier is selected
+                if (SelectedProduct.SupplierID <= 0 && Suppliers.Count > 0)
+                {
+                    System.Windows.MessageBox.Show("Please select a supplier", "Validation Error");
+                    return;
+                }
+                
+                // Log for debugging
+                Console.WriteLine($"Saving product with SupplierID: {SelectedProduct.SupplierID}");
 
                 // Calculate prices in INR
                 decimal currentRate = await GetCurrentMetalRate();
@@ -157,7 +173,6 @@ namespace Page_Navigation_App.ViewModel
                 // Calculate wastage
                 decimal wastagePercentage = SelectedProduct.WastagePercentage;
                
-
                 decimal wastageAmount = (SelectedProduct.BasePrice * wastagePercentage) / 100;
                 decimal makingAmount = (SelectedProduct.BasePrice * makingCharges) / 100;
 
@@ -172,21 +187,37 @@ namespace Page_Navigation_App.ViewModel
                         : 0), 
                     2);
 
+                bool result;
                 if (SelectedProduct.ProductID > 0)
                 {
-                    await _productService.UpdateProduct(SelectedProduct);
+                    result = await _productService.UpdateProduct(SelectedProduct);
                 }
                 else
                 {
-                    await _productService.AddProduct(SelectedProduct);
+                    var addedProduct = await _productService.AddProduct(SelectedProduct);
+                    result = addedProduct != null;
                 }
 
-                LoadProducts();
-                ClearForm();
+                if (result)
+                {
+                    System.Windows.MessageBox.Show("Product saved successfully!", "Success");
+                    LoadProducts();
+                    ClearForm();
+                }
+                else
+                {
+                    System.Windows.MessageBox.Show("Failed to save product. Please check your inputs.", "Error");
+                }
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error saving product: {ex.Message}", "Error");
+                // Show full exception details for debugging
+                System.Windows.MessageBox.Show($"Error saving product: {ex.Message}\n{ex.StackTrace}", "Error");
+                
+                if (ex.InnerException != null)
+                {
+                    System.Windows.MessageBox.Show($"Inner exception: {ex.InnerException.Message}", "Error Details");
+                }
             }
         }
 

@@ -441,11 +441,12 @@ namespace Page_Navigation_App.Services
                            s.Product.StoneWeight > 0)
                 .OrderByDescending(s => s.Product.StoneValue)
                 .ToListAsync();
-        }
-
-        public async Task<bool> ReduceStock(int productId, decimal quantity, decimal unitPrice = 0, string referenceId = null, string transactionType = "Sale")
+        }        public async Task<bool> ReduceStock(int productId, decimal quantity, decimal unitPrice = 0, string referenceId = null, string transactionType = "Sale")
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
+            // Check if there's already an active transaction
+            bool inExistingTransaction = _context.Database.CurrentTransaction != null;
+            var transaction = inExistingTransaction ? null : await _context.Database.BeginTransactionAsync();
+            
             try
             {
                 var product = await _context.Products.FindAsync(productId);
@@ -480,19 +481,27 @@ namespace Page_Navigation_App.Services
                 await _context.StockLedgers.AddAsync(ledgerEntry);
                 await _context.SaveChangesAsync();
                 
-                await transaction.CommitAsync();
+                // Only commit if we created the transaction
+                if (transaction != null) {
+                    await transaction.CommitAsync();
+                }
                 return true;
-            }
-            catch
+            }            catch
             {
-                await transaction.RollbackAsync();
+                // Only rollback if we created the transaction
+                if (transaction != null) {
+                    await transaction.RollbackAsync();
+                }
                 return false;
             }
         }
 
         public async Task<bool> IncreaseStock(int productId, decimal quantity, decimal unitPrice = 0, string referenceId = null, string transactionType = "Purchase")
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
+            // Check if there's already an active transaction
+            bool inExistingTransaction = _context.Database.CurrentTransaction != null;
+            var transaction = inExistingTransaction ? null : await _context.Database.BeginTransactionAsync();
+            
             try
             {
                 var product = await _context.Products.FindAsync(productId);
@@ -527,12 +536,18 @@ namespace Page_Navigation_App.Services
                 await _context.StockLedgers.AddAsync(ledgerEntry);
                 await _context.SaveChangesAsync();
                 
-                await transaction.CommitAsync();
+                // Only commit if we created the transaction
+                if (transaction != null) {
+                    await transaction.CommitAsync();
+                }
                 return true;
             }
             catch
             {
-                await transaction.RollbackAsync();
+                // Only rollback if we created the transaction
+                if (transaction != null) {
+                    await transaction.RollbackAsync();
+                }
                 return false;
             }
         }

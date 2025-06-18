@@ -29,9 +29,7 @@ namespace Page_Navigation_App.ViewModel
         public ICommand CreateFinanceEntryCommand { get; }
 
         // Add a parameterless constructor to allow XAML instantiation
-        public OrderVM() { }
-
-        public OrderVM(OrderService orderService, CustomerService customerService, 
+        public OrderVM() { }        public OrderVM(OrderService orderService, CustomerService customerService, 
                       ProductService productService, FinanceService financeService)
         {
             _orderService = orderService;
@@ -39,9 +37,29 @@ namespace Page_Navigation_App.ViewModel
             _productService = productService;
             _financeService = financeService;
             
-            LoadOrders();
-            LoadCustomers();
-            LoadProducts();
+            // Initialize SelectedOrder to avoid null reference exceptions
+            SelectedOrder = new Order
+            {
+                OrderDate = DateOnly.FromDateTime(DateTime.Now),
+                Status = "Pending",
+                PaymentMethod = "Cash"
+            };
+            
+            // Initialize collections
+            Orders = new ObservableCollection<Order>();
+            Customers = new ObservableCollection<Customer>();
+            Products = new ObservableCollection<Product>();
+            OrderItems = new ObservableCollection<OrderDetail>();
+            
+            // Load data in proper order
+            Task.Run(async () => {
+                await Task.Delay(100); // Small delay to ensure UI is loaded
+                System.Windows.Application.Current.Dispatcher.Invoke(() => {
+                    LoadOrders();
+                    LoadCustomers();
+                    LoadProducts();
+                });
+            });
 
             AddOrUpdateCommand = new RelayCommand<object>(_ => AddOrUpdateOrder(), _ => CanAddOrUpdateOrder());
             ClearCommand = new RelayCommand<object>(_ => ClearForm(), _ => true);
@@ -183,25 +201,55 @@ namespace Page_Navigation_App.ViewModel
             {
                 Orders.Add(order);
             }
-        }
-
-        private async void LoadCustomers()
+        }        private async void LoadCustomers()
         {
-            Customers.Clear();
-            var customers = await _customerService.GetAllCustomers();
-            foreach (var customer in customers)
+            try
             {
-                Customers.Add(customer);
+                Customers.Clear();
+                var customers = await _customerService.GetAllCustomers();
+                if (customers != null)
+                {
+                    foreach (var customer in customers)
+                    {
+                        Customers.Add(customer);
+                    }
+                    System.Diagnostics.Debug.WriteLine($"Loaded {Customers.Count} customers");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("Customer loading returned null");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading customers: {ex.Message}");
+                System.Windows.MessageBox.Show($"Failed to load customers: {ex.Message}");
             }
         }
 
         private async void LoadProducts()
         {
-            Products.Clear();
-            var products = await _productService.GetAllProducts();
-            foreach (var product in products)
+            try
             {
-                Products.Add(product);
+                Products.Clear();
+                var products = await _productService.GetAllProducts();
+                if (products != null)
+                {
+                    foreach (var product in products)
+                    {
+                        Products.Add(product);
+                    }
+                    System.Diagnostics.Debug.WriteLine($"Loaded {Products.Count} products");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("Product loading returned null");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading products: {ex.Message}");
+                System.Windows.MessageBox.Show($"Failed to load products: {ex.Message}");
             }
         }
 
@@ -213,42 +261,94 @@ namespace Page_Navigation_App.ViewModel
             {
                 OrderItems.Add(item);
             }
-        }
-
-        private void CalculateOrderItemTotal()
+        }        private void CalculateOrderItemTotal()
         {
             if (SelectedOrderItem != null && SelectedProduct != null)
             {
                 SelectedOrderItem.Quantity = 1;  // Default quantity
-                SelectedOrderItem.TotalAmount = SelectedOrderItem.UnitPrice * SelectedOrderItem.Quantity;
+                SelectedOrderItem.TotalAmount = Math.Round(SelectedOrderItem.UnitPrice * SelectedOrderItem.Quantity, 2);
                 SelectedOrderItem.NetWeight = SelectedProduct.NetWeight;
                 SelectedOrderItem.GrossWeight = SelectedProduct.GrossWeight;
+                
+                // Calculate tax amounts only if product has HUID
+                if (!string.IsNullOrEmpty(SelectedProduct.HUID))
+                {
+                    decimal taxableAmount = SelectedOrderItem.TotalAmount;
+                    SelectedOrderItem.TaxableAmount = taxableAmount;
+                    SelectedOrderItem.CGSTAmount = Math.Round(taxableAmount * 0.015m, 2);  // 1.5% CGST
+                    SelectedOrderItem.SGSTAmount = Math.Round(taxableAmount * 0.015m, 2);  // 1.5% SGST
+                    SelectedOrderItem.FinalAmount = taxableAmount + SelectedOrderItem.CGSTAmount + SelectedOrderItem.SGSTAmount;
+                }
+                else
+                {
+                    // No GST if no HUID
+                    SelectedOrderItem.TaxableAmount = 0;
+                    SelectedOrderItem.CGSTAmount = 0;
+                    SelectedOrderItem.SGSTAmount = 0;
+                    SelectedOrderItem.FinalAmount = SelectedOrderItem.TotalAmount;
+                }
+                
                 OnPropertyChanged(nameof(SelectedOrderItem));
             }
-        }
-
-        private void UpdateOrderTotal()
+        }        private void UpdateOrderTotal()
         {
             SelectedOrder.TotalAmount = OrderItems.Sum(item => item.TotalAmount);
             SelectedOrder.TotalItems = OrderItems.Count;
             
-            // Calculate taxes
-            SelectedOrder.CGST = SelectedOrder.TotalAmount * 0.015m;  // 1.5%
-            SelectedOrder.SGST = SelectedOrder.TotalAmount * 0.015m;  // 1.5%
+            // Reset GST values
+            SelectedOrder.CGST = 0;
+            SelectedOrder.SGST = 0;
+            SelectedOrder.IGST = 0;
             
-            // Calculate discounts
-            // (keep any existing discount logic)
+            // Calculate GST only for products with HUID or hallmarking
+            decimal taxableAmount = 0;
+            foreach (var item in OrderItems)
+            {
+                bool hasValidHUID = false;
+                
+                if (item.Product != null)
+                {
+                    hasValidHUID = !string.IsNullOrEmpty(item.Product.HUID) || 
+                                   item.Product.IsHallmarked || 
+                                   !string.IsNullOrEmpty(item.Product.HallmarkNumber);
+                }
+                
+                if (hasValidHUID)
+                {
+                    // Apply Indian GST only to products with HUID or hallmarking
+                    taxableAmount += item.TotalAmount;
+                }
+            }
             
-            // Calculate grand total
+            // Apply Indian GST rates (3% for gold/jewelry - 1.5% CGST, 1.5% SGST)
+            if (taxableAmount > 0)
+            {
+                SelectedOrder.CGST = Math.Round(taxableAmount * 0.015m, 2);  // 1.5% CGST
+                SelectedOrder.SGST = Math.Round(taxableAmount * 0.015m, 2);  // 1.5% SGST
+            }
+            
+            // Calculate grand total in INR
             SelectedOrder.GrandTotal = SelectedOrder.TotalAmount + SelectedOrder.CGST + SelectedOrder.SGST - SelectedOrder.DiscountAmount;
             
+            // Set GST value for tracking and visibility
+            SelectedOrder.TaxAmount = SelectedOrder.CGST + SelectedOrder.SGST + SelectedOrder.IGST;
+            
             OnPropertyChanged(nameof(SelectedOrder));
-        }
-
-        private void AddOrderItem()
+        }private void AddOrderItem()
         {
             if (SelectedProduct == null)
                 return;
+
+            decimal metalRate = 0;
+            if (SelectedProduct.NetWeight > 0)
+            {
+                metalRate = SelectedProduct.BasePrice / SelectedProduct.NetWeight;
+            }
+
+            // Determine if product has HUID or BIS hallmarking
+            bool hasValidHUID = !string.IsNullOrEmpty(SelectedProduct.HUID) || 
+                                SelectedProduct.IsHallmarked || 
+                                !string.IsNullOrEmpty(SelectedProduct.HallmarkNumber);
 
             var newItem = new OrderDetail
             {
@@ -259,10 +359,36 @@ namespace Page_Navigation_App.ViewModel
                 TotalAmount = SelectedProduct.FinalPrice,
                 NetWeight = SelectedProduct.NetWeight,
                 GrossWeight = SelectedProduct.GrossWeight,
-                MetalRate = SelectedProduct.BasePrice / SelectedProduct.NetWeight,
+                MetalRate = metalRate,
                 MakingCharges = SelectedProduct.MakingCharges,
-                WastagePercentage = SelectedProduct.WastagePercentage
+                WastagePercentage = SelectedProduct.WastagePercentage,
+                HSNCode = "7113", // Standard HSN code for jewelry 
+                BaseAmount = SelectedProduct.BasePrice
             };
+
+            // Calculate tax amounts only if product has HUID or hallmarking
+            if (hasValidHUID)
+            {
+                decimal taxableAmount = newItem.TotalAmount;
+                newItem.TaxableAmount = taxableAmount;
+                newItem.CGSTAmount = Math.Round(taxableAmount * 0.015m, 2);  // 1.5% CGST for GST rate of 3%
+                newItem.SGSTAmount = Math.Round(taxableAmount * 0.015m, 2);  // 1.5% SGST for GST rate of 3%
+                newItem.FinalAmount = taxableAmount + newItem.CGSTAmount + newItem.SGSTAmount;
+                
+                // Log for debugging
+                System.Diagnostics.Debug.WriteLine($"Product has HUID/Hallmark: {hasValidHUID}, Applying GST");
+            }
+            else
+            {
+                // No GST if no HUID/hallmarking
+                newItem.TaxableAmount = 0;
+                newItem.CGSTAmount = 0;
+                newItem.SGSTAmount = 0;
+                newItem.FinalAmount = newItem.TotalAmount;
+                
+                // Log for debugging
+                System.Diagnostics.Debug.WriteLine($"Product has no HUID/Hallmark, Skipping GST");
+            }
 
             OrderItems.Add(newItem);
             UpdateOrderTotal();
@@ -343,9 +469,7 @@ namespace Page_Navigation_App.ViewModel
             {
                 System.Windows.MessageBox.Show($"Error saving order: {ex.Message}");
             }
-        }
-
-        private void CreateFinanceEntry()
+        }        private void CreateFinanceEntry()
         {
             if (SelectedOrder == null || SelectedOrder.OrderID <= 0)
             {
@@ -355,18 +479,19 @@ namespace Page_Navigation_App.ViewModel
 
             try
             {
-                // Create finance entry for the order
+                // Create finance entry for the order (in INR)
                 var finance = new Finance
                 {
                     TransactionDate = DateTime.Now,
                     Amount = SelectedOrder.GrandTotal,
                     TransactionType = "Income",
                     PaymentMethod = SelectedOrder.PaymentType,
-                    Description = $"Payment for Order #{SelectedOrder.OrderID}",
+                    Description = $"Payment for Order #{SelectedOrder.OrderID} (INR)",
                     CustomerID = SelectedOrder.CustomerID,
                     OrderID = SelectedOrder.OrderID,
                     ReferenceNumber = SelectedOrder.OrderID.ToString(),
-                    CreatedBy = Environment.UserName
+                    CreatedBy = Environment.UserName,
+                    Currency = "INR"  // Explicitly specify currency as INR
                 };
 
                 // Call AddFinanceRecord and handle result properly
@@ -434,6 +559,22 @@ namespace Page_Navigation_App.ViewModel
             foreach (var order in orders)
             {
                 Orders.Add(order);
+            }
+        }
+        
+        // Method to manually reload customers and products data
+        public void ReloadData()
+        {
+            try
+            {
+                LoadCustomers();
+                LoadProducts();
+                System.Windows.MessageBox.Show("Customer and product data reloaded successfully.");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error reloading data: {ex.Message}");
+                System.Windows.MessageBox.Show($"Failed to reload data: {ex.Message}");
             }
         }
     }

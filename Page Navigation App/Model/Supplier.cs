@@ -60,9 +60,11 @@ namespace Page_Navigation_App.Model
         
         // Alias for CurrentBalance
         [NotMapped]
-        public decimal CurrentBalance { get => OutstandingAmount; set => OutstandingAmount = value; }
-
-        public string PreferredPaymentTerms { get; set; } = "Net 30";
+        public decimal CurrentBalance { get => OutstandingAmount; set => OutstandingAmount = value; }        public string PreferredPaymentTerms { get; set; } = "Net 30";
+        
+        // Add alias for PaymentTerms
+        [NotMapped]
+        public string PaymentTerms { get => PreferredPaymentTerms; set => PreferredPaymentTerms = value; }
 
         [StringLength(100)]
         public string BankName { get; set; } = "ICICI Bank";

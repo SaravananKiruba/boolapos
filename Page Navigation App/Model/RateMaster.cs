@@ -301,6 +301,43 @@ namespace Page_Navigation_App.Model
             }
         }
 
+        private decimal _wastagePercentage;
+        [Column(TypeName = "decimal(5,2)")]
+        [Range(0, 100)]
+        public decimal WastagePercentage
+        {
+            get => _wastagePercentage;
+            set
+            {
+                if (_wastagePercentage != value)
+                {
+                    _wastagePercentage = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private decimal _finalRate;
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal FinalRate
+        {
+            get => _finalRate;
+            set
+            {
+                if (_finalRate != value)
+                {
+                    _finalRate = value;
+                    OnPropertyChanged();
+                }
+            }
+        }        public decimal CalculateFinalRate()
+        {
+            // Calculate final rate based on base rate, wastage, and making charges
+            decimal wastageAmount = Rate * (WastagePercentage / 100);
+            decimal makingAmount = Rate * (MakingChargePercentage / 100);
+            return Rate + wastageAmount + makingAmount;
+        }
+
         [NotMapped]
         public bool IsCurrentRate => IsActive && 
             EffectiveDate <= DateTime.Now && 

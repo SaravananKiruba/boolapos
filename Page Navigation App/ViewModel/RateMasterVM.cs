@@ -18,6 +18,7 @@ namespace Page_Navigation_App.ViewModel
         public ICommand AddOrUpdateCommand { get; }
         public ICommand ClearCommand { get; }
         public ICommand SearchCommand { get; }
+        public ICommand CalculateRateCommand { get; }
 
         public ObservableCollection<RateMaster> Rates { get; set; } = new ObservableCollection<RateMaster>();
         public ObservableCollection<RateMaster> RateHistory { get; set; } = new ObservableCollection<RateMaster>();
@@ -79,11 +80,10 @@ namespace Page_Navigation_App.ViewModel
             _productService = productService;
             
             LoadCurrentRates();
-            LoadRateAnalytics();
-
-            AddOrUpdateCommand = new RelayCommand<object>(_ => AddOrUpdateRate(), _ => CanAddOrUpdateRate());
+            LoadRateAnalytics();            AddOrUpdateCommand = new RelayCommand<object>(_ => AddOrUpdateRate(), _ => CanAddOrUpdateRate());
             ClearCommand = new RelayCommand<object>(_ => ClearForm(), _ => true);
             SearchCommand = new RelayCommand<object>(_ => LoadRateHistory(), _ => true);
+            CalculateRateCommand = new RelayCommand<object>(_ => CalculateRate(), _ => CanCalculateRate());
         }
 
         private void LoadCurrentRates()
@@ -258,6 +258,19 @@ namespace Page_Navigation_App.ViewModel
                    !string.IsNullOrEmpty(SelectedRate.Source) &&
                    SelectedRate.Rate > 0 &&
                    SelectedRate.ValidUntil > DateTime.Now;
+        }
+
+        private void CalculateRate()
+        {
+            if (SelectedRate != null)
+            {
+                SelectedRate.FinalRate = SelectedRate.CalculateFinalRate();
+            }
+        }
+
+        private bool CanCalculateRate()
+        {
+            return SelectedRate != null && SelectedRate.Rate > 0;
         }
     }
 

@@ -4,8 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Page_Navigation_App.Model
-{
-    public class User
+{    public class User
     {
         [Key]
         public int UserID { get; set; }
@@ -40,10 +39,11 @@ namespace Page_Navigation_App.Model
         [Required]
         public bool IsActive { get; set; }
         
+        [NotMapped]
         public virtual ICollection<Role> Roles { get; set; } = new HashSet<Role>();
-    }
-
-    public class UserRole
+        
+        public virtual ICollection<UserRole> UserRoles { get; set; } = new HashSet<UserRole>();
+    }    public class UserRole
     {
         [Key]
         public int UserRoleID { get; set; }
@@ -52,9 +52,11 @@ namespace Page_Navigation_App.Model
         public int UserID { get; set; }
         
         [Required]
-        [StringLength(50)]
-        public string RoleName { get; set; }
+        public int RoleID { get; set; }
         
         public virtual User User { get; set; }
+        
+        [ForeignKey("RoleID")]
+        public virtual Role Role { get; set; }
     }
 }

@@ -28,10 +28,9 @@ namespace Page_Navigation_App.Services
             if (!await _context.Users.AnyAsync())
             {
                 await SeedDefaultUserAsync();
-            }
-
-            var user = await _context.Users
-                .Include(u => u.Roles)
+            }            var user = await _context.Users
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
                 .FirstOrDefaultAsync(u => u.Username == username && u.IsActive);
 
             if (user == null)
@@ -40,9 +39,41 @@ namespace Page_Navigation_App.Services
             if (!VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
                 return null;
 
-            // Update last login date
-            user.LastLoginDate = DateTime.Now;
-            await _context.SaveChangesAsync();
+            try
+            {
+                // Update last login date
+                user.LastLoginDate = DateTime.Now;
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                // Log the exception but still return the user to allow login
+                Console.WriteLine($"Error updating last login date: {ex.Message}");
+            }            // Manually load roles for backward compatibility
+            if (user.Roles == null)
+                user.Roles = new HashSet<Role>();
+
+            // Load roles from UserRoles if available
+            if (user.UserRoles != null)
+            {
+                // Eager load the roles if they weren't already loaded
+                foreach (var userRole in user.UserRoles)
+                {
+                    if (userRole.Role == null)
+                    {
+                        // Fetch the role if it wasn't included
+                        var role = await _context.Roles.FindAsync(userRole.RoleID);
+                        if (role != null)
+                        {
+                            user.Roles.Add(role);
+                        }
+                    }
+                    else
+                    {
+                        user.Roles.Add(userRole.Role);
+                    }
+                }
+            }
 
             return user;
         }

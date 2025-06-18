@@ -10,6 +10,17 @@
              d:DesignWidth="900">
 
     <Grid Margin="20">
+        <!-- Add Reload Button at the top right -->
+        <Button x:Name="btnReloadData"                Content="Reload Data" 
+                Style="{StaticResource MahApps.Styles.Button.Square.Accent}"
+                Click="ReloadData_Click"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Margin="0,0,20,0"
+                Panel.ZIndex="100"
+                Width="100"
+                Height="30"/>
+                
         <TabControl Style="{StaticResource MahApps.Styles.TabControl}">
             <TabItem Header="Create Order">
                 <Grid>
