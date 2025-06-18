@@ -11,7 +11,7 @@ using Page_Navigation_App.Data;
 namespace Page_Navigation_App.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250618061358_init")]
+    [Migration("20250618074830_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -407,6 +407,10 @@ namespace Page_Navigation_App.Migrations
 
                     b.Property<string>("CreatedBy")
                         .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Currency")
+                        .HasMaxLength(5)
                         .HasColumnType("TEXT");
 
                     b.Property<int?>("CustomerID")

@@ -62,13 +62,23 @@ namespace Page_Navigation_App.Services
                 .Where(o => o.CustomerID == customerId)
                 .OrderByDescending(o => o.OrderDate)
                 .ToListAsync();
+        }        // Filter orders by DateTime range
+        public async Task<IEnumerable<Order>> GetOrdersByDateRange(DateTime startDate, DateTime endDate)
+        {
+            DateOnly startDateOnly = DateOnly.FromDateTime(startDate);
+            DateOnly endDateOnly = DateOnly.FromDateTime(endDate);
+            
+            return await _context.Orders
+                .Include(o => o.OrderDetails)
+                .Where(o => o.OrderDate >= startDateOnly && o.OrderDate <= endDateOnly)
+                .ToListAsync();
         }
 
         // Get all orders
         public async Task<IEnumerable<Order>> GetAllOrders()
         {
             return await _context.Orders
-                .Include(o => o.Customer)
+                .Include(o => o.OrderDetails)
                 .OrderByDescending(o => o.OrderDate)
                 .ToListAsync();
         }

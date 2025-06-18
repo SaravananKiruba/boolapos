@@ -386,5 +386,25 @@ namespace Page_Navigation_App.Services
                 return false;
             }
         }
+
+        /// <summary>
+        /// Get stock ledger entries within a date range
+        /// </summary>
+        public async Task<List<StockLedger>> GetStockLedgerEntriesByDateRange(DateTime startDate, DateTime endDate)
+        {
+            try
+            {
+                return await _context.StockLedgers
+                    .Include(sl => sl.Product)
+                    .Where(sl => sl.TransactionDate >= startDate && sl.TransactionDate <= endDate)
+                    .OrderByDescending(sl => sl.TransactionDate)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                await _logService.LogErrorAsync($"Error retrieving stock ledger entries: {ex.Message}");
+                return new List<StockLedger>();
+            }
+        }
     }
 }

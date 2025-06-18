@@ -77,7 +77,12 @@ namespace Page_Navigation_App
 
             // ViewModels - Transient lifetime except for NavigationVM
             services.AddSingleton<NavigationVM>();
-            services.AddTransient<HomeVM>();
+            services.AddTransient<HomeVM>(provider => new HomeVM(
+                provider.GetRequiredService<ProductService>(),
+                provider.GetRequiredService<OrderService>(),
+                provider.GetRequiredService<CustomerService>(),
+                provider.GetRequiredService<StockLedgerService>()
+            ));
             services.AddTransient<CustomerVM>();
             services.AddTransient<ProductVM>();
             services.AddTransient<OrderVM>();

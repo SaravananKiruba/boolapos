@@ -571,6 +571,8 @@ namespace Page_Navigation_App.Migrations
                     IsPaymentReceived = table.Column<bool>(type: "INTEGER", nullable: false),
                     Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
                     Status = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
+                    Currency = table.Column<string>(type: "TEXT", maxLength: 5, nullable: true),
+                    CreatedBy = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
                     StartDate = table.Column<DateTime>(type: "TEXT", nullable: true),
                     LastPaymentDate = table.Column<DateTime>(type: "TEXT", nullable: true),
                     NextInstallmentDate = table.Column<DateTime>(type: "TEXT", nullable: true),
@@ -588,7 +590,6 @@ namespace Page_Navigation_App.Migrations
                     InterestRate = table.Column<decimal>(type: "decimal(5,2)", nullable: true),
                     NumberOfInstallments = table.Column<int>(type: "INTEGER", nullable: true),
                     InstallmentNumber = table.Column<int>(type: "INTEGER", nullable: true),
-                    CreatedBy = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
                     SupplierID = table.Column<int>(type: "INTEGER", nullable: true)
                 },
                 constraints: table =>

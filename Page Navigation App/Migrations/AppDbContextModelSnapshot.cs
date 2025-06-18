@@ -407,6 +407,10 @@ namespace Page_Navigation_App.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Currency")
+                        .HasMaxLength(5)
+                        .HasColumnType("TEXT");
+
                     b.Property<int?>("CustomerID")
                         .HasColumnType("INTEGER");
 
