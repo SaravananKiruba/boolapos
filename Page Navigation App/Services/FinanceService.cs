@@ -338,18 +338,18 @@ namespace Page_Navigation_App.Services
         /// <summary>
         /// Get daily sales and payment summary for a date range
         /// </summary>
-        public async Task<List<DailySummary>> GetDailyFinanceSummaryAsync(DateTime fromDate, DateTime toDate)
+        public async Task<List<DailySummary>> GetDailyFinanceSummaryAsync(DateOnly fromDate, DateOnly toDate)
         {
             try
             {
-                // Convert to date only
-                fromDate = fromDate.Date;
-                toDate = toDate.Date.AddDays(1).AddSeconds(-1); // Include all of toDate
+                // Convert DateOnly to DateTime for DB queries
+                DateTime fromDateTime = fromDate.ToDateTime(TimeOnly.MinValue);
+                DateTime toDateTime = toDate.ToDateTime(TimeOnly.MaxValue); // includes full day of toDate
 
                 // Get sales grouped by date
                 var sales = await _context.Orders
                     .Where(o => o.OrderDate >= fromDate && o.OrderDate <= toDate)
-                    .GroupBy(o => o.OrderDate.Date)
+                    .GroupBy(o => o.OrderDate)
                     .Select(g => new
                     {
                         Date = g.Key,
@@ -360,8 +360,8 @@ namespace Page_Navigation_App.Services
 
                 // Get payments grouped by date
                 var payments = await _context.Finances
-                    .Where(f => f.TransactionDate >= fromDate && 
-                                f.TransactionDate <= toDate && 
+                    .Where(f => f.TransactionDate >= fromDateTime &&
+                                f.TransactionDate <= toDateTime &&
                                 f.IsPaymentReceived)
                     .GroupBy(f => f.TransactionDate.Date)
                     .Select(g => new
@@ -374,8 +374,8 @@ namespace Page_Navigation_App.Services
 
                 // Get expenses grouped by date
                 var expenses = await _context.Finances
-                    .Where(f => f.TransactionDate >= fromDate && 
-                                f.TransactionDate <= toDate && 
+                    .Where(f => f.TransactionDate >= fromDateTime &&
+                                f.TransactionDate <= toDateTime &&
                                 !f.IsPaymentReceived)
                     .GroupBy(f => f.TransactionDate.Date)
                     .Select(g => new
@@ -386,23 +386,21 @@ namespace Page_Navigation_App.Services
                     })
                     .ToListAsync();
 
-                // Create a list of all dates in the range
-                var allDates = new List<DateTime>();
-                for (var date = fromDate; date <= toDate; date = date.AddDays(1))
-                {
-                    allDates.Add(date.Date);
-                }
+                // Build the list of all dates in the range
+                var allDates = Enumerable.Range(0, (toDate.DayNumber - fromDate.DayNumber) + 1)
+                                         .Select(offset => fromDate.AddDays(offset).ToDateTime(TimeOnly.MinValue))
+                                         .ToList();
 
-                // Create the unified summary
+                // Merge the results
                 var summary = allDates.Select(date => new DailySummary
                 {
                     Date = date,
-                    TotalSales = sales.FirstOrDefault(s => s.Date == date)?.TotalSales ?? 0,
-                    OrderCount = sales.FirstOrDefault(s => s.Date == date)?.OrderCount ?? 0,
-                    TotalPayments = payments.FirstOrDefault(p => p.Date == date)?.TotalPayments ?? 0,
-                    PaymentCount = payments.FirstOrDefault(p => p.Date == date)?.PaymentCount ?? 0,
-                    TotalExpenses = expenses.FirstOrDefault(e => e.Date == date)?.TotalExpenses ?? 0,
-                    ExpenseCount = expenses.FirstOrDefault(e => e.Date == date)?.ExpenseCount ?? 0
+                    TotalSales = sales.FirstOrDefault(s => s.Date == DateOnly.FromDateTime(date))?.TotalSales ?? 0,
+                    OrderCount = sales.FirstOrDefault(s => s.Date == DateOnly.FromDateTime(date))?.OrderCount ?? 0,
+                    TotalPayments = payments.FirstOrDefault(p => p.Date == date.Date)?.TotalPayments ?? 0,
+                    PaymentCount = payments.FirstOrDefault(p => p.Date == date.Date)?.PaymentCount ?? 0,
+                    TotalExpenses = expenses.FirstOrDefault(e => e.Date == date.Date)?.TotalExpenses ?? 0,
+                    ExpenseCount = expenses.FirstOrDefault(e => e.Date == date.Date)?.ExpenseCount ?? 0
                 }).ToList();
 
                 return summary;
@@ -414,16 +412,14 @@ namespace Page_Navigation_App.Services
             }
         }
 
-        /// <summary>
-        /// Calculate profit and loss for a date range
-        /// </summary>
-        public async Task<ProfitLossReport> GetProfitLossReportAsync(DateTime fromDate, DateTime toDate)
+
+        public async Task<ProfitLossReport> GetProfitLossReportAsync(DateOnly fromDate, DateOnly toDate)
         {
             try
             {
-                // Convert to date only
-                fromDate = fromDate.Date;
-                toDate = toDate.Date.AddDays(1).AddSeconds(-1); // Include all of toDate
+                // Convert DateOnly to full-day DateTime range
+                DateTime fromDateTime = fromDate.ToDateTime(TimeOnly.MinValue);
+                DateTime toDateTime = toDate.ToDateTime(TimeOnly.MaxValue); // Includes full day of toDate
 
                 // Get total sales
                 var totalSales = await _context.Orders
@@ -432,37 +428,14 @@ namespace Page_Navigation_App.Services
 
                 // Get total expenses
                 var totalExpenses = await _context.Finances
-                    .Where(f => f.TransactionDate >= fromDate && 
-                                f.TransactionDate <= toDate && 
+                    .Where(f => f.TransactionDate >= fromDateTime &&
+                                f.TransactionDate <= toDateTime &&
                                 !f.IsPaymentReceived)
                     .SumAsync(f => f.Amount);
 
-                // Get sales by category
-                var salesByCategory = await _context.OrderDetails
-                    .Include(od => od.Order)
-                    .Include(od => od.Product)
-                    .ThenInclude(p => p.Category)
-                    .Where(od => od.Order.OrderDate >= fromDate && od.Order.OrderDate <= toDate)
-                    .GroupBy(od => od.Product.Category.CategoryName)
-                    .Select(g => new CategorySalesReport
-                    {
-                        CategoryName = g.Key,
-                        SalesAmount = g.Sum(od => od.TotalPrice)
-                    })
-                    .ToListAsync();
+               
 
-                // Get expenses by category
-                var expensesByCategory = await _context.Finances
-                    .Where(f => f.TransactionDate >= fromDate && 
-                                f.TransactionDate <= toDate && 
-                                !f.IsPaymentReceived)
-                    .GroupBy(f => f.Category)
-                    .Select(g => new CategoryExpenseReport
-                    {
-                        CategoryName = g.Key,
-                        ExpenseAmount = g.Sum(f => f.Amount)
-                    })
-                    .ToListAsync();
+               
 
                 return new ProfitLossReport
                 {
@@ -471,8 +444,7 @@ namespace Page_Navigation_App.Services
                     TotalSales = totalSales,
                     TotalExpenses = totalExpenses,
                     GrossProfit = totalSales - totalExpenses,
-                    SalesByCategory = salesByCategory,
-                    ExpensesByCategory = expensesByCategory
+                    
                 };
             }
             catch (Exception ex)
@@ -485,15 +457,11 @@ namespace Page_Navigation_App.Services
                     TotalSales = 0,
                     TotalExpenses = 0,
                     GrossProfit = 0,
-                    SalesByCategory = new List<CategorySalesReport>(),
-                    ExpensesByCategory = new List<CategoryExpenseReport>()
                 };
             }
         }
 
-        /// <summary>
-        /// Get all finance records
-        /// </summary>
+
         public List<Finance> GetAllFinanceRecords()
         {
             try
@@ -654,24 +622,11 @@ namespace Page_Navigation_App.Services
 
     public class ProfitLossReport
     {
-        public DateTime FromDate { get; set; }
-        public DateTime ToDate { get; set; }
+        public DateOnly FromDate { get; set; }
+        public DateOnly ToDate { get; set; }
         public decimal TotalSales { get; set; }
         public decimal TotalExpenses { get; set; }
         public decimal GrossProfit { get; set; }
-        public List<CategorySalesReport> SalesByCategory { get; set; } = new List<CategorySalesReport>();
-        public List<CategoryExpenseReport> ExpensesByCategory { get; set; } = new List<CategoryExpenseReport>();
     }
 
-    public class CategorySalesReport
-    {
-        public string CategoryName { get; set; }
-        public decimal SalesAmount { get; set; }
-    }
-
-    public class CategoryExpenseReport
-    {
-        public string CategoryName { get; set; }
-        public decimal ExpenseAmount { get; set; }
-    }
 }

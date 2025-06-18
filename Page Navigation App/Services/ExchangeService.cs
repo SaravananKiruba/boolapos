@@ -25,10 +25,10 @@ namespace Page_Navigation_App.Services
         }
 
         public async Task<Order> ProcessExchange(
-            int customerId, 
-            Product returnedProduct, 
+            int customerId,
+            Product returnedProduct,
             decimal returnedQuantity,
-            Product newProduct, 
+            Product newProduct,
             decimal newQuantity,
             decimal exchangeRate,
             string notes = null)
@@ -40,7 +40,7 @@ namespace Page_Navigation_App.Services
                 var exchangeOrder = new Order
                 {
                     CustomerID = customerId,
-                    OrderDate = DateTime.Now,
+                    OrderDate = DateOnly.FromDateTime(DateTime.Now),
                     Status = "Exchange",
                     PaymentMethod = "Exchange",
                     TotalItems = 2, // Returned + new item
@@ -58,30 +58,30 @@ namespace Page_Navigation_App.Services
                 // Returned product (negative quantity)
                 var returnDetail = new OrderDetail
                 {
-                    ProductID = returnedProduct.ProductID,                   
+                    ProductID = returnedProduct.ProductID,
                     NetWeight = returnedProduct.NetWeight,
                     GrossWeight = returnedProduct.GrossWeight,
                     MetalRate = returnedProduct.BasePrice,
                     MakingCharges = returnedProduct.MakingCharges,
-                   
+
                 };
                 orderDetails.Add(returnDetail);
 
                 // New product
                 var newDetail = new OrderDetail
                 {
-                    ProductID = newProduct.ProductID,                  
+                    ProductID = newProduct.ProductID,
                     NetWeight = newProduct.NetWeight,
                     GrossWeight = newProduct.GrossWeight,
                     MetalRate = newProduct.BasePrice,
                     MakingCharges = newProduct.MakingCharges,
-                    
+
                 };
                 orderDetails.Add(newDetail);
 
                 // 4. Complete exchange calculations
                 exchangeOrder.TotalAmount = balanceAmount > 0 ? balanceAmount : 0;
-                
+
                 // Calculate GST on the balance amount if customer pays extra
                 if (balanceAmount > 0)
                 {
@@ -98,8 +98,7 @@ namespace Page_Navigation_App.Services
 
                 // Set exchange-specific fields
                 exchangeOrder.HasMetalExchange = true;
-                exchangeOrder.ExchangeMetalType = returnedProduct.CategoryID == newProduct.CategoryID ? 
-                    returnedProduct.CategoryID.ToString() : "Mixed";
+                exchangeOrder.ExchangeMetalType = "Gold"; // Assuming gold for simplicity, can be dynamic
                 exchangeOrder.ExchangeMetalPurity = returnedProduct.Purity;
                 exchangeOrder.ExchangeMetalWeight = returnedProduct.NetWeight * returnedQuantity;
                 exchangeOrder.ExchangeValue = returnValue;
@@ -119,18 +118,18 @@ namespace Page_Navigation_App.Services
                 // 7. Update inventory
                 // Reduce inventory for new product
                 await _stockService.ReduceStock(
-                    newProduct.ProductID, 
-                    newQuantity, 
-                    newProduct.FinalPrice, 
-                    exchangeOrder.OrderID.ToString(), 
+                    newProduct.ProductID,
+                    newQuantity,
+                    newProduct.FinalPrice,
+                    exchangeOrder.OrderID.ToString(),
                     "Exchange-Out");
 
                 // Increase inventory for returned product
                 await _stockService.IncreaseStock(
-                    returnedProduct.ProductID, 
-                    returnedQuantity, 
-                    returnedProduct.FinalPrice, 
-                    exchangeOrder.OrderID.ToString(), 
+                    returnedProduct.ProductID,
+                    returnedQuantity,
+                    returnedProduct.FinalPrice,
+                    exchangeOrder.OrderID.ToString(),
                     "Exchange-In");
 
                 // 8. Generate invoice number if needed

@@ -23,7 +23,7 @@ namespace Page_Navigation_App.Services
 
         public async Task<Customer> AddCustomer(Customer customer)
         {
-            customer.RegistrationDate = DateTime.Now;
+            customer.RegistrationDate = DateOnly.FromDateTime(DateTime.Now); 
             customer.LoyaltyPoints = 0;
             customer.IsActive = true;
 
@@ -148,13 +148,14 @@ namespace Page_Navigation_App.Services
 
         public async Task<IEnumerable<Customer>> GetInactiveCustomers(int daysInactive)
         {
-            var cutoffDate = DateTime.Now.AddDays(-daysInactive);
-            
+            var cutoffDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-daysInactive));
+
             return await _context.Customers
                 .Include(c => c.Orders)
                 .Where(c => !c.Orders.Any(o => o.OrderDate >= cutoffDate))
                 .ToListAsync();
         }
+
 
         public async Task<Dictionary<string, int>> GetCustomerSegmentation()
         {
@@ -255,7 +256,7 @@ namespace Page_Navigation_App.Services
         public decimal TotalRepairAmount { get; set; }
         public int LoyaltyPoints { get; set; }
         public decimal PendingAmount { get; set; }
-        public DateTime? LastPurchaseDate { get; set; }
+        public DateOnly? LastPurchaseDate { get; set; }
         public string PreferredPaymentMode { get; set; }
     }
 }

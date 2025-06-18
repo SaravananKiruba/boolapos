@@ -51,7 +51,6 @@ namespace Page_Navigation_App.Services
                 .Include(o => o.Customer)
                 .Include(o => o.OrderDetails)
                     .ThenInclude(od => od.Product)
-                        .ThenInclude(p => p.Category)
                 .FirstOrDefaultAsync(o => o.OrderID == orderId);
                 
             if (order == null)

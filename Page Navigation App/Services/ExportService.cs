@@ -34,51 +34,7 @@ namespace Page_Navigation_App.Services
             }
         }
 
-        public async Task<string> ExportSalesReport(
-            DateTime startDate,
-            DateTime endDate,
-            string format = "xlsx")
-        {
-            var analytics = _reportService.GetSalesAnalytics(startDate, endDate);
-            var fileName = $"SalesReport_{startDate:yyyyMMdd}_{endDate:yyyyMMdd}.{format}";
-            var filePath = Path.Combine(_exportPath, fileName);
-
-            if (format.ToLower() == "xlsx")
-            {
-                using var workbook = new XLWorkbook();
-                var worksheet = workbook.Worksheets.Add("Sales Report");
-
-                // Add headers
-                worksheet.Cell(1, 1).Value = "Category";
-                worksheet.Cell(1, 2).Value = "Amount";
-
-                // Add data
-                var row = 2;
-                foreach (var item in analytics.SalesByCategory)
-                {
-                    worksheet.Cell(row, 1).Value = item.CategoryName;
-                    worksheet.Cell(row, 2).Value = item.Amount;
-                    row++;
-                }
-
-                workbook.SaveAs(filePath);
-            }
-            else if (format.ToLower() == "csv")
-            {
-                using var writer = new StreamWriter(filePath);
-                using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
-
-                var records = analytics.SalesByCategory.Select(a => new
-                {
-                    Category = a.CategoryName,
-                    Amount = a.Amount
-                });
-
-                csv.WriteRecords(records);
-            }
-
-            return filePath;
-        }
+       
 
         public async Task<string> ExportInventoryReport(string format = "xlsx")
         {
@@ -139,8 +95,8 @@ namespace Page_Navigation_App.Services
         }
 
         public async Task<string> ExportGSTReport(
-            DateTime startDate,
-            DateTime endDate,
+            DateOnly startDate,
+            DateOnly endDate,
             string format = "xlsx")
         {
             var gstData = _reportService.GetFinancialReports(startDate, endDate);
@@ -153,7 +109,6 @@ namespace Page_Navigation_App.Services
                 var worksheet = workbook.Worksheets.Add("GST Report");
 
                 // Headers
-                worksheet.Cell(1, 1).Value = "Category";
                 worksheet.Cell(1, 2).Value = "Sales";
                 worksheet.Cell(1, 3).Value = "Expenses"; 
                 worksheet.Cell(1, 4).Value = "Profit/Loss";
@@ -164,27 +119,7 @@ namespace Page_Navigation_App.Services
                 worksheet.Cell(2, 3).Value = gstData.TotalExpenses;
                 worksheet.Cell(2, 4).Value = gstData.GrossProfit;
 
-                // Category breakdowns
-                var row = 4;
-                worksheet.Cell(3, 1).Value = "By Category";
-                
-                foreach (var category in gstData.SalesByCategory)
-                {
-                    worksheet.Cell(row, 1).Value = category.CategoryName;
-                    worksheet.Cell(row, 2).Value = category.SalesAmount;
-                    row++;
-                }
-
-                row += 2;
-                worksheet.Cell(row, 1).Value = "Expenses by Category";
-                row++;
-                
-                foreach (var expense in gstData.ExpensesByCategory)
-                {
-                    worksheet.Cell(row, 1).Value = expense.CategoryName;
-                    worksheet.Cell(row, 3).Value = expense.ExpenseAmount;
-                    row++;
-                }
+               
 
                 workbook.SaveAs(filePath);
             }
@@ -199,23 +134,7 @@ namespace Page_Navigation_App.Services
                     new { Category = "Total", Sales = gstData.TotalSales, Expenses = gstData.TotalExpenses, ProfitLoss = gstData.GrossProfit }
                 };
                 
-                // Add empty row
-                records.Add(new { Category = string.Empty, Sales = (decimal?)null, Expenses = (decimal?)null, ProfitLoss = (decimal?)null });
-                
-                // Add sales by category
-                records.Add(new { Category = "Sales by Category", Sales = (decimal?)null, Expenses = (decimal?)null, ProfitLoss = (decimal?)null });
-                foreach (var category in gstData.SalesByCategory)
-                {
-                    records.Add(new { Category = category.CategoryName, Sales = category.SalesAmount, Expenses = (decimal?)null, ProfitLoss = (decimal?)null });
-                }
-                
-                // Add expenses by category
-                records.Add(new { Category = string.Empty, Sales = (decimal?)null, Expenses = (decimal?)null, ProfitLoss = (decimal?)null });
-                records.Add(new { Category = "Expenses by Category", Sales = (decimal?)null, Expenses = (decimal?)null, ProfitLoss = (decimal?)null });
-                foreach (var expense in gstData.ExpensesByCategory)
-                {
-                    records.Add(new { Category = expense.CategoryName, Sales = (decimal?)null, Expenses = expense.ExpenseAmount, ProfitLoss = (decimal?)null });
-                }
+              
 
                 csv.WriteRecords(records);
             }
@@ -230,8 +149,8 @@ namespace Page_Navigation_App.Services
         }
 
         public async Task<string> ExportRepairReport(
-            DateTime startDate,
-            DateTime endDate,
+            DateOnly startDate,
+            DateOnly endDate,
             string format = "xlsx")
         {
             var repairs = _reportService.GetRepairAnalytics(startDate, endDate);
@@ -263,8 +182,8 @@ namespace Page_Navigation_App.Services
                     worksheet.Cell(row, 3).Value = job.ItemDescription;
                     worksheet.Cell(row, 4).Value = job.WorkType;
                     worksheet.Cell(row, 5).Value = job.Status;
-                    worksheet.Cell(row, 6).Value = job.ReceiptDate;
-                    worksheet.Cell(row, 7).Value = job.DeliveryDate;
+                    worksheet.Cell(row, 6).Value = job.ReceiptDate.ToDateTime(new TimeOnly(0, 0)); // Convert DateOnly to DateTime
+                    worksheet.Cell(row, 7).Value = job.DeliveryDate.ToDateTime(new TimeOnly(0, 0)); ; // If DeliveryDate is already DateTime or null, keep it as is
                     worksheet.Cell(row, 8).Value = job.EstimatedCost;
                     worksheet.Cell(row, 9).Value = job.FinalAmount;
                     row++;

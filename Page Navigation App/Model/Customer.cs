@@ -72,16 +72,16 @@ namespace Page_Navigation_App.Model
 
         #region Personal Details
         [Display(Name = "Date of Birth")]
-        public DateTime? DateOfBirth { get; set; } = new DateTime(1985, 6, 15);
+        public DateOnly? DateOfBirth { get; set; } 
 
         [Display(Name = "Registration Date")]
-        public DateTime RegistrationDate { get; set; }
+        public DateOnly RegistrationDate { get; set; }
 
         [Display(Name = "Is Active")]
         public bool IsActive { get; set; }
 
         [Display(Name = "Anniversary Date")]
-        public DateTime? DateOfAnniversary { get; set; }
+        public DateOnly? DateOfAnniversary { get; set; }
 
         [Required]
         [StringLength(20)]

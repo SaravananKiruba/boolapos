@@ -25,7 +25,7 @@ namespace Page_Navigation_App.Services
         /// <summary>
         /// Get sales dashboard data for specified period
         /// </summary>
-        public async Task<DashboardData> GetDashboardDataAsync(DateTime fromDate, DateTime toDate)
+        public async Task<DashboardData> GetDashboardDataAsync(DateOnly fromDate, DateOnly toDate)
         {
             try
             {
@@ -52,11 +52,8 @@ namespace Page_Navigation_App.Services
                     NewCustomers = customers.Count,
                     PendingRepairs = repairJobs.Count(r => r.Status == "Received" || r.Status == "In Progress"),
                     LowStockCount = products.Count,
-                    GoldSalesAmount = await GetMetalSalesAsync(fromDate, toDate, "Gold"),
-                    SilverSalesAmount = await GetMetalSalesAsync(fromDate, toDate, "Silver"),
                     TopSellingProducts = await GetTopSellingProductsAsync(fromDate, toDate, 5),
                     MonthlySalesData = await GetMonthlySalesAsync(fromDate, toDate),
-                    SalesByCategory = await GetSalesByCategoryAsync(fromDate, toDate)
                 };
             }
             catch (Exception ex)
@@ -69,7 +66,7 @@ namespace Page_Navigation_App.Services
         /// <summary>
         /// Get sales for a specific metal type
         /// </summary>
-        private async Task<decimal> GetMetalSalesAsync(DateTime fromDate, DateTime toDate, string metalType)
+        private async Task<decimal> GetMetalSalesAsync(DateOnly fromDate, DateOnly toDate, string metalType)
         {
             var sales = await _context.OrderDetails
                 .Include(od => od.Order)
@@ -86,8 +83,8 @@ namespace Page_Navigation_App.Services
         /// Get top selling products for the period
         /// </summary>
         private async Task<List<TopSellingProduct>> GetTopSellingProductsAsync(
-            DateTime fromDate, 
-            DateTime toDate, 
+            DateOnly fromDate, 
+            DateOnly toDate, 
             int count)
         {
             var topProducts = await _context.OrderDetails
@@ -109,72 +106,49 @@ namespace Page_Navigation_App.Services
             return topProducts;
         }
 
-        /// <summary>
-        /// Get monthly sales data for trend analysis
-        /// </summary>
-        private async Task<List<MonthlySales>> GetMonthlySalesAsync(DateTime fromDate, DateTime toDate)
+        private async Task<List<MonthlySales>> GetMonthlySalesAsync(DateOnly fromDate, DateOnly toDate)
         {
-            // Ensure the date range spans at least one full month
-            if ((toDate - fromDate).TotalDays < 28)
+            // Normalize fromDate and toDate to DateTime
+            var fromDateTime = new DateTime(fromDate.Year, fromDate.Month, 1);
+            var toDateTime = new DateTime(toDate.Year, toDate.Month, 1).AddMonths(1).AddDays(-1); // End of 'toDate' month
+
+            // Ensure the range includes at least one full month
+            if (toDateTime < fromDateTime.AddMonths(1).AddDays(-1))
             {
-                toDate = fromDate.AddMonths(1);
+                toDateTime = fromDateTime.AddMonths(1).AddDays(-1);
             }
 
             var monthlySales = new List<MonthlySales>();
-            var currentDate = new DateTime(fromDate.Year, fromDate.Month, 1);
-            
-            while (currentDate <= toDate)
+            var currentDate = fromDateTime;
+
+            while (currentDate <= toDateTime)
             {
-                var monthStart = currentDate;
+                var monthStart = new DateTime(currentDate.Year, currentDate.Month, 1);
                 var monthEnd = monthStart.AddMonths(1).AddDays(-1);
-                
+
                 var totalSales = await _context.Orders
-                    .Where(o => o.OrderDate >= monthStart && o.OrderDate <= monthEnd)
-                    .SumAsync(o => o.GrandTotal);
-                
+                    .Where(o => o.OrderDate >= fromDate && o.OrderDate <= toDate)
+                    .SumAsync(o => (decimal?)o.GrandTotal) ?? 0;
+
                 monthlySales.Add(new MonthlySales
                 {
-                    Month = currentDate.ToString("MMM yyyy"),
+                    Month = monthStart.ToString("MMM yyyy"),
                     Amount = totalSales
                 });
-                
+
                 currentDate = currentDate.AddMonths(1);
             }
-            
+
             return monthlySales;
         }
 
-        /// <summary>
-        /// Get sales data by product category
-        /// </summary>
-        private async Task<List<CategorySales>> GetSalesByCategoryAsync(DateTime fromDate, DateTime toDate)
-        {
-            var categorySales = await _context.OrderDetails
-                .Include(od => od.Order)
-                .Include(od => od.Product)
-                .ThenInclude(p => p.Category)
-                .Where(od => od.Order.OrderDate >= fromDate && od.Order.OrderDate <= toDate)
-                .GroupBy(od => new { od.Product.CategoryID, od.Product.Category.CategoryName })
-                .Select(g => new CategorySales
-                {
-                    CategoryName = g.Key.CategoryName,
-                    Amount = g.Sum(od => od.TotalPrice)
-                })
-                .OrderByDescending(c => c.Amount)
-                .ToListAsync();
-                
-            return categorySales;
-        }
 
-        /// <summary>
-        /// Generate inventory report with valuation
-        /// </summary>
+      
         public async Task<InventoryReport> GenerateInventoryReportAsync()
         {
             try
             {
                 var products = await _context.Products
-                    .Include(p => p.Category)
                     .Include(p => p.Supplier)
                     .ToListAsync();
                 
@@ -196,7 +170,6 @@ namespace Page_Navigation_App.Services
                     {
                         ProductID = p.ProductID,
                         ProductName = p.ProductName,
-                        Category = p.Category.CategoryName,
                         MetalType = p.MetalType,
                         Purity = p.Purity,
                         GrossWeight = p.GrossWeight,
@@ -218,7 +191,7 @@ namespace Page_Navigation_App.Services
         /// <summary>
         /// Generate GST compliance report for tax filing
         /// </summary>
-        public async Task<GSTReport> GenerateGSTReportAsync(DateTime fromDate, DateTime toDate)
+        public async Task<GSTReport> GenerateGSTReportAsync(DateOnly fromDate, DateOnly toDate)
         {
             try
             {
@@ -265,8 +238,8 @@ namespace Page_Navigation_App.Services
         /// Generate repair jobs report
         /// </summary>
         public async Task<RepairJobsReport> GenerateRepairJobsReportAsync(
-            DateTime fromDate, 
-            DateTime toDate, 
+            DateOnly fromDate, 
+            DateOnly toDate, 
             string status = null)
         {
             try
@@ -316,8 +289,8 @@ namespace Page_Navigation_App.Services
         /// Generate customer purchase report
         /// </summary>
         public async Task<CustomerReport> GenerateCustomerReportAsync(
-            DateTime fromDate, 
-            DateTime toDate, 
+            DateOnly fromDate, 
+            DateOnly toDate, 
             int? customerId = null)
         {
             try
@@ -354,7 +327,7 @@ namespace Page_Navigation_App.Services
                         PhoneNumber = customer.PhoneNumber,
                         TotalPurchases = orders.Sum(o => o.GrandTotal),
                         OrderCount = orders.Count,
-                        LastPurchaseDate = orders.Any() ? orders.Max(o => o.OrderDate) : (DateTime?)null,
+                        LastPurchaseDate = orders.Any() ? orders.Max(o => o.OrderDate) : (DateOnly?)null,
                         RepairJobCount = repairJobs.Count,
                         PendingAmount = customer.OutstandingAmount,
                         LoyaltyPoints = customer.LoyaltyPoints
@@ -410,7 +383,7 @@ namespace Page_Navigation_App.Services
         /// <summary>
         /// Get sales analytics data
         /// </summary>
-        public async Task<DashboardData> GetSalesAnalyticsAsync(DateTime fromDate, DateTime toDate)
+        public async Task<DashboardData> GetSalesAnalyticsAsync(DateOnly fromDate, DateOnly toDate)
         {
             return await GetDashboardDataAsync(fromDate, toDate);
         }
@@ -418,7 +391,7 @@ namespace Page_Navigation_App.Services
         /// <summary>
         /// Get sales analytics data (synchronous version)
         /// </summary>
-        public DashboardData GetSalesAnalytics(DateTime fromDate, DateTime toDate)
+        public DashboardData GetSalesAnalytics(DateOnly fromDate, DateOnly toDate)
         {
             return GetSalesAnalyticsAsync(fromDate, toDate).GetAwaiter().GetResult();
         }
@@ -426,7 +399,7 @@ namespace Page_Navigation_App.Services
         /// <summary>
         /// Get financial reports
         /// </summary>
-        public ProfitLossReport GetFinancialReports(DateTime fromDate, DateTime toDate)
+        public ProfitLossReport GetFinancialReports(DateOnly fromDate, DateOnly toDate)
         {
             try
             {
@@ -451,7 +424,7 @@ namespace Page_Navigation_App.Services
         /// <summary>
         /// Get repair analytics data
         /// </summary>
-        public RepairJobsReport GetRepairAnalytics(DateTime fromDate, DateTime toDate, string status = null)
+        public RepairJobsReport GetRepairAnalytics(DateOnly fromDate, DateOnly toDate, string status = null)
         {
             return GenerateRepairJobsReportAsync(fromDate, toDate, status).GetAwaiter().GetResult();
         }
@@ -464,12 +437,9 @@ namespace Page_Navigation_App.Services
         public int OrderCount { get; set; }
         public int NewCustomers { get; set; }
         public int PendingRepairs { get; set; }
-        public int LowStockCount { get; set; }
-        public decimal GoldSalesAmount { get; set; }
-        public decimal SilverSalesAmount { get; set; }
+        public int LowStockCount { get; set; }       
         public List<TopSellingProduct> TopSellingProducts { get; set; } = new List<TopSellingProduct>();
         public List<MonthlySales> MonthlySalesData { get; set; } = new List<MonthlySales>();
-        public List<CategorySales> SalesByCategory { get; set; } = new List<CategorySales>();
     }
 
     public class TopSellingProduct
@@ -522,8 +492,8 @@ namespace Page_Navigation_App.Services
 
     public class GSTReport
     {
-        public DateTime FromDate { get; set; }
-        public DateTime ToDate { get; set; }
+        public DateOnly FromDate { get; set; }
+        public DateOnly ToDate { get; set; }
         public int TotalInvoices { get; set; }
         public decimal TotalSales { get; set; }
         public decimal TotalCGST { get; set; }
@@ -538,7 +508,7 @@ namespace Page_Navigation_App.Services
     public class GSTInvoiceDetail
     {
         public string InvoiceNumber { get; set; }
-        public DateTime InvoiceDate { get; set; }
+        public DateOnly InvoiceDate { get; set; }
         public string CustomerName { get; set; }
         public string CustomerGST { get; set; }
         public string HSNCode { get; set; }
@@ -551,8 +521,8 @@ namespace Page_Navigation_App.Services
 
     public class RepairJobsReport
     {
-        public DateTime FromDate { get; set; }
-        public DateTime ToDate { get; set; }
+        public DateOnly FromDate { get; set; }
+        public DateOnly ToDate { get; set; }
         public string Status { get; set; }
         public int TotalJobs { get; set; }
         public int CompletedJobs { get; set; }
@@ -566,8 +536,8 @@ namespace Page_Navigation_App.Services
         public int RepairID { get; set; }
         public string CustomerName { get; set; }
         public string ItemDescription { get; set; }
-        public DateTime ReceiptDate { get; set; }
-        public DateTime? DeliveryDate { get; set; }
+        public DateOnly ReceiptDate { get; set; }
+        public DateOnly DeliveryDate { get; set; }
         public string Status { get; set; }
         public decimal EstimatedCost { get; set; }
         public decimal FinalAmount { get; set; }
@@ -576,8 +546,8 @@ namespace Page_Navigation_App.Services
 
     public class CustomerReport
     {
-        public DateTime FromDate { get; set; }
-        public DateTime ToDate { get; set; }
+        public DateOnly FromDate { get; set; }
+        public DateOnly ToDate { get; set; }
         public int TotalCustomers { get; set; }
         public decimal TotalPurchases { get; set; }
         public List<CustomerPurchaseDetail> CustomerDetails { get; set; } = new List<CustomerPurchaseDetail>();
@@ -590,7 +560,7 @@ namespace Page_Navigation_App.Services
         public string PhoneNumber { get; set; }
         public decimal TotalPurchases { get; set; }
         public int OrderCount { get; set; }
-        public DateTime? LastPurchaseDate { get; set; }
+        public DateOnly? LastPurchaseDate { get; set; }
         public int RepairJobCount { get; set; }
         public decimal PendingAmount { get; set; }
         public int LoyaltyPoints { get; set; }

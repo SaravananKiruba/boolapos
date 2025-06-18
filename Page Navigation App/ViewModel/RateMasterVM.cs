@@ -212,24 +212,10 @@ namespace Page_Navigation_App.ViewModel
                     
                     // Recalculate final price with all components
                     decimal makingCharges = product.MakingCharges;
-                    if (product.Subcategory?.SpecialMakingCharges != null)
-                    {
-                        makingCharges = product.Subcategory.SpecialMakingCharges.Value;
-                    }
-                    else if (product.Category?.DefaultMakingCharges != null)
-                    {
-                        makingCharges = product.Category.DefaultMakingCharges;
-                    }
+                   
 
                     decimal wastagePercentage = product.WastagePercentage;
-                    if (product.Subcategory?.SpecialWastage != null)
-                    {
-                        wastagePercentage = product.Subcategory.SpecialWastage.Value;
-                    }
-                    else if (product.Category?.DefaultWastage != null)
-                    {
-                        wastagePercentage = product.Category.DefaultWastage;
-                    }
+                    
 
                     decimal wastageAmount = (product.BasePrice * wastagePercentage) / 100;
                     decimal makingAmount = (product.BasePrice * makingCharges) / 100;

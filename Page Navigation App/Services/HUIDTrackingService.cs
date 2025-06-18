@@ -73,9 +73,8 @@ namespace Page_Navigation_App.Services
                 
                 // Update product with HUID information
                 product.HUID = huid;
-                product.AHCCode = ahc; // Assay & Hallmarking Center code
                 product.JewelType = jewelType;
-                product.HUIDRegistrationDate = DateTime.Now;
+                product.HUIDRegistrationDate = DateOnly.FromDateTime(DateTime.Now);
                 
                 // Update product
                 _context.Products.Update(product);

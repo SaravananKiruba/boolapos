@@ -16,7 +16,6 @@ namespace Page_Navigation_App.ViewModel
         private readonly OrderService _orderService;
         private readonly ProductService _productService;
         private readonly FinanceService _financeService;
-        private readonly CategoryService _categoryService;
         
         public ICommand GenerateReportCommand { get; }
         public ICommand ExportReportCommand { get; }
@@ -25,14 +24,12 @@ namespace Page_Navigation_App.ViewModel
             CustomerService customerService,
             OrderService orderService,
             ProductService productService,
-            FinanceService financeService,
-            CategoryService categoryService)
+            FinanceService financeService)
         {
             _customerService = customerService;
             _orderService = orderService;
             _productService = productService;
             _financeService = financeService;
-            _categoryService = categoryService;
             
             // Initialize collections
             ReportTypes = new ObservableCollection<string>
@@ -41,7 +38,6 @@ namespace Page_Navigation_App.ViewModel
                 "Inventory Report",
                 "Customer Report",
                 "Financial Report",
-                "Category Report"
             };
             
             GenerateReportCommand = new RelayCommand<object>(_ => GenerateReport(), _ => CanGenerateReport());
@@ -166,9 +162,7 @@ namespace Page_Navigation_App.ViewModel
                     case "Financial Report":
                         await GenerateFinancialReport();
                         break;
-                    case "Category Report":
-                        await GenerateCategoryReport();
-                        break;
+                   
                 }
                 
                 IsReportGenerated = true;
@@ -349,37 +343,6 @@ namespace Page_Navigation_App.ViewModel
             return Task.CompletedTask;
         }
         
-        private async Task GenerateCategoryReport()
-        {
-            ReportTitle = "Category Report";
-            
-            // Get all categories
-            var categories = await _categoryService.GetAllCategories();
-            ReportData = categories.ToList();
-            
-            // Calculate summary data
-            int totalCategories = categories.Count();
-            int activeCategories = categories.Count(c => c.IsActive);
-            
-            var categoriesWithProducts = categories
-                .Select(c => new
-                {
-                    CategoryName = c.CategoryName,
-                    ProductCount = c.Products?.Count ?? 0,
-                    MakingCharges = c.DefaultMakingCharges,
-                    Wastage = c.DefaultWastage,
-                    SubcategoryCount = c.Subcategories?.Count ?? 0
-                })
-                .OrderByDescending(x => x.ProductCount)
-                .ToList();
-            
-            ReportSummary = new Dictionary<string, object>
-            {
-                { "Total Categories", totalCategories },
-                { "Active Categories", activeCategories },
-                { "Categories with Products", categoriesWithProducts }
-            };
-        }
         
         private void ExportReport()
         {

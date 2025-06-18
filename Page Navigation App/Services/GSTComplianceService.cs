@@ -255,7 +255,7 @@ namespace Page_Navigation_App.Services
         /// <summary>
         /// Generate GST report for a period - delegates to ReportService
         /// </summary>
-        public async Task<GSTReport> GenerateGSTReportAsync(DateTime fromDate, DateTime toDate)
+        public async Task<GSTReport> GenerateGSTReportAsync(DateOnly fromDate, DateOnly toDate)
         {
             try
             {
