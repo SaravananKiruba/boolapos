@@ -169,37 +169,17 @@
                                                Style="{StaticResource MahApps.Styles.TextBox}"/>
                                     </Grid>
                                 </StackPanel>
-                            </Border>
-
-                            <!-- Classification with visual grouping -->
+                            </Border>                            <!-- Product Details with visual grouping -->
                             <Border Background="#F9F9F9"
                                     CornerRadius="8"
                                     Padding="10"
                                     Margin="0,0,0,15">
                                 <StackPanel>
-                                    <TextBlock Text="Classification" 
+                                    <TextBlock Text="Product Details" 
                                              Style="{StaticResource MahApps.Styles.TextBlock}" 
                                              FontWeight="Bold"
                                              Foreground="#2D3748"
                                              Margin="0,0,0,10"/>
-                                    
-                                    <ComboBox ItemsSource="{Binding Categories}"
-                                           DisplayMemberPath="CategoryName"
-                                           SelectedValuePath="CategoryID"
-                                           SelectedValue="{Binding SelectedProduct.CategoryID, UpdateSourceTrigger=PropertyChanged}"
-                                           Margin="0,5"
-                                           mah:TextBoxHelper.Watermark="Select Category"
-                                           mah:ControlsHelper.CornerRadius="5"
-                                           Style="{StaticResource MahApps.Styles.ComboBox}"/>
-                                    
-                                    <ComboBox ItemsSource="{Binding Subcategories}"
-                                           DisplayMemberPath="SubcategoryName"
-                                           SelectedValuePath="SubcategoryID"
-                                           SelectedValue="{Binding SelectedProduct.SubcategoryID, UpdateSourceTrigger=PropertyChanged}"
-                                           Margin="0,5"
-                                           mah:TextBoxHelper.Watermark="Select Subcategory"
-                                           mah:ControlsHelper.CornerRadius="5"
-                                           Style="{StaticResource MahApps.Styles.ComboBox}"/>
                                     
                                     <ComboBox ItemsSource="{Binding Suppliers}"
                                            SelectedItem="{Binding SelectedProduct.Supplier}"
@@ -208,9 +188,16 @@
                                            mah:ControlsHelper.CornerRadius="5"
                                            Style="{StaticResource MahApps.Styles.ComboBox}"/>
                                     
-                                    <TextBox Text="{Binding SelectedProduct.Location, UpdateSourceTrigger=PropertyChanged}"
+                                    <TextBox Text="{Binding SelectedProduct.Collection, UpdateSourceTrigger=PropertyChanged}"
                                           Margin="0,5"
-                                          mah:TextBoxHelper.Watermark="Location"
+                                          mah:TextBoxHelper.Watermark="Collection"
+                                          mah:TextBoxHelper.UseFloatingWatermark="True"
+                                          mah:ControlsHelper.CornerRadius="5"
+                                          Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                          
+                                    <TextBox Text="{Binding SelectedProduct.Design, UpdateSourceTrigger=PropertyChanged}"
+                                          Margin="0,5"
+                                          mah:TextBoxHelper.Watermark="Design"
                                           mah:TextBoxHelper.UseFloatingWatermark="True"
                                           mah:ControlsHelper.CornerRadius="5"
                                           Style="{StaticResource MahApps.Styles.TextBox}"/>
@@ -331,9 +318,8 @@
                                               Width="80"/>
                             <DataGridTextColumn Header="Price" 
                                               Binding="{Binding FinalPrice, StringFormat=₹ {0:N2}}"
-                                              Width="100"/>
-                            <DataGridTextColumn Header="Category" 
-                                              Binding="{Binding Category.CategoryName}"
+                                              Width="100"/>                            <DataGridTextColumn Header="Collection" 
+                                              Binding="{Binding Collection}"
                                               Width="120"/>
                             <DataGridTemplateColumn Width="Auto">
                                 <DataGridTemplateColumn.CellTemplate>

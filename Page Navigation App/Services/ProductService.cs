@@ -73,12 +73,10 @@ namespace Page_Navigation_App.Services
             return await query.OrderBy(p => p.ProductName).ToListAsync();
         }
 
-        public async Task<IEnumerable<Product>> SearchProducts(
+    public async Task<IEnumerable<Product>> SearchProducts(
             string searchTerm = null,
             string metalType = null,
-            string purity = null,
-            int? categoryId = null,
-            int? subcategoryId = null)
+            string purity = null)
         {
             var query = _context.Products
                 .Include(p => p.Stocks)
@@ -102,7 +100,6 @@ namespace Page_Navigation_App.Services
             {
                 query = query.Where(p => p.Purity == purity);
             }
-
 
             return await query.ToListAsync();
         }
@@ -173,13 +170,11 @@ namespace Page_Navigation_App.Services
                 .ToListAsync();
         }
 
-        public async Task UpdateMakingCharges(
-            int categoryId,
-            decimal makingCharges,
-            bool applyToSubcategories = false)
+    public async Task UpdateMakingCharges(
+            decimal makingCharges)
         {
             var products = await _context.Products
-                .Where(p =>  p.IsActive)
+                .Where(p => p.IsActive)
                 .ToListAsync();
 
             foreach (var product in products)
@@ -187,25 +182,11 @@ namespace Page_Navigation_App.Services
                 product.MakingCharges = makingCharges;
             }
 
-            if (applyToSubcategories)
-            {
-                var subcategoryProducts = await _context.Products
-                    .Where(p => p.IsActive)
-                    .ToListAsync();
-
-                foreach (var product in subcategoryProducts)
-                {
-                    product.MakingCharges = makingCharges;
-                }
-            }
-
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateWastagePercentage(
-            int categoryId,
-            decimal wastagePercentage,
-            bool applyToSubcategories = false)
+    public async Task UpdateWastagePercentage(
+            decimal wastagePercentage)
         {
             var products = await _context.Products
                 .Where(p => p.IsActive)
@@ -214,18 +195,6 @@ namespace Page_Navigation_App.Services
             foreach (var product in products)
             {
                 product.WastagePercentage = wastagePercentage;
-            }
-
-            if (applyToSubcategories)
-            {
-                var subcategoryProducts = await _context.Products
-                    .Where(p => p.IsActive)
-                    .ToListAsync();
-
-                foreach (var product in subcategoryProducts)
-                {
-                    product.WastagePercentage = wastagePercentage;
-                }
             }
 
             await _context.SaveChangesAsync();
