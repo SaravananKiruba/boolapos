@@ -102,43 +102,7 @@
                                             Height="60"/>
                                 </StackPanel>
                             </Border>
-                            
-                            <!-- Financial Information with visual grouping -->
-                            <Border Background="#F9F9F9"
-                                    CornerRadius="8"
-                                    Padding="10"
-                                    Margin="0,0,0,15">
-                                <StackPanel>
-                                    <TextBlock Text="Financial Information" 
-                                            Style="{StaticResource MahApps.Styles.TextBlock}" 
-                                            FontWeight="Bold"
-                                            Foreground="#2D3748"
-                                            Margin="0,0,0,10"/>
-                                    
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        
-                                        <mah:NumericUpDown Grid.Column="0"
-                                                        Value="{Binding SelectedSupplier.CreditLimit}"
-                                                        Margin="0,5,5,5"
-                                                        mah:TextBoxHelper.Watermark="Credit Limit"
-                                                        mah:ControlsHelper.CornerRadius="5"
-                                                        Style="{StaticResource {x:Type mah:NumericUpDown}}"
-                                                        StringFormat="C"
-                                                        Minimum="0"/>
-                                          <TextBox Grid.Column="1"
-                                                Text="{Binding SelectedSupplier.PreferredPaymentTerms}"
-                                                Margin="5,5,0,5"
-                                                mah:TextBoxHelper.Watermark="Payment Terms"
-                                                mah:TextBoxHelper.UseFloatingWatermark="True"
-                                                mah:ControlsHelper.CornerRadius="5"
-                                                Style="{StaticResource MahApps.Styles.TextBox}"/>
-                                    </Grid>
-                                </StackPanel>
-                            </Border>
+  
                             
                             <!-- Status Information with visual grouping -->
                             <Border Background="#F9F9F9"
@@ -197,11 +161,9 @@
         </Border>
 
         <!-- Supplier List and Transactions -->
-        <Grid Grid.Column="1" Margin="20,0,0,0">
-            <Grid.RowDefinitions>
+        <Grid Grid.Column="1" Margin="20,0,0,0">            <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <!-- Search Panel with enhanced design -->
@@ -300,13 +262,9 @@
                                             Width="*"/>
                             <DataGridTextColumn Header="Contact" 
                                             Binding="{Binding ContactNumber}"
-                                            Width="120"/>
-                            <DataGridTextColumn Header="Contact Person" 
+                                            Width="120"/>                            <DataGridTextColumn Header="Contact Person" 
                                             Binding="{Binding ContactPerson}"
                                             Width="150"/>
-                            <DataGridTextColumn Header="Balance" 
-                                            Binding="{Binding CurrentBalance, StringFormat=₹ {0:N2}}"
-                                            Width="120"/>
                             <DataGridTemplateColumn Header="Status" Width="100">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
@@ -360,79 +318,6 @@
                             </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
-                </mah:MetroHeader>
-            </Border>
-
-            <!-- Transaction Panel with enhanced styling -->
-            <Border Grid.Row="2"
-                    Background="#FFFFFF"
-                    CornerRadius="10">
-                <Border.Effect>
-                    <DropShadowEffect BlurRadius="10"
-                            ShadowDepth="1"
-                            Opacity="0.2"/>
-                </Border.Effect>
-                <mah:MetroHeader Header="Quick Actions"
-                             Margin="5">
-                    <Grid Margin="10">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-
-                        <mah:NumericUpDown Value="{Binding TransactionAmount}"
-                                        mah:TextBoxHelper.Watermark="Amount"
-                                        mah:ControlsHelper.CornerRadius="5"
-                                        Style="{StaticResource {x:Type mah:NumericUpDown}}"
-                                        StringFormat="C"
-                                        Minimum="0"/>
-
-                        <TextBox Grid.Column="1"
-                                Text="{Binding ReferenceNumber}"
-                                mah:TextBoxHelper.Watermark="Reference #"
-                                mah:TextBoxHelper.UseFloatingWatermark="True"
-                                mah:ControlsHelper.CornerRadius="5"
-                                Style="{StaticResource MahApps.Styles.TextBox}"
-                                Width="120"
-                                Margin="10,0"/>
-
-                        <Button Grid.Column="2"
-                                Style="{StaticResource MahApps.Styles.Button}"
-                                mah:ControlsHelper.CornerRadius="5"
-                                Padding="10,8"
-                                Command="{Binding RecordPurchaseCommand}"
-                                Margin="0,0,10,0">
-                            <Button.Effect>
-                                <DropShadowEffect BlurRadius="5"
-                                        ShadowDepth="1"
-                                        Opacity="0.3"/>
-                            </Button.Effect>
-                            <StackPanel Orientation="Horizontal">
-                                <iconPacks:PackIconMaterial Kind="CartArrowDown" 
-                                                        Margin="0,0,5,0"/>
-                                <TextBlock Text="Record Purchase"/>
-                            </StackPanel>
-                        </Button>
-
-                        <Button Grid.Column="3"
-                                Style="{StaticResource MahApps.Styles.Button.Square.Accent}"
-                                mah:ControlsHelper.CornerRadius="5"
-                                Padding="10,8"
-                                Command="{Binding RecordPaymentCommand}">
-                            <Button.Effect>
-                                <DropShadowEffect BlurRadius="5"
-                                        ShadowDepth="1"
-                                        Opacity="0.3"/>
-                            </Button.Effect>
-                            <StackPanel Orientation="Horizontal">
-                                <iconPacks:PackIconMaterial Kind="CashRegister" 
-                                                        Margin="0,0,5,0"/>
-                                <TextBlock Text="Record Payment"/>
-                            </StackPanel>
-                        </Button>
-                    </Grid>
                 </mah:MetroHeader>
             </Border>
         </Grid>

@@ -16,8 +16,6 @@ namespace Page_Navigation_App.ViewModel
         public ICommand AddOrUpdateCommand { get; }
         public ICommand ClearCommand { get; }
         public ICommand SearchCommand { get; }
-        public ICommand RecordPurchaseCommand { get; }
-        public ICommand RecordPaymentCommand { get; }
 
         public SupplierVM(SupplierService supplierService)
         {
@@ -27,8 +25,6 @@ namespace Page_Navigation_App.ViewModel
             AddOrUpdateCommand = new RelayCommand<object>(_ => AddOrUpdateSupplier(), _ => CanAddOrUpdateSupplier());
             ClearCommand = new RelayCommand<object>(_ => ClearForm(), _ => true);
             SearchCommand = new RelayCommand<object>(_ => SearchSuppliers(), _ => true);
-            RecordPurchaseCommand = new RelayCommand<object>(_ => RecordPurchase(), _ => CanRecordTransaction());
-            RecordPaymentCommand = new RelayCommand<object>(_ => RecordPayment(), _ => CanRecordTransaction());
         }
 
         public ObservableCollection<Supplier> Suppliers { get; set; } = new ObservableCollection<Supplier>();
@@ -53,28 +49,6 @@ namespace Page_Navigation_App.ViewModel
                 _searchTerm = value;
                 OnPropertyChanged();
                 AutoSelectSupplier();
-            }
-        }
-
-        private decimal _transactionAmount;
-        public decimal TransactionAmount
-        {
-            get => _transactionAmount;
-            set
-            {
-                _transactionAmount = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private string _referenceNumber;
-        public string ReferenceNumber
-        {
-            get => _referenceNumber;
-            set
-            {
-                _referenceNumber = value;
-                OnPropertyChanged();
             }
         }
 
@@ -108,7 +82,9 @@ namespace Page_Navigation_App.ViewModel
                     IsActive = true
                 };
             }
-        }        private async void AddOrUpdateSupplier()
+        }        
+
+        private async void AddOrUpdateSupplier()
         {
             try
             {
@@ -170,8 +146,6 @@ namespace Page_Navigation_App.ViewModel
         {
             SelectedSupplier = new Supplier { IsActive = true };
             SearchTerm = string.Empty;
-            TransactionAmount = 0;
-            ReferenceNumber = string.Empty;
         }
 
         private bool CanAddOrUpdateSupplier()
@@ -188,44 +162,6 @@ namespace Page_Navigation_App.ViewModel
             {
                 Suppliers.Add(supplier);
             }
-        }
-
-        private async void RecordPurchase()
-        {
-            if (SelectedSupplier?.SupplierID > 0 && TransactionAmount > 0)
-            {
-                await _supplierService.RecordPurchase(
-                    SelectedSupplier.SupplierID,
-                    TransactionAmount,
-                    "Purchase",
-                    "Direct",
-                    ReferenceNumber);
-
-                LoadSuppliers();
-                TransactionAmount = 0;
-                ReferenceNumber = string.Empty;
-            }
-        }
-
-        private async void RecordPayment()
-        {
-            if (SelectedSupplier?.SupplierID > 0 && TransactionAmount > 0)
-            {
-                await _supplierService.RecordPayment(
-                    SelectedSupplier.SupplierID,
-                    TransactionAmount,
-                    "Direct",
-                    ReferenceNumber);
-
-                LoadSuppliers();
-                TransactionAmount = 0;
-                ReferenceNumber = string.Empty;
-            }
-        }
-
-        private bool CanRecordTransaction()
-        {
-            return SelectedSupplier?.SupplierID > 0 && TransactionAmount > 0;
         }
     }
 }

@@ -51,35 +51,11 @@ namespace Page_Navigation_App.Model
 
         [Required]
         public bool IsActive { get; set; } = true;
-
-        [Column(TypeName = "decimal(18,2)")]
-        public decimal CreditLimit { get; set; } = 5000000.00m;
-
-        [Column(TypeName = "decimal(18,2)")]
-        public decimal OutstandingAmount { get; set; }
-        
-        // Alias for CurrentBalance
-        [NotMapped]
-        public decimal CurrentBalance { get => OutstandingAmount; set => OutstandingAmount = value; }        public string PreferredPaymentTerms { get; set; } = "Net 30";
-        
-        // Add alias for PaymentTerms
-        [NotMapped]
-        public string PaymentTerms { get => PreferredPaymentTerms; set => PreferredPaymentTerms = value; }
-
-        [StringLength(100)]
-        public string BankName { get; set; } = "ICICI Bank";
-
-        [StringLength(20)]
-        public string AccountNumber { get; set; } = "12345678901234";
-
-        [StringLength(20)]
-        public string IFSCCode { get; set; } = "ICIC0001234";
         
         // Add RegistrationDate property
         public DateTime RegistrationDate { get; set; } = DateTime.Now;
 
         // Navigation Properties
         public virtual ICollection<Product> Products { get; set; }
-        public virtual ICollection<Finance> Payments { get; set; }
     }
 }
