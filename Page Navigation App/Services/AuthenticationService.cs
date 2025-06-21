@@ -17,38 +17,56 @@ namespace Page_Navigation_App.Services
         public AuthenticationService(AppDbContext context)
         {
             _context = context;
-        }
-
-        public async Task<User> AuthenticateAsync(string username, string password)
+        }        public async Task<User> AuthenticateAsync(string username, string password)
         {
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
                 return null;
 
-            // If database is empty, try to seed first
-            if (!await _context.Users.AnyAsync())
-            {
-                await SeedDefaultUserAsync();
-            }            var user = await _context.Users
-                .Include(u => u.UserRoles)
-                    .ThenInclude(ur => ur.Role)
-                .FirstOrDefaultAsync(u => u.Username == username && u.IsActive);
-
-            if (user == null)
-                return null;
-
-            if (!VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
-                return null;
-
+            // Create a local user variable to return
+            User user = null;
+            
             try
             {
-                // Update last login date
-                user.LastLoginDate = DateTime.Now;
-                await _context.SaveChangesAsync();
+                // If database is empty, try to seed first
+                if (!await _context.Users.AnyAsync().ConfigureAwait(false))
+                {
+                    await SeedDefaultUserAsync().ConfigureAwait(false);
+                }
+                
+                // Use AsNoTracking() to prevent the entity from being tracked by the context
+                // This helps prevent issues with concurrent operations on the same DbContext
+                user = await _context.Users
+                    .AsNoTracking()
+                    .Include(u => u.UserRoles)
+                        .ThenInclude(ur => ur.Role)
+                    .FirstOrDefaultAsync(u => u.Username == username && u.IsActive)
+                    .ConfigureAwait(false);
+
+                if (user == null)
+                    return null;
+
+                if (!VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
+                    return null;
+
+                try
+                {
+                    // Update last login date - use a new separate transaction
+                    var updateUser = await _context.Users.FindAsync(user.UserID).ConfigureAwait(false);
+                    if (updateUser != null)
+                    {
+                        updateUser.LastLoginDate = DateTime.Now;
+                        await _context.SaveChangesAsync().ConfigureAwait(false);
+                    }
+                }
+                catch (Exception ex)
+                {                    // Log the exception but still return the user to allow login
+                    Console.WriteLine($"Error updating last login date: {ex.Message}");
+                }
             }
             catch (Exception ex)
             {
-                // Log the exception but still return the user to allow login
-                Console.WriteLine($"Error updating last login date: {ex.Message}");
+                Console.WriteLine($"Authentication error: {ex.Message}");
+                return null;
             }            // Manually load roles for backward compatibility
             if (user.Roles == null)
                 user.Roles = new HashSet<Role>();
@@ -126,22 +144,31 @@ namespace Page_Navigation_App.Services
                 passwordSalt = hmac.Key;
                 passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
             }
-        }
-
-        // Seed an admin user if none exists
+        }        // Seed an admin user if none exists
         public async Task SeedDefaultUserAsync()
         {
-            if (!await _context.Users.AnyAsync())
+            try
             {
-                var adminUser = new User
+                // Use ExecuteAsync to avoid keeping the DbContext "busy"
+                bool hasUsers = await _context.Users.AnyAsync().ConfigureAwait(false);
+                
+                if (!hasUsers)
                 {
-                    Username = "admin",
-                    FullName = "Administrator",
-                    Email = "admin@boolasystem.com",
-                    IsActive = true
-                };
-
-                await RegisterAsync(adminUser, "Admin@123");
+                    var adminUser = new User
+                    {
+                        Username = "admin",
+                        FullName = "Administrator",
+                        Email = "admin@boolasystem.com",
+                        IsActive = true
+                    };
+    
+                    await RegisterAsync(adminUser, "Admin@123").ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error seeding default user: {ex.Message}");
+                throw;
             }
         }
     }

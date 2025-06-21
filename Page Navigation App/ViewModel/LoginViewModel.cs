@@ -103,17 +103,18 @@ namespace Page_Navigation_App.ViewModel
             Username = "admin";
             ErrorMessage = "";
             IsLoggingIn = false;
-            
-            // Check database connection immediately
-            Task.Run(async () => await CheckDatabaseConnectionAsync());
+              // Check database connection immediately
+            // Use ConfigureAwait(false) to avoid deadlocks and continue on any thread instead of Task.Run
+            // This avoids multiple threads using the same DbContext instance
+            _ = CheckDatabaseConnectionAsync();
         }
-        
-        private async Task CheckDatabaseConnectionAsync()
+          private async Task CheckDatabaseConnectionAsync()
         {
             try
             {
-                // Check if we can access the authentication service
-                await _authService.SeedDefaultUserAsync();
+                // Use ConfigureAwait(false) to avoid returning to the UI thread
+                // which helps prevent thread synchronization issues with DbContext
+                await _authService.SeedDefaultUserAsync().ConfigureAwait(false);
                 Debug.WriteLine("Database connection successful, default user seeded if needed.");
             }
             catch (Exception ex)
@@ -130,8 +131,7 @@ namespace Page_Navigation_App.ViewModel
         {
             return !IsLoggingIn && !string.IsNullOrWhiteSpace(Username) && HasPassword;
         }
-        
-        private async void ExecuteLogin()
+          private async void ExecuteLogin()
         {
             try
             {
@@ -163,8 +163,15 @@ namespace Page_Navigation_App.ViewModel
                 // Add a small delay to show the loading animation
                 await Task.Delay(500);
                 
-                // Attempt authentication with retry
-                var user = await AuthenticateWithRetryAsync(Username, password);
+                // Store username and password locally to use in the task
+                string username = Username;
+                string pwd = password;
+                
+                // Use Task.Run to ensure authentication happens on a background thread with its own DbContext
+                var user = await Task.Run(async () => {
+                    // This will run in a separate thread with its own DbContext scope
+                    return await AuthenticateWithRetryAsync(username, pwd);
+                });
                 
                 if (user != null)
                 {
@@ -209,8 +216,7 @@ namespace Page_Navigation_App.ViewModel
                 IsLoggingIn = false;
             }
         }
-        
-        private async Task<User> AuthenticateWithRetryAsync(string username, string password, int maxRetries = 2)
+          private async Task<User> AuthenticateWithRetryAsync(string username, string password, int maxRetries = 2)
         {
             User user = null;
             int attempts = 0;
@@ -219,12 +225,15 @@ namespace Page_Navigation_App.ViewModel
             {
                 try
                 {
-                    user = await _authService.AuthenticateAsync(username, password);
+                    // Use ConfigureAwait(false) to avoid context switching back to the UI thread
+                    // This helps prevent DbContext threading issues
+                    user = await _authService.AuthenticateAsync(username, password).ConfigureAwait(false);
+                    
                     if (user == null && attempts == 0)
                     {
                         // If first attempt fails, try to seed the database and retry
                         Debug.WriteLine("Authentication failed, checking if database needs seeding...");
-                        await _authService.SeedDefaultUserAsync();
+                        await _authService.SeedDefaultUserAsync().ConfigureAwait(false);
                     }
                 }
                 catch (Exception ex)
@@ -238,7 +247,7 @@ namespace Page_Navigation_App.ViewModel
                 attempts++;
                 
                 if (user == null && attempts < maxRetries)
-                    await Task.Delay(500); // Small delay between retries
+                    await Task.Delay(500).ConfigureAwait(false); // Small delay between retries
             }
             
             return user;
@@ -296,17 +305,16 @@ namespace Page_Navigation_App.ViewModel
                     window.Close();
                     break;
                 }
-            }
-        }
+            }        }
+        
+        // Use 'new' keyword to explicitly hide the base class implementation
+        public new event PropertyChangedEventHandler PropertyChanged;
 
-        #region INotifyPropertyChanged
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        // Use 'new' keyword to explicitly hide the base class implementation
+        protected new virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-        #endregion
     }
 
     // A simpler relay command implementation

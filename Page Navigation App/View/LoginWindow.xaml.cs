@@ -113,39 +113,35 @@ namespace Page_Navigation_App.View
             // Login ViewModel
             services.AddSingleton<LoginViewModel>();
         }
-        
-        private async Task ValidateDatabaseConnectionAsync()
+          private async Task ValidateDatabaseConnectionAsync()
         {
-            try
-            {
-                var dbContext = _serviceProvider.GetService<AppDbContext>();
-                if (dbContext == null)
+            // Use Task.Run to ensure this runs on a background thread with its own DbContext
+            await Task.Run(async () => {
+                try
                 {
-                    throw new Exception("Failed to initialize database context");
-                }
-                
-                var authService = _serviceProvider.GetService<AuthenticationService>();
-                if (authService == null)
-                {
-                    throw new Exception("Failed to initialize authentication service");
-                }
-                
-                // Verify database connection and ensure it has the default user
-                await authService.SeedDefaultUserAsync();
-            }
-            catch (Exception ex)
-            {
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    MessageBox.Show($"Database validation error: {ex.Message}\n\nThe application will continue, but login functionality may be limited.",
-                        "Database Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        
-                    if (DataContext is LoginViewModel viewModel)
+                    var authService = _serviceProvider.GetService<AuthenticationService>();
+                    if (authService == null)
                     {
-                        viewModel.ErrorMessage = "Database connection error. Login may not work.";
+                        throw new Exception("Failed to initialize authentication service");
                     }
-                });
-            }
+                    
+                    // Verify database connection and ensure it has the default user
+                    await authService.SeedDefaultUserAsync().ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        MessageBox.Show($"Database validation error: {ex.Message}\n\nThe application will continue, but login functionality may be limited.",
+                            "Database Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            
+                        if (DataContext is LoginViewModel viewModel)
+                        {
+                            viewModel.ErrorMessage = "Database connection error. Login may not work.";
+                        }
+                    });
+                }
+            });
         }
 
         private void ExitButton_Click(object sender, RoutedEventArgs e)

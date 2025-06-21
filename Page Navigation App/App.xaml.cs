@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Windows;
 using System;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using System.IO;
 using Page_Navigation_App;
@@ -100,25 +101,35 @@ namespace Page_Navigation_App
             // Register Windows
             services.AddSingleton<MainWindow>();
             services.AddTransient<LoginWindow>();
-        }
-
-        protected override async void OnStartup(StartupEventArgs e)
+        }        protected override async void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
 
-            // Ensure database is created and migrations are applied
-            using (var scope = ServiceProvider.CreateScope())
+            try
             {
-                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                await dbContext.Database.MigrateAsync();
-                
-                // Seed default admin user if needed
-                var authService = scope.ServiceProvider.GetRequiredService<AuthenticationService>();
-                await authService.SeedDefaultUserAsync();
-                
-                // Setup automatic backup schedule
-                var backupService = scope.ServiceProvider.GetRequiredService<BackupService>();
-                await backupService.ScheduleAutomaticBackupsAsync();
+                // Run database initialization in a background thread to avoid
+                // blocking the UI and causing DbContext threading issues
+                await Task.Run(async () => {
+                    // Ensure database is created and migrations are applied
+                    using (var scope = ServiceProvider.CreateScope())
+                    {
+                        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                        await dbContext.Database.MigrateAsync().ConfigureAwait(false);
+                        
+                        // Seed default admin user if needed
+                        var authService = scope.ServiceProvider.GetRequiredService<AuthenticationService>();
+                        await authService.SeedDefaultUserAsync().ConfigureAwait(false);
+                        
+                        // Setup automatic backup schedule
+                        var backupService = scope.ServiceProvider.GetRequiredService<BackupService>();
+                        await backupService.ScheduleAutomaticBackupsAsync().ConfigureAwait(false);
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error initializing application: {ex.Message}", 
+                    "Startup Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
             // Get main window but don't show it yet
@@ -129,7 +140,6 @@ namespace Page_Navigation_App
             mainWindow.Hide();
             
             // Show login window
-            var loginViewModel = ServiceProvider.GetRequiredService<LoginViewModel>();
             var loginWindow = ServiceProvider.GetRequiredService<LoginWindow>();
             loginWindow.Show();
         }
