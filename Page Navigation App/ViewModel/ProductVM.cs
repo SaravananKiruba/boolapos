@@ -20,6 +20,7 @@ namespace Page_Navigation_App.ViewModel
         public ICommand AddOrUpdateCommand { get; }
         public ICommand ClearCommand { get; }
         public ICommand SearchCommand { get; }
+        public ICommand RecalculatePriceCommand { get; }
 
         public ProductVM(
             ProductService productService, 
@@ -32,28 +33,58 @@ namespace Page_Navigation_App.ViewModel
             
             LoadProducts();
             LoadSuppliers();
-            InitializeCollections();
-
-            AddOrUpdateCommand = new RelayCommand<object>(_ => AddOrUpdateProduct(), _ => CanAddOrUpdateProduct());
+            InitializeCollections();            AddOrUpdateCommand = new RelayCommand<object>(_ => AddOrUpdateProduct(), _ => CanAddOrUpdateProduct());
             ClearCommand = new RelayCommand<object>(_ => ClearForm(), _ => true);
             SearchCommand = new RelayCommand<object>(_ => SearchProducts(), _ => true);
+            RecalculatePriceCommand = new RelayCommand<object>(_ => RecalculatePrice(_), _ => CanRecalculatePrice(_));
+            RecalculatePriceCommand = new RelayCommand<object>(RecalculatePrice, CanRecalculatePrice);
         }
 
         public ObservableCollection<Product> Products { get; set; } = new ObservableCollection<Product>();
         public ObservableCollection<Supplier> Suppliers { get; set; } = new ObservableCollection<Supplier>();
         public ObservableCollection<string> MetalTypes { get; set; } = new ObservableCollection<string>();
-        public ObservableCollection<string> Purities { get; set; } = new ObservableCollection<string>();
-
-        private Product _selectedProduct = new Product();
+        public ObservableCollection<string> Purities { get; set; } = new ObservableCollection<string>();        private Product _selectedProduct = new Product();
+        private Product _previousProduct;
+        
         public Product SelectedProduct
         {
             get => _selectedProduct;
             set
             {
+                // Detach handlers from previous product if it exists
+                if (_previousProduct != null)
+                {
+                    DetachProductHandlers(_previousProduct);
+                }
+                
+                _previousProduct = _selectedProduct;
                 _selectedProduct = value;
-               
+                
+                // Attach handlers to the new product
+                if (_selectedProduct != null)
+                {
+                    AttachProductHandlers(_selectedProduct);
+                    
+                    // Calculate price for the newly selected product
+                    _ = RecalculateProductPriceAsync();
+                }
+                
                 OnPropertyChanged();
             }
+        }
+          // Attach event handlers to watch for property changes that affect price
+        private void AttachProductHandlers(Product product)
+        {
+            // We can't directly attach to Product property changes
+            // Instead, we'll implement this in our UI through binding with UpdateSourceTrigger=PropertyChanged
+            // and ensure the product form includes property change handlers
+        }
+        
+        // Detach event handlers when product is no longer selected
+        private void DetachProductHandlers(Product product)
+        {
+            // Empty implementation to match AttachProductHandlers
+            // Will be used if we implement direct event handling in the future
         }
 
       
@@ -154,38 +185,37 @@ namespace Page_Navigation_App.ViewModel
                 }
                 
                 // Log for debugging
-                Console.WriteLine($"Saving product with SupplierID: {SelectedProduct.SupplierID}");
-
-                // Calculate prices in INR
+                Console.WriteLine($"Saving product with SupplierID: {SelectedProduct.SupplierID}");                // Calculate prices in INR using enhanced calculation with GST
                 decimal currentRate = await GetCurrentMetalRate();
                 if (currentRate == 0)
                 {
                     System.Windows.MessageBox.Show("No current rate found for selected metal type and purity", "Rate Error");
                     return;
                 }
-
-                // Calculate base price directly without await
-                SelectedProduct.BasePrice = Math.Round(SelectedProduct.NetWeight * currentRate, 2);
                 
-                // Calculate making charges
-                decimal makingCharges = SelectedProduct.MakingCharges;               
+                // Check HUID for GST applicability
+                SelectedProduct.IsGstApplicable = !string.IsNullOrWhiteSpace(SelectedProduct.HUID);
 
-                // Calculate wastage
-                decimal wastagePercentage = SelectedProduct.WastagePercentage;
-               
-                decimal wastageAmount = (SelectedProduct.BasePrice * wastagePercentage) / 100;
-                decimal makingAmount = (SelectedProduct.BasePrice * makingCharges) / 100;
-
-                // Calculate final price with all components - ensure we're not awaiting a decimal
-                SelectedProduct.FinalPrice = Math.Round(
-                    SelectedProduct.BasePrice + 
-                    makingAmount + 
-                    SelectedProduct.StoneValue +
-                    wastageAmount +
-                    (SelectedProduct.ValueAdditionPercentage > 0 
-                        ? (SelectedProduct.BasePrice * SelectedProduct.ValueAdditionPercentage) / 100 
-                        : 0), 
-                    2);
+                // Use the enhanced price calculation that includes GST logic based on HUID
+                var priceCalculation = await _rateService.CalculateEnhancedProductPriceAsync(
+                    SelectedProduct.NetWeight, 
+                    SelectedProduct.MetalType, 
+                    SelectedProduct.Purity, 
+                    SelectedProduct.WastagePercentage, 
+                    SelectedProduct.MakingCharges,
+                    SelectedProduct.HUID,
+                    currentRate);
+                
+                // Update product with calculated values
+                SelectedProduct.BasePrice = Math.Round(priceCalculation.BasePrice, 2);
+                SelectedProduct.FinalPrice = Math.Round(priceCalculation.FinalPrice, 2);
+                SelectedProduct.GstAmount = Math.Round(priceCalculation.GstAmount, 2);
+                
+                // Also consider stone value if set (add it after GST calculations)
+                if (SelectedProduct.StoneValue > 0)
+                {
+                    SelectedProduct.FinalPrice += SelectedProduct.StoneValue;
+                }
 
                 bool result;
                 if (SelectedProduct.ProductID > 0)
@@ -257,6 +287,91 @@ namespace Page_Navigation_App.ViewModel
             foreach (var product in products)
             {
                 Products.Add(product);
+            }
+        }
+
+        // Method to recalculate product price when any input changes
+        public async Task RecalculateProductPriceAsync()
+        {
+            if (SelectedProduct == null)
+                return;
+                
+            try
+            {
+                decimal currentRate = await GetCurrentMetalRate();
+                if (currentRate <= 0)
+                    return;
+                    
+                // Check HUID for GST applicability
+                SelectedProduct.IsGstApplicable = !string.IsNullOrWhiteSpace(SelectedProduct.HUID);
+                
+                // Use enhanced calculation method
+                var priceCalculation = await _rateService.CalculateEnhancedProductPriceAsync(
+                    SelectedProduct.NetWeight, 
+                    SelectedProduct.MetalType, 
+                    SelectedProduct.Purity, 
+                    SelectedProduct.WastagePercentage, 
+                    SelectedProduct.MakingCharges,
+                    SelectedProduct.HUID,
+                    currentRate);
+                    
+                // Update product with calculated values
+                SelectedProduct.BasePrice = Math.Round(priceCalculation.BasePrice, 2);
+                SelectedProduct.FinalPrice = Math.Round(priceCalculation.FinalPrice, 2);
+                SelectedProduct.GstAmount = Math.Round(priceCalculation.GstAmount, 2);
+                
+                // Also consider stone value if set (add it after GST calculations)
+                if (SelectedProduct.StoneValue > 0)
+                {
+                    SelectedProduct.FinalPrice += SelectedProduct.StoneValue;
+                }
+                
+                // Notify UI of changes
+                OnPropertyChanged(nameof(SelectedProduct));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error recalculating price: {ex.Message}");
+            }
+        }
+
+        // Method for manual price recalculation triggered by UI
+        private void RecalculatePrice(object parameter)
+        {
+            _ = RecalculateProductPriceAsync();
+        }
+
+        // Can always recalculate price if a product is selected
+        private bool CanRecalculatePrice(object parameter)
+        {
+            return SelectedProduct != null;
+        }
+
+        // Method to update a product property value
+        public async Task UpdateProductProperty(string propertyName, object value)
+        {
+            if (SelectedProduct == null)
+                return;
+            
+            var propInfo = typeof(Product).GetProperty(propertyName);
+            if (propInfo != null)
+            {
+                var convertedValue = Convert.ChangeType(value, propInfo.PropertyType);
+                propInfo.SetValue(SelectedProduct, convertedValue);
+                
+                // List of properties that should trigger price recalculation
+                string[] priceRelatedProperties = new[]
+                {
+                    "NetWeight", "GrossWeight", "MetalType", "Purity", 
+                    "MakingCharges", "WastagePercentage", "HUID", "StoneValue"
+                };
+                
+                if (priceRelatedProperties.Contains(propertyName))
+                {
+                    await RecalculateProductPriceAsync();
+                }
+                
+                OnPropertyChanged(nameof(SelectedProduct));
             }
         }
     }

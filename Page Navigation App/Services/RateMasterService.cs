@@ -308,5 +308,70 @@ namespace Page_Navigation_App.Services
                 return 0;
             }
         }
+
+        /// <summary>
+        /// Calculate price for a product based on current rates, including GST based on HUID
+        /// </summary>
+        public async Task<(decimal BasePrice, decimal FinalPrice, decimal GstAmount)> CalculateEnhancedProductPriceAsync(
+            decimal productWeight, 
+            string metalType, 
+            string purity, 
+            decimal wastagePercentage, 
+            decimal makingCharges,
+            string huidNumber,
+            decimal ratePerGram = 0)
+        {
+            try
+            {
+                // Get current rate if not provided
+                decimal currentRate = ratePerGram;
+                if (currentRate <= 0)
+                {
+                    currentRate = await GetLatestRateAsync(metalType, purity);
+                }
+                
+                if (currentRate <= 0)
+                    return (0, 0, 0);
+                
+                // Step 1: Calculate effective weight
+                decimal effectiveWeight = productWeight + (productWeight * wastagePercentage / 100);
+                
+                // Step 2: Calculate base metal price
+                decimal basePrice = effectiveWeight * currentRate;
+                  // Initialize GST amounts
+                decimal gstOnBasePrice = 0;
+                decimal gstOnTotal = 0;
+                decimal totalGst = 0;
+                
+                // Step 3: If HUID is not empty, apply 3% GST to the base metal price
+                bool hasHuid = !string.IsNullOrWhiteSpace(huidNumber);
+                if (hasHuid)
+                {
+                    gstOnBasePrice = basePrice * 0.03m;
+                }
+                
+                // Add GST to base price
+                decimal priceWithBaseGst = basePrice + gstOnBasePrice;
+                  // Step 4: Add making charges (as a flat value, not percentage)
+                decimal priceWithMakingCharges = priceWithBaseGst + makingCharges;
+                
+                // Step 5: If HUID is not empty, apply 3% GST on the total (base price + making charges)
+                if (hasHuid)
+                {
+                    gstOnTotal = priceWithMakingCharges * 0.03m;
+                    totalGst = gstOnBasePrice + gstOnTotal;
+                }
+                
+                // Final amount
+                decimal finalPrice = priceWithMakingCharges + gstOnTotal;
+                
+                return (basePrice, finalPrice, totalGst);
+            }
+            catch (Exception ex)
+            {
+                await _logService.LogErrorAsync($"Error calculating enhanced product price: {ex.Message}");
+                return (0, 0, 0);
+            }
+        }
     }
 }

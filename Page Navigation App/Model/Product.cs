@@ -98,6 +98,15 @@ namespace Page_Navigation_App.Model
         [StringLength(50)]
         public string BISStandard { get; set; }  // BIS standard reference number
 
+        // GST related properties
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal GstAmount { get; set; } = 0.00m;  // Total GST charged
+        
+        [Column(TypeName = "decimal(5,2)")]
+        public decimal GstPercentage { get; set; } = 3.00m;  // Default to 3% GST rate
+        
+        public bool IsGstApplicable { get; set; } = false;  // Auto-determined based on HUID
+
         [Column(TypeName = "decimal(5,2)")]
         [Range(0, 100)]
         public decimal ValueAdditionPercentage { get; set; } = 5.00m;

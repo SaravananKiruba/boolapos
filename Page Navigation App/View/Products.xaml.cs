@@ -28,6 +28,13 @@ namespace Page_Navigation_App.View
 
             // Resolve ProductVM from the DI container
             DataContext = App.ServiceProvider.GetService<ProductVM>();
+        }        // Event handler for price-affecting field changes to trigger price recalculation
+        private async void PriceAffecting_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (DataContext is ProductVM viewModel)
+            {
+                await viewModel.RecalculateProductPriceAsync();
+            }
         }
     }
 }

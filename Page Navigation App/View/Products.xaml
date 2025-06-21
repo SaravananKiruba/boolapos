@@ -134,6 +134,7 @@
                                                      Foreground="#4A5568"
                                                      Margin="0,0,0,2"/>
                                             <TextBox Text="{Binding SelectedProduct.NetWeight, StringFormat=N3, UpdateSourceTrigger=PropertyChanged}"
+                                                   TextChanged="PriceAffecting_TextChanged"
                                                    mah:ControlsHelper.CornerRadius="5"
                                                    Style="{StaticResource MahApps.Styles.TextBox}"/>
                                         </StackPanel>
@@ -153,6 +154,7 @@
                                                      Foreground="#4A5568"
                                                      Margin="0,0,0,2"/>
                                             <TextBox Text="{Binding SelectedProduct.MakingCharges, StringFormat=N2, UpdateSourceTrigger=PropertyChanged}"
+                                                   TextChanged="PriceAffecting_TextChanged"
                                                    mah:ControlsHelper.CornerRadius="5"
                                                    Style="{StaticResource MahApps.Styles.TextBox}"/>
                                         </StackPanel>
@@ -183,23 +185,60 @@
                                                      Foreground="#4A5568"
                                                      Margin="0,0,0,2"/>
                                             <TextBox Text="{Binding SelectedProduct.WastagePercentage, StringFormat=N2, UpdateSourceTrigger=PropertyChanged}"
+                                                   TextChanged="PriceAffecting_TextChanged"
                                                    mah:ControlsHelper.CornerRadius="5"
                                                    Style="{StaticResource MahApps.Styles.TextBox}"/>
                                         </StackPanel>
                                         
                                         <!-- Final Price with Label -->
-                                        <StackPanel Grid.Column="1" Margin="5,5,0,5">
-                                            <TextBlock Text="Final Price (₹)" 
+                                        <StackPanel Grid.Column="1" Margin="5,5,0,5">                                    <TextBlock Text="Final Price (₹)" 
                                                      FontSize="12" 
                                                      Foreground="#4A5568"
                                                      Margin="0,0,0,2"/>
-                                            <TextBox Text="{Binding SelectedProduct.FinalPrice, StringFormat='₹ {0:N2}', UpdateSourceTrigger=PropertyChanged}"
-                                                   IsReadOnly="True"
-                                                   Background="#F0F9FF"
-                                                   mah:ControlsHelper.CornerRadius="5"
-                                                   Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBox Grid.Column="0" 
+                                                       Text="{Binding SelectedProduct.FinalPrice, StringFormat='₹ {0:N2}', UpdateSourceTrigger=PropertyChanged}"
+                                                       IsReadOnly="True"
+                                                       Background="#F0F9FF"
+                                                       mah:ControlsHelper.CornerRadius="5"
+                                                       Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                                <Button Grid.Column="1"
+                                                      Content="Recalculate"
+                                                      Command="{Binding RecalculatePriceCommand}"
+                                                      mah:ControlsHelper.CornerRadius="5"
+                                                      Margin="5,0,0,0"
+                                                      Style="{StaticResource MahApps.Styles.Button.Accent}"/>
+                                            </Grid>
                                         </StackPanel>
                                     </Grid>
+                                      <!-- HUID Field -->
+                                    <StackPanel Margin="0,5">
+                                        <TextBlock Text="HUID Number (Leave empty to skip GST)" 
+                                                 FontSize="12" 
+                                                 Foreground="#4A5568"
+                                                 Margin="0,0,0,2"/>
+                                        <TextBox Text="{Binding SelectedProduct.HUID, UpdateSourceTrigger=PropertyChanged}"
+                                               mah:ControlsHelper.CornerRadius="5"
+                                               mah:TextBoxHelper.Watermark="HUID Impacts GST Calculation"
+                                               Style="{StaticResource MahApps.Styles.TextBox}"                                               TextChanged="PriceAffecting_TextChanged"/>
+                                    </StackPanel>
+                                    
+                                    <!-- GST Amount Display -->
+                                    <StackPanel Margin="0,5">
+                                        <TextBlock Text="GST Amount (₹)" 
+                                                 FontSize="12" 
+                                                 Foreground="#4A5568"
+                                                 Margin="0,0,0,2"/>
+                                        <TextBox Text="{Binding SelectedProduct.GstAmount, StringFormat='₹ {0:N2}', UpdateSourceTrigger=PropertyChanged}"
+                                               IsReadOnly="True"
+                                               Background="#F0F9FF"
+                                               mah:ControlsHelper.CornerRadius="5"
+                                               Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                    </StackPanel>
                                     
                                     <!-- Base Price with Label (Added) -->
                                     <StackPanel Margin="0,5">
