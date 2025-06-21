@@ -89,17 +89,6 @@ namespace Page_Navigation_App.Migrations
                     IsActive = table.Column<bool>(type: "INTEGER", nullable: false),
                     DateOfAnniversary = table.Column<DateOnly>(type: "TEXT", nullable: true),
                     CustomerType = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
-                    PreferredDesigns = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
-                    PreferredMetalType = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
-                    RingSize = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
-                    BangleSize = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
-                    ChainLength = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
-                    TotalPurchases = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    OutstandingAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    CreditLimit = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    LoyaltyPoints = table.Column<int>(type: "INTEGER", nullable: false),
-                    IsGoldSchemeEnrolled = table.Column<bool>(type: "INTEGER", nullable: false),
-                    LastPurchaseDate = table.Column<DateTime>(type: "TEXT", nullable: true),
                     FamilyDetails = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true)
                 },
                 constraints: table =>

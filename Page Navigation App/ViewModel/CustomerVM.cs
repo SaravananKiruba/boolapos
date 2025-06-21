@@ -148,22 +148,8 @@ namespace Page_Navigation_App.ViewModel
                 DateOfBirth = customer.DateOfBirth,
                 DateOfAnniversary = customer.DateOfAnniversary,
                 RegistrationDate = customer.RegistrationDate,
-                IsActive = customer.IsActive,
-                
-                // Preferences
-                PreferredDesigns = customer.PreferredDesigns,
-                PreferredMetalType = customer.PreferredMetalType,
-                RingSize = customer.RingSize,
-                BangleSize = customer.BangleSize,
-                ChainLength = customer.ChainLength,
-                
-                // Financial Information
-                LoyaltyPoints = customer.LoyaltyPoints,
-                CreditLimit = customer.CreditLimit,
-                TotalPurchases = customer.TotalPurchases,
-                OutstandingAmount = customer.OutstandingAmount,
-                IsGoldSchemeEnrolled = customer.IsGoldSchemeEnrolled,
-                LastPurchaseDate = customer.LastPurchaseDate,
+                IsActive = customer.IsActive,                
+                // Preferences, Financial Information, and Jewelry Measurements sections have been removed
                 
                 // Additional Information
                 FamilyDetails = customer.FamilyDetails

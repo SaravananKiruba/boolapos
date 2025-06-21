@@ -169,20 +169,9 @@ namespace Page_Navigation_App.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("BangleSize")
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ChainLength")
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("City")
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
-
-                    b.Property<decimal>("CreditLimit")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("CustomerName")
                         .IsRequired()
@@ -219,44 +208,17 @@ namespace Page_Navigation_App.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool>("IsGoldSchemeEnrolled")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("LastName")
                         .HasMaxLength(50)
                         .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("LastPurchaseDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("LoyaltyPoints")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal>("OutstandingAmount")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasMaxLength(15)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("PreferredDesigns")
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("PreferredMetalType")
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
                     b.Property<DateOnly>("RegistrationDate")
                         .HasColumnType("TEXT");
-
-                    b.Property<string>("RingSize")
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("TotalPurchases")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("WhatsAppNumber")
                         .HasMaxLength(15)

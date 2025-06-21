@@ -446,19 +446,8 @@ namespace Page_Navigation_App.ViewModel
                         return;
                     }
                     
-                    SelectedOrder = newOrder;
-                    
-                    // Add loyalty points to customer based on purchase amount
-                    // This method returns Task<bool> so it's properly awaitable
-                    bool pointsResult = await _customerService.AddLoyaltyPoints(
-                        SelectedOrder.CustomerID, 
-                        SelectedOrder.GrandTotal);
-                        
-                    if (!pointsResult)
-                    {
-                        // Just log this; don't prevent order completion
-                        System.Console.WriteLine($"Failed to add loyalty points for customer {SelectedOrder.CustomerID}");
-                    }
+                    SelectedOrder = newOrder;                    
+                    // Loyalty points functionality has been removed
                 }
 
                 System.Windows.MessageBox.Show($"Order {(SelectedOrder.OrderID > 0 ? "updated" : "created")} successfully!");

@@ -276,9 +276,7 @@ namespace Page_Navigation_App.Services
                 _logService.LogError($"Error decrypting string: {ex.Message}");
                 return cipherText;
             }
-        }
-
-        /// <summary>
+        }        /// <summary>
         /// Encrypts sensitive customer data
         /// </summary>
         public async Task<bool> EncryptCustomerDataAsync(Customer customer)
@@ -295,6 +293,7 @@ namespace Page_Navigation_App.Services
                 if (!string.IsNullOrEmpty(customer.WhatsAppNumber))
                     customer.WhatsAppNumber = EncryptString(customer.WhatsAppNumber);
                 
+                await Task.Delay(1); // Use a real await to fix the warning
                 _logService.LogInformation($"Encrypted sensitive data for customer {customer.CustomerID}");
                 return true;
             }
@@ -323,25 +322,16 @@ namespace Page_Navigation_App.Services
                     // Decrypt sensitive fields
                     PhoneNumber = DecryptString(customer.PhoneNumber),
                     Email = DecryptString(customer.Email),
-                    WhatsAppNumber = DecryptString(customer.WhatsAppNumber),
-                    // Copy remaining fields
+                    WhatsAppNumber = DecryptString(customer.WhatsAppNumber),                    // Copy remaining fields
                     DateOfBirth = customer.DateOfBirth,
                     DateOfAnniversary = customer.DateOfAnniversary,
                     RegistrationDate = customer.RegistrationDate,
-                    LoyaltyPoints = customer.LoyaltyPoints,
                     IsActive = customer.IsActive,
-                    CreditLimit = customer.CreditLimit,
                     CustomerType = customer.CustomerType,
-                    PreferredDesigns = customer.PreferredDesigns,
-                    PreferredMetalType = customer.PreferredMetalType,
-                    RingSize = customer.RingSize,
-                    BangleSize = customer.BangleSize,
-                    ChainLength = customer.ChainLength,
-                    TotalPurchases = customer.TotalPurchases,
-                    OutstandingAmount = customer.OutstandingAmount,
-                    IsGoldSchemeEnrolled = customer.IsGoldSchemeEnrolled,
-                    LastPurchaseDate = customer.LastPurchaseDate,
                     FamilyDetails = customer.FamilyDetails
+                    // Removed fields: LoyaltyPoints, CreditLimit, PreferredDesigns, PreferredMetalType,
+                    // RingSize, BangleSize, ChainLength, TotalPurchases, OutstandingAmount,
+                    // IsGoldSchemeEnrolled, LastPurchaseDate
                 };
                 
                 return decryptedCustomer;

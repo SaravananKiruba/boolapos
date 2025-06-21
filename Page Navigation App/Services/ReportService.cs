@@ -319,6 +319,12 @@ namespace Page_Navigation_App.Services
                                      rj.ReceiptDate >= fromDate && 
                                      rj.ReceiptDate <= toDate)
                         .ToListAsync();
+                      // Calculate pending amount from orders and payments
+                    var totalOrders = orders.Sum(o => o.GrandTotal);
+                    var totalPayments = _context.Finances
+                        .Where(f => f.CustomerID == customer.CustomerID && f.IsPaymentReceived)
+                        .Sum(f => f.Amount);
+                    var pendingAmount = totalOrders - totalPayments;
                     
                     customerReports.Add(new CustomerPurchaseDetail
                     {
@@ -329,8 +335,8 @@ namespace Page_Navigation_App.Services
                         OrderCount = orders.Count,
                         LastPurchaseDate = orders.Any() ? orders.Max(o => o.OrderDate) : (DateOnly?)null,
                         RepairJobCount = repairJobs.Count,
-                        PendingAmount = customer.OutstandingAmount,
-                        LoyaltyPoints = customer.LoyaltyPoints
+                        PendingAmount = pendingAmount,
+                        LoyaltyPoints = 0 // LoyaltyPoints property removed from Customer model
                     });
                 }
                 
@@ -551,9 +557,7 @@ namespace Page_Navigation_App.Services
         public int TotalCustomers { get; set; }
         public decimal TotalPurchases { get; set; }
         public List<CustomerPurchaseDetail> CustomerDetails { get; set; } = new List<CustomerPurchaseDetail>();
-    }
-
-    public class CustomerPurchaseDetail
+    }    public class CustomerPurchaseDetail
     {
         public int CustomerID { get; set; }
         public string CustomerName { get; set; }
@@ -563,6 +567,7 @@ namespace Page_Navigation_App.Services
         public DateOnly? LastPurchaseDate { get; set; }
         public int RepairJobCount { get; set; }
         public decimal PendingAmount { get; set; }
-        public int LoyaltyPoints { get; set; }
+        // LoyaltyPoints system has been removed
+        public int LoyaltyPoints { get; set; } = 0; // Default to 0
     }
 }

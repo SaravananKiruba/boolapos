@@ -109,13 +109,12 @@ namespace Page_Navigation_App.Services
                 // Calculate total payments
                 var totalPayments = await _context.Finances
                     .Where(f => f.CustomerID == customerId && f.IsPaymentReceived)
-                    .SumAsync(f => f.Amount);
-
-                // Update outstanding amount
-                customer.OutstandingAmount = totalOrders - totalPayments;
+                    .SumAsync(f => f.Amount);                // OutstandingAmount property has been removed from Customer model
+                // Store the calculated value in Finance records instead
+                var outstandingAmount = totalOrders - totalPayments;
                 await _context.SaveChangesAsync();
 
-                await _logService.LogInformationAsync($"Customer balance updated for ID {customerId}: Outstanding amount = {customer.OutstandingAmount}");
+                await _logService.LogInformationAsync($"Customer balance updated for ID {customerId}: Outstanding amount = {outstandingAmount}");
                 return true;
             }
             catch (Exception ex)
@@ -475,24 +474,46 @@ namespace Page_Navigation_App.Services
                 _logService.LogError($"Error getting all finance records: {ex.Message}");
                 return new List<Finance>();
             }
-        }
-
-        /// <summary>
+        }        /// <summary>
         /// Get customer dues
         /// </summary>
-        public List<Customer> GetCustomerDues()
+        public List<dynamic> GetCustomerDues()
         {
             try
             {
-                return _context.Customers
-                    .Where(c => c.OutstandingAmount > 0)
-                    .OrderByDescending(c => c.OutstandingAmount)
-                    .ToList();
+                // Since OutstandingAmount is no longer on Customer model,
+                // calculate it from orders and payments
+                var customers = _context.Customers.ToList();
+                var result = new List<dynamic>();
+                
+                foreach (var customer in customers)
+                {
+                    var totalOrders = _context.Orders
+                        .Where(o => o.CustomerID == customer.CustomerID)
+                        .Sum(o => o.GrandTotal);
+                        
+                    var totalPayments = _context.Finances
+                        .Where(f => f.CustomerID == customer.CustomerID && f.IsPaymentReceived)
+                        .Sum(f => f.Amount);
+                        
+                    var outstandingAmount = totalOrders - totalPayments;
+                    
+                    if (outstandingAmount > 0)
+                    {
+                        result.Add(new
+                        {
+                            Customer = customer,
+                            OutstandingAmount = outstandingAmount
+                        });
+                    }
+                }
+                
+                return result.OrderByDescending(x => x.OutstandingAmount).ToList();
             }
             catch (Exception ex)
             {
                 _logService.LogError($"Error getting customer dues: {ex.Message}");
-                return new List<Customer>();
+                return new List<dynamic>();
             }
         }
 
@@ -503,11 +524,16 @@ namespace Page_Navigation_App.Services
         {
             try
             {
-                var customer = await _context.Customers.FindAsync(customerId);
-                if (customer == null)
-                    return 0;
+                // Calculate outstanding amount from orders and payments
+                var totalOrders = await _context.Orders
+                    .Where(o => o.CustomerID == customerId)
+                    .SumAsync(o => o.GrandTotal);
                     
-                return customer.OutstandingAmount;
+                var totalPayments = await _context.Finances
+                    .Where(f => f.CustomerID == customerId && f.IsPaymentReceived)
+                    .SumAsync(f => f.Amount);
+                    
+                return totalOrders - totalPayments;
             }
             catch (Exception ex)
             {

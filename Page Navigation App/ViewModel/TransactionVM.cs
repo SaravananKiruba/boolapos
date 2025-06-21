@@ -336,15 +336,14 @@ namespace Page_Navigation_App.ViewModel
                    !string.IsNullOrEmpty(SelectedTransaction.TransactionType) &&
                    !string.IsNullOrEmpty(SelectedTransaction.PaymentMethod);
         }
-        
-        private void GenerateFinanceReport()
+          private void GenerateFinanceReport()
         {
             System.Windows.MessageBox.Show(
                 $"Financial Summary:\n\n" +
                 $"Period: {StartDate:d} to {EndDate:d}\n" +
-                $"Total Income: {TotalIncome:C}\n" +
-                $"Total Expenses: {TotalExpense:C}\n" +
-                $"Net Balance: {NetBalance:C}",
+                $"Total Income: ₹{TotalIncome:N2}\n" +
+                $"Total Expenses: ₹{TotalExpense:N2}\n" +
+                $"Net Balance: ₹{NetBalance:N2}",
                 "Finance Report",
                 System.Windows.MessageBoxButton.OK,
                 System.Windows.MessageBoxImage.Information);

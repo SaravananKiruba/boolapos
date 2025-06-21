@@ -87,52 +87,7 @@ namespace Page_Navigation_App.Model
         [StringLength(20)]
         [Display(Name = "Customer Type")]
         public string CustomerType { get; set; } = "Gold";
-        #endregion
-
-        #region Preferences
-        [StringLength(500)]
-        [Display(Name = "Preferred Designs")]
-        public string PreferredDesigns { get; set; } = "Traditional designs";
-
-        [StringLength(100)]
-        [Display(Name = "Preferred Metal Type")]
-        public string PreferredMetalType { get; set; } = "Gold";
-
-        [StringLength(100)]
-        [Display(Name = "Ring Size")]
-        public string RingSize { get; set; }  // Customer's ring size for future reference
-
-        [StringLength(100)]
-        [Display(Name = "Bangle Size")]
-        public string BangleSize { get; set; }  // Customer's bangle size
-
-        [StringLength(100)]
-        [Display(Name = "Chain Length")]
-        public string ChainLength { get; set; }  // Preferred chain length
-        #endregion
-
-        #region Financial Information
-        [Column(TypeName = "decimal(18,2)")]
-        [Display(Name = "Total Purchases")]
-        public decimal TotalPurchases { get; set; }  // Total purchase amount
-
-        [Column(TypeName = "decimal(18,2)")]
-        [Display(Name = "Outstanding Amount")]
-        public decimal OutstandingAmount { get; set; }  // Current outstanding amount
-
-        [Column(TypeName = "decimal(18,2)")]
-        [Display(Name = "Credit Limit")]
-        public decimal CreditLimit { get; set; } = 10000;  // Credit limit for the customer
-
-        [Display(Name = "Loyalty Points")]
-        public int LoyaltyPoints { get; set; } = 0;  // Loyalty points accumulated by customer
-
-        [Display(Name = "Gold Scheme Enrolled")]
-        public bool IsGoldSchemeEnrolled { get; set; }  // Whether enrolled in gold savings scheme
-
-        [Display(Name = "Last Purchase Date")]
-        public DateTime? LastPurchaseDate { get; set; }  // Date of last purchase
-        #endregion
+        #endregion        // Preferences, Financial Information, and Jewelry Measurements have been removed
 
         #region Additional Information
         [StringLength(500)]

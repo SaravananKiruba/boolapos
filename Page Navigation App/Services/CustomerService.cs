@@ -19,12 +19,9 @@ namespace Page_Navigation_App.Services
         {
             _context = context;
             _financeService = financeService;
-        }
-
-        public async Task<Customer> AddCustomer(Customer customer)
+        }        public async Task<Customer> AddCustomer(Customer customer)
         {
             customer.RegistrationDate = DateOnly.FromDateTime(DateTime.Now); 
-            customer.LoyaltyPoints = 0;
             customer.IsActive = true;
 
             await _context.Customers.AddAsync(customer);
@@ -83,34 +80,7 @@ namespace Page_Navigation_App.Services
             }
 
             return await query.ToListAsync();
-        }
-
-        public async Task<bool> AddLoyaltyPoints(int customerId, decimal purchaseAmount)
-        {
-            var customer = await _context.Customers.FindAsync(customerId);
-            if (customer == null) return false;
-
-            // Add 1 point per 100 rupees spent
-            int pointsToAdd = (int)(purchaseAmount / 100);
-            customer.LoyaltyPoints += pointsToAdd;
-
-            await _context.SaveChangesAsync();
-            return true;
-        }
-
-        public async Task<bool> RedeemLoyaltyPoints(
-            int customerId, 
-            int pointsToRedeem,
-            decimal discountValue)
-        {
-            var customer = await _context.Customers.FindAsync(customerId);
-            if (customer == null || customer.LoyaltyPoints < pointsToRedeem)
-                return false;
-
-            customer.LoyaltyPoints -= pointsToRedeem;
-            await _context.SaveChangesAsync();
-            return true;
-        }
+        }        // Loyalty points methods have been removed as the related properties have been removed from the Customer model
 
         public async Task<CustomerStats> GetCustomerStats(int customerId)
         {
@@ -124,15 +94,12 @@ namespace Page_Navigation_App.Services
 
             var totalPurchases = customer.Orders.Sum(o => o.GrandTotal);
             var totalRepairs = customer.RepairJobs.Sum(r => r.FinalAmount);
-            var pendingAmount = await _financeService.GetCustomerDues(customerId);
-
-            return new CustomerStats
+            var pendingAmount = await _financeService.GetCustomerDues(customerId);            return new CustomerStats
             {
                 TotalOrders = customer.Orders.Count,
                 TotalPurchases = totalPurchases,
                 TotalRepairJobs = customer.RepairJobs.Count,
                 TotalRepairAmount = totalRepairs,
-                LoyaltyPoints = customer.LoyaltyPoints,
                 PendingAmount = pendingAmount,
                 LastPurchaseDate = customer.Orders
                     .OrderByDescending(o => o.OrderDate)
@@ -246,15 +213,12 @@ namespace Page_Navigation_App.Services
             await _context.SaveChangesAsync();
             return true;
         }
-    }
-
-    public class CustomerStats
+    }    public class CustomerStats
     {
         public int TotalOrders { get; set; }
         public decimal TotalPurchases { get; set; }
         public int TotalRepairJobs { get; set; }
         public decimal TotalRepairAmount { get; set; }
-        public int LoyaltyPoints { get; set; }
         public decimal PendingAmount { get; set; }
         public DateOnly? LastPurchaseDate { get; set; }
         public string PreferredPaymentMode { get; set; }

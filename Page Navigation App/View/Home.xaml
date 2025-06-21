@@ -205,8 +205,7 @@
                                          FontSize="48"
                                          FontWeight="Bold"
                                          Foreground="#FFC107"
-                                         HorizontalAlignment="Center"/>
-                                <TextBlock Text="{Binding TotalRevenue, StringFormat={}Total Revenue: {0:C}}"
+                                         HorizontalAlignment="Center"/>                                <TextBlock Text="{Binding TotalRevenue, StringFormat={}Total Revenue: ₹{0:N2}}"
                                          FontSize="16"
                                          Opacity="0.7"
                                          HorizontalAlignment="Center"/>
