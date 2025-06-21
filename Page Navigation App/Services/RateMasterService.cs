@@ -261,11 +261,10 @@ namespace Page_Navigation_App.Services
                 var existingRate = _context.RateMaster.Find(rate.RateID);
                 if (existingRate == null)
                     return false;
-                
-                existingRate.Rate = rate.Rate;
+                  existingRate.Rate = rate.Rate;
                 existingRate.MetalType = rate.MetalType;
                 existingRate.Purity = rate.Purity;
-                existingRate.Description = rate.Description;
+                existingRate.Description = rate.Description ?? string.Empty;
                 existingRate.UpdatedBy = rate.UpdatedBy;
                 existingRate.UpdatedDate = DateTime.Now;
                 

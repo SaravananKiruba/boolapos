@@ -18,11 +18,9 @@ namespace Page_Navigation_App.ViewModel
         public ICommand AddOrUpdateCommand { get; }
         public ICommand ClearCommand { get; }
         public ICommand SearchCommand { get; }
-        public ICommand CalculateRateCommand { get; }
 
         public ObservableCollection<RateMaster> Rates { get; set; } = new ObservableCollection<RateMaster>();
         public ObservableCollection<RateMaster> RateHistory { get; set; } = new ObservableCollection<RateMaster>();
-        public ObservableCollection<RateAnalytics> RateAnalytics { get; set; } = new ObservableCollection<RateAnalytics>();
 
         private RateMaster _selectedRate = new RateMaster();
         public RateMaster SelectedRate
@@ -48,20 +46,7 @@ namespace Page_Navigation_App.ViewModel
         public string[] Purities => _purities;
 
         private string[] _sources = new[] { "Market", "Association", "MCX", "Bank", "Custom" };
-        public string[] Sources => _sources;
-
-        private decimal _volatilityThreshold = 2.0m;
-        public decimal VolatilityThreshold
-        {
-            get => _volatilityThreshold;
-            set
-            {
-                _volatilityThreshold = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private bool _autoUpdatePrices = true;
+        public string[] Sources => _sources;        private bool _autoUpdatePrices = true;
         public bool AutoUpdatePrices
         {
             get => _autoUpdatePrices;
@@ -80,10 +65,9 @@ namespace Page_Navigation_App.ViewModel
             _productService = productService;
             
             LoadCurrentRates();
-            LoadRateAnalytics();            AddOrUpdateCommand = new RelayCommand<object>(_ => AddOrUpdateRate(), _ => CanAddOrUpdateRate());
+            AddOrUpdateCommand = new RelayCommand<object>(_ => AddOrUpdateRate(), _ => CanAddOrUpdateRate());
             ClearCommand = new RelayCommand<object>(_ => ClearForm(), _ => true);
             SearchCommand = new RelayCommand<object>(_ => LoadRateHistory(), _ => true);
-            CalculateRateCommand = new RelayCommand<object>(_ => CalculateRate(), _ => CanCalculateRate());
         }
 
         private void LoadCurrentRates()
@@ -94,9 +78,7 @@ namespace Page_Navigation_App.ViewModel
             {
                 Rates.Add(rate);
             }
-        }
-
-        private void LoadRateHistory()
+        }        private void LoadRateHistory()
         {
             if (SelectedRate == null) return;
 
@@ -110,49 +92,7 @@ namespace Page_Navigation_App.ViewModel
             {
                 RateHistory.Add(rate);
             }
-        }
-
-        private void LoadRateAnalytics()
-        {
-            RateAnalytics.Clear();
-            var currentRates = _rateService.GetCurrentRates();
-            
-            foreach (var current in currentRates)
-            {
-                var dayHistory = _rateService.GetRateHistory(
-                    current.MetalType,
-                    current.Purity,
-                    DateTime.Now.AddDays(-7));
-
-                var oldestRate = dayHistory.OrderBy(r => r.EffectiveDate).FirstOrDefault();
-                var dayOldRate = dayHistory.Where(r => r.EffectiveDate <= DateTime.Now.AddDays(-1))
-                                         .OrderByDescending(r => r.EffectiveDate)
-                                         .FirstOrDefault();
-
-                decimal change24h = 0;
-                decimal change7d = 0;
-
-                if (dayOldRate != null)
-                {
-                    change24h = ((current.Rate - dayOldRate.Rate) / dayOldRate.Rate) * 100;
-                }
-
-                if (oldestRate != null)
-                {
-                    change7d = ((current.Rate - oldestRate.Rate) / oldestRate.Rate) * 100;
-                }
-
-                RateAnalytics.Add(new RateAnalytics
-                {
-                    MetalType = current.MetalType,
-                    Purity = current.Purity,
-                    Change24h = change24h,
-                    Change7d = change7d
-                });
-            }
-        }
-
-        private void AddOrUpdateRate()
+        }        private void AddOrUpdateRate()
         {
             try
             {
@@ -188,7 +128,6 @@ namespace Page_Navigation_App.ViewModel
                 }
 
                 LoadCurrentRates();
-                LoadRateAnalytics();
                 ClearForm();
             }
             catch (Exception ex)
@@ -196,9 +135,7 @@ namespace Page_Navigation_App.ViewModel
                 System.Windows.MessageBox.Show($"Failed to save rate: {ex.Message}", "Error", 
                     System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
-        }
-
-        private async Task UpdateProductPrices(RateMaster newRate)
+        }        private async Task UpdateProductPrices(RateMaster newRate)
         {
             try
             {
@@ -212,11 +149,8 @@ namespace Page_Navigation_App.ViewModel
                     
                     // Recalculate final price with all components
                     decimal makingCharges = product.MakingCharges;
-                   
-
                     decimal wastagePercentage = product.WastagePercentage;
                     
-
                     decimal wastageAmount = (product.BasePrice * wastagePercentage) / 100;
                     decimal makingAmount = (product.BasePrice * makingCharges) / 100;
 
@@ -258,27 +192,5 @@ namespace Page_Navigation_App.ViewModel
                    !string.IsNullOrEmpty(SelectedRate.Source) &&
                    SelectedRate.Rate > 0 &&
                    SelectedRate.ValidUntil > DateTime.Now;
-        }
-
-        private void CalculateRate()
-        {
-            if (SelectedRate != null)
-            {
-                SelectedRate.FinalRate = SelectedRate.CalculateFinalRate();
-            }
-        }
-
-        private bool CanCalculateRate()
-        {
-            return SelectedRate != null && SelectedRate.Rate > 0;
-        }
-    }
-
-    public class RateAnalytics
-    {
-        public string MetalType { get; set; }
-        public string Purity { get; set; }
-        public decimal Change24h { get; set; }
-        public decimal Change7d { get; set; }
-    }
+        }    }
 }

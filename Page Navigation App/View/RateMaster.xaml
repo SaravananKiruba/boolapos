@@ -53,8 +53,7 @@
                                     Color="Black"/>
                         <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}"
                                     Color="Black"/>
-                    </DataGrid.Resources>
-                    <DataGrid.Columns>
+                    </DataGrid.Resources>                    <DataGrid.Columns>
                         <DataGridTextColumn Header="Metal Type"
                                         Binding="{Binding MetalType}"
                                         Width="*"/>
@@ -64,17 +63,11 @@
                         <DataGridTextColumn Header="Rate (₹/g)"
                                         Binding="{Binding Rate, StringFormat=N2}"
                                         Width="*"/>
-                        <DataGridTextColumn Header="Purchase Rate (₹/g)"
-                                        Binding="{Binding PurchaseRate, StringFormat=N2}"
-                                        Width="*"/>
                         <DataGridTextColumn Header="Effective From"
                                         Binding="{Binding EffectiveDate, StringFormat=dd-MMM-yy HH:mm}"
                                         Width="*"/>
                         <DataGridTextColumn Header="Valid Until"
                                         Binding="{Binding ValidUntil, StringFormat=dd-MMM-yy HH:mm}"
-                                        Width="*"/>
-                        <DataGridTextColumn Header="Source"
-                                        Binding="{Binding Source}"
                                         Width="*"/>
                     </DataGrid.Columns>
                 </DataGrid>
@@ -131,9 +124,7 @@
                                             Style="{StaticResource MahApps.Styles.ComboBox}"/>
                                 </StackPanel>
                             </StackPanel>
-                        </Border>
-                        
-                        <!-- Rate Information with visual grouping -->
+                        </Border>                        <!-- Rate Information with visual grouping -->
                         <Border Background="#F9F9F9"
                                 CornerRadius="8"
                                 Padding="10"
@@ -145,68 +136,20 @@
                                         Foreground="#2D3748"
                                         Margin="0,0,0,10"/>
                                         
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    
-                                    <!-- Base Price with Label -->
-                                    <StackPanel Grid.Column="0" Grid.Row="0" Margin="0,5,5,5">
-                                        <TextBlock Text="Base Price (₹/g)" 
-                                                 FontSize="12" 
-                                                 Foreground="#4A5568"
-                                                 Margin="0,0,0,2"/>
-                                        <mah:NumericUpDown Value="{Binding SelectedRate.Rate}"
-                                                        mah:ControlsHelper.CornerRadius="5"
-                                                        StringFormat="N2"
-                                                        Minimum="0"/>
-                                    </StackPanel>
-                                    
-                                    <!-- Purchase Rate with Label -->
-                                    <StackPanel Grid.Column="1" Grid.Row="0" Margin="5,5,0,5">
-                                        <TextBlock Text="Purchase Rate (₹/g)" 
-                                                 FontSize="12" 
-                                                 Foreground="#4A5568"
-                                                 Margin="0,0,0,2"/>
-                                        <mah:NumericUpDown Value="{Binding SelectedRate.PurchaseRate}"
-                                                        mah:ControlsHelper.CornerRadius="5"
-                                                        StringFormat="N2"
-                                                        Minimum="0"/>
-                                    </StackPanel>
-                                    
-                                    <!-- Making Charges with Label -->
-                                    <StackPanel Grid.Column="0" Grid.Row="1" Margin="0,5,5,5">
-                                        <TextBlock Text="Making Charges (%)" 
-                                                 FontSize="12" 
-                                                 Foreground="#4A5568"
-                                                 Margin="0,0,0,2"/>
-                                        <mah:NumericUpDown Value="{Binding SelectedRate.MakingChargePercentage}"
-                                                        mah:ControlsHelper.CornerRadius="5"
-                                                        StringFormat="N2"
-                                                        Minimum="0"/>
-                                    </StackPanel>
-                                    
-                                    <!-- Hallmarking Charge with Label -->
-                                    <StackPanel Grid.Column="1" Grid.Row="1" Margin="5,5,0,5">
-                                        <TextBlock Text="Hallmarking Charge (₹)" 
-                                                 FontSize="12" 
-                                                 Foreground="#4A5568"
-                                                 Margin="0,0,0,2"/>
-                                        <mah:NumericUpDown Value="{Binding SelectedRate.HallmarkingCharge}"
-                                                        mah:ControlsHelper.CornerRadius="5"
-                                                        StringFormat="N2"
-                                                        Minimum="0"/>
-                                    </StackPanel>
-                                </Grid>
+                                <!-- Base Price with Label -->
+                                <StackPanel Margin="0,5">
+                                    <TextBlock Text="Today's Rate (₹/g)" 
+                                             FontSize="12" 
+                                             Foreground="#4A5568"
+                                             Margin="0,0,0,2"/>
+                                    <mah:NumericUpDown Value="{Binding SelectedRate.Rate}"
+                                                    mah:ControlsHelper.CornerRadius="5"
+                                                    StringFormat="N2"
+                                                    Minimum="0"/>
+                                </StackPanel>
                             </StackPanel>
                         </Border>
-                        
-                        <!-- Additional Information with visual grouping -->
+                          <!-- Additional Information with visual grouping -->
                         <Border Background="#F9F9F9"
                                 CornerRadius="8"
                                 Padding="10"
@@ -230,16 +173,6 @@
                                         SelectedDate="{Binding SelectedRate.ValidUntil}"
                                         mah:TextBoxHelper.Watermark="Valid Until"
                                         mah:ControlsHelper.CornerRadius="5"/>
-
-                                <TextBox Text="{Binding SelectedRate.Notes}"
-                                        Margin="0,5"
-                                        mah:TextBoxHelper.Watermark="Notes"
-                                        mah:TextBoxHelper.UseFloatingWatermark="True"
-                                        mah:ControlsHelper.CornerRadius="5"
-                                        Style="{StaticResource MahApps.Styles.TextBox}"
-                                        Height="60"
-                                        TextWrapping="Wrap"
-                                        AcceptsReturn="True"/>
                             </StackPanel>
                         </Border>
 
@@ -315,8 +248,7 @@
                                     Color="Black"/>
                         <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}"
                                     Color="Black"/>
-                    </DataGrid.Resources>
-                    <DataGrid.Columns>
+                    </DataGrid.Resources>                    <DataGrid.Columns>
                         <DataGridTextColumn Header="Metal Type"
                                         Binding="{Binding MetalType}"
                                         Width="*"/>
@@ -326,14 +258,8 @@
                         <DataGridTextColumn Header="Rate (₹/g)"
                                         Binding="{Binding Rate, StringFormat=N2}"
                                         Width="*"/>
-                        <DataGridTextColumn Header="Purchase Rate (₹/g)"
-                                        Binding="{Binding PurchaseRate, StringFormat=N2}"
-                                        Width="*"/>
                         <DataGridTextColumn Header="Effective Date"
                                         Binding="{Binding EffectiveDate, StringFormat=dd-MMM-yy HH:mm}"
-                                        Width="*"/>
-                        <DataGridTextColumn Header="Source"
-                                        Binding="{Binding Source}"
                                         Width="*"/>
                         <DataGridTextColumn Header="Updated By"
                                         Binding="{Binding UpdatedBy}"
@@ -341,9 +267,7 @@
                     </DataGrid.Columns>
                 </DataGrid>
             </mah:MetroHeader>
-        </Border>
-
-        <!-- Rate Analytics with enhanced styling -->
+        </Border>        <!-- Auto-update prices option -->
         <Border Grid.Column="1"
                 Grid.Row="1"
                 Grid.RowSpan="2"
@@ -355,96 +279,12 @@
                         ShadowDepth="1"
                         Opacity="0.2"/>
             </Border.Effect>
-            <mah:MetroHeader Header="Rate Analytics"
+            <mah:MetroHeader Header="Settings"
                             Margin="5">
                 <StackPanel Margin="10">
-                    <!-- Rate Change Summary with visual grouping -->
-                    <Border Background="#F9F9F9"
-                            CornerRadius="8"
-                            Padding="10"
-                            Margin="0,0,0,15">
-                        <StackPanel>
-                            <TextBlock Text="Rate Change Summary"
-                                    Style="{StaticResource MahApps.Styles.TextBlock}"
-                                    FontWeight="Bold"
-                                    Foreground="#2D3748"
-                                    Margin="0,0,0,10"/>
-                            
-
-                            <DataGrid ItemsSource="{Binding RateAnalytics}"
-                                    AutoGenerateColumns="False"
-                                    IsReadOnly="True"
-                                    Style="{StaticResource MahApps.Styles.DataGrid}"
-                                    Height="150"
-                                    AlternatingRowBackground="#FFFFFF"
-                                    RowHeight="45"
-                                    BorderThickness="0"
-                                    VerticalGridLinesBrush="Transparent">
-                                <DataGrid.Resources>
-                                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
-                                                Color="#E3F2FD"/>
-                                    <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}"
-                                                Color="#E3F2FD"/>
-                                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}"
-                                                Color="Black"/>
-                                    <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}"
-                                                Color="Black"/>
-                                </DataGrid.Resources>
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Metal Type"
-                                                    Binding="{Binding MetalType}"
-                                                    Width="*"/>
-                                    <DataGridTextColumn Header="Purity"
-                                                    Binding="{Binding Purity}"
-                                                    Width="*"/>
-                                    <DataGridTextColumn Header="24h Change"
-                                                    Binding="{Binding Change24h, StringFormat=N2}"
-                                                    Width="*"/>
-                                    <DataGridTextColumn Header="7d Change"
-                                                    Binding="{Binding Change7d, StringFormat=N2}"
-                                                    Width="*"/>
-                                </DataGrid.Columns>
-                            </DataGrid>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Volatility Alert Settings with visual grouping -->
-                    <Border Background="#F9F9F9"
-                            CornerRadius="8"
-                            Padding="10"
-                            Margin="0,0,0,15">
-                        <StackPanel>
-                            <TextBlock Text="Volatility Alert Settings"
-                                    Style="{StaticResource MahApps.Styles.TextBlock}"
-                                    FontWeight="Bold"
-                                    Foreground="#2D3748"
-                                    Margin="0,0,0,10"/>
-
-                            <StackPanel Orientation="Horizontal"
-                                    Margin="0,5">
-                                <TextBlock Text="Alert when change exceeds:"
-                                        VerticalAlignment="Center"
-                                        Margin="0,0,10,0"/>
-                                <mah:NumericUpDown Value="{Binding VolatilityThreshold}"
-                                                StringFormat="N2"
-                                                Minimum="0"
-                                                Maximum="100"
-                                                mah:ControlsHelper.CornerRadius="5"
-                                                Width="100"/>
-                                <TextBlock Text="%"
-                                        VerticalAlignment="Center"
-                                        Margin="5,0"/>
-                            </StackPanel>
-
-                            <CheckBox Content="Enable rate change notifications"
-                                    IsChecked="{Binding EnableNotifications}"
-                                    Margin="0,10,0,5"/>
-
-                            <CheckBox Content="Auto-update product prices on rate change"
-                                    IsChecked="{Binding AutoUpdatePrices}"
-                                    Margin="0,5"/>
-                        </StackPanel>
-                    </Border>
+                    <CheckBox Content="Auto-update product prices on rate change"
+                            IsChecked="{Binding AutoUpdatePrices}"
+                            Margin="10,5"/>
                 </StackPanel>
             </mah:MetroHeader>
         </Border>

@@ -17,15 +17,12 @@ namespace Page_Navigation_App.Model
 
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int RateID { get; set; }
-
-        // Properties referenced in RateManagementService and RateMasterService
+        public int RateID { get; set; }        // Properties referenced in RateManagementService and RateMasterService
         public decimal RatePerGram { get => Rate; set => Rate = value; }
-        public decimal MakingChargePercentage { get; set; }
+        public decimal MakingChargePercentage { get; set; } = 0;
         public DateTime UpdatedDate { get; set; }
         public DateTime RateDate { get => EffectiveDate; set => EffectiveDate = value; }
-
-        private string _metalType;
+        public string Description { get; set; }private string _metalType;
         [Required]
         [StringLength(50)]
         public string MetalType
@@ -101,9 +98,7 @@ namespace Page_Navigation_App.Model
                     OnPropertyChanged();
                 }
             }
-        }
-
-        private bool _isActive;
+        }        private bool _isActive;
         [Required]
         public bool IsActive
         {
@@ -150,52 +145,6 @@ namespace Page_Navigation_App.Model
             }
         }
 
-        private string _notes;
-        [StringLength(500)]
-        public string Notes
-        {
-            get => _notes;
-            set
-            {
-                if (_notes != value)
-                {
-                    _notes = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        private decimal _saleRate;
-        public decimal SaleRate
-        {
-            get => _saleRate;
-            set
-            {
-                if (_saleRate != value)
-                {
-                    _saleRate = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        private decimal _purchaseRate;
-        [Required]
-        [Column(TypeName = "decimal(18,2)")]
-        [Range(0.01, 999999999.99)]
-        public decimal PurchaseRate
-        {
-            get => _purchaseRate;
-            set
-            {
-                if (_purchaseRate != value)
-                {
-                    _purchaseRate = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
         private string _updatedBy;
         public string UpdatedBy
         {
@@ -208,137 +157,7 @@ namespace Page_Navigation_App.Model
                     OnPropertyChanged();
                 }
             }
-        }
-
-        private decimal _exchangeRate;
-        [Column(TypeName = "decimal(18,2)")]
-        [Range(0.01, 999999999.99)]
-        public decimal ExchangeRate
-        {
-            get => _exchangeRate;
-            set
-            {
-                if (_exchangeRate != value)
-                {
-                    _exchangeRate = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        private decimal _hallmarkingCharge;
-        [Column(TypeName = "decimal(18,2)")]
-        public decimal HallmarkingCharge
-        {
-            get => _hallmarkingCharge;
-            set
-            {
-                if (_hallmarkingCharge != value)
-                {
-                    _hallmarkingCharge = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        private decimal _defaultGst;
-        [Column(TypeName = "decimal(5,2)")]
-        [Range(0, 100)]
-        public decimal DefaultGst
-        {
-            get => _defaultGst;
-            set
-            {
-                if (_defaultGst != value)
-                {
-                    _defaultGst = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        private string _marketSource;
-        [StringLength(100)]
-        public string MarketSource
-        {
-            get => _marketSource;
-            set
-            {
-                if (_marketSource != value)
-                {
-                    _marketSource = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        private bool _isSpecialRate;
-        public bool IsSpecialRate
-        {
-            get => _isSpecialRate;
-            set
-            {
-                if (_isSpecialRate != value)
-                {
-                    _isSpecialRate = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        private string _description;
-        [StringLength(500)]
-        public string Description
-        {
-            get => _description;
-            set
-            {
-                if (_description != value)
-                {
-                    _description = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        private decimal _wastagePercentage;
-        [Column(TypeName = "decimal(5,2)")]
-        [Range(0, 100)]
-        public decimal WastagePercentage
-        {
-            get => _wastagePercentage;
-            set
-            {
-                if (_wastagePercentage != value)
-                {
-                    _wastagePercentage = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        private decimal _finalRate;
-        [Column(TypeName = "decimal(18,2)")]
-        public decimal FinalRate
-        {
-            get => _finalRate;
-            set
-            {
-                if (_finalRate != value)
-                {
-                    _finalRate = value;
-                    OnPropertyChanged();
-                }
-            }
-        }        public decimal CalculateFinalRate()
-        {
-            // Calculate final rate based on base rate, wastage, and making charges
-            decimal wastageAmount = Rate * (WastagePercentage / 100);
-            decimal makingAmount = Rate * (MakingChargePercentage / 100);
-            return Rate + wastageAmount + makingAmount;
-        }
-
-        [NotMapped]
+        }[NotMapped]
         public bool IsCurrentRate => IsActive && 
             EffectiveDate <= DateTime.Now && 
             (!ValidUntil.HasValue || ValidUntil.Value > DateTime.Now);
