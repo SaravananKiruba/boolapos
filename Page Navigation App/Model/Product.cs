@@ -57,16 +57,20 @@ namespace Page_Navigation_App.Model
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
-        public decimal BasePrice { get; set; }  // Will be calculated based on current rate
+        public decimal ProductPrice { get; set; }  // Will be calculated including all charges
+        
+        // Added BasePrice for backward compatibility
+        [NotMapped]
+        public decimal BasePrice { get => ProductPrice * 0.85m; set => ProductPrice = value / 0.85m; }
+        
+        // Added FinalPrice for backward compatibility
+        [NotMapped]
+        public decimal FinalPrice { get => ProductPrice; set => ProductPrice = value; }
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
-        public decimal FinalPrice { get; set; }  // Will be calculated including all charges
-
-        [Required]
-        [Column(TypeName = "decimal(5,2)")]
-        [Range(0, 100)]
-        public decimal MakingCharges { get; set; } = 12.00m;
+        [Range(0, 999999.99)]
+        public decimal MakingCharges { get; set; } = 1200.00m; // Changed to amount instead of percentage
 
         [Required]
         [Column(TypeName = "decimal(5,2)")]
@@ -96,20 +100,33 @@ namespace Page_Navigation_App.Model
         public bool IsBISCertified { get; set; } = false;
         
         [StringLength(50)]
-        public string BISStandard { get; set; }  // BIS standard reference number
-
-        // GST related properties
-        [Column(TypeName = "decimal(18,2)")]
-        public decimal GstAmount { get; set; } = 0.00m;  // Total GST charged
+        public string BISStandard { get; set; }  // BIS standard reference number        // Method to calculate product price based on requirements
+        public void CalculateProductPrice(decimal ratePerGram)
+        {
+            // Formula: ((Product weight + Wastage %) * Gold rate) + making charges
+            // Calculate effective weight including wastage
+            decimal effectiveWeight = CalculateEffectiveWeight();
+            
+            // Calculate the metal value
+            decimal metalValue = effectiveWeight * ratePerGram;
+            
+            // Store the current metal price for reference
+            MetalPrice = metalValue;
+            
+            // Calculate final product price
+            ProductPrice = metalValue + MakingCharges;
+            
+            // Update the last price update date
+            LastPriceUpdate = DateOnly.FromDateTime(DateTime.Now);
+        }
         
-        [Column(TypeName = "decimal(5,2)")]
-        public decimal GstPercentage { get; set; } = 3.00m;  // Default to 3% GST rate
-        
-        public bool IsGstApplicable { get; set; } = false;  // Auto-determined based on HUID
-
-        [Column(TypeName = "decimal(5,2)")]
-        [Range(0, 100)]
-        public decimal ValueAdditionPercentage { get; set; } = 5.00m;
+        // Calculate effective weight including wastage
+        public decimal CalculateEffectiveWeight()
+        {
+            // Add wastage percentage to the net weight
+            decimal wastageAmount = NetWeight * (WastagePercentage / 100);
+            return NetWeight + wastageAmount;
+        }
 
         public bool IsCustomOrder { get; set; } = false;
 
@@ -135,12 +152,36 @@ namespace Page_Navigation_App.Model
         public virtual ICollection<Stock> Stocks { get; set; }
         public virtual ICollection<OrderDetail> OrderDetails { get; set; }
 
-        // Properties referenced in HUIDTrackingService and RateManagementService        public string AHCCode { get; set; }
+        // Properties referenced in HUIDTrackingService and RateManagementService
+        public string AHCCode { get; set; }
         public string JewelType { get; set; }
         public DateOnly? HUIDRegistrationDate { get; set; }
         public decimal Wastage { get => WastagePercentage; set => WastagePercentage = value; }
         public decimal MetalPrice { get; set; }
         public decimal MakingCharge { get => MakingCharges; set => MakingCharges = value; }
         public DateOnly? LastPriceUpdate { get; set; }
+        
+        // Method to get the current product value based on provided rate
+        public decimal GetCurrentValue(decimal currentRatePerGram)
+        {
+            decimal effectiveWeight = CalculateEffectiveWeight();
+            return (effectiveWeight * currentRatePerGram) + MakingCharges;
+        }
+        
+        // Method to display the price breakdown
+        public string GetPriceBreakdown(decimal ratePerGram)
+        {
+            decimal effectiveWeight = CalculateEffectiveWeight();
+            decimal wastageWeight = NetWeight * (WastagePercentage / 100);
+            decimal metalValue = effectiveWeight * ratePerGram;
+            
+            return $"Net Weight: {NetWeight}g\n" +
+                   $"Wastage ({WastagePercentage}%): {wastageWeight}g\n" +
+                   $"Effective Weight: {effectiveWeight}g\n" +
+                   $"Rate: ₹{ratePerGram}/g\n" +
+                   $"Metal Value: ₹{metalValue}\n" +
+                   $"Making Charges: ₹{MakingCharges}\n" +
+                   $"Total Price: ₹{metalValue + MakingCharges}";
+        }
     }
 }

@@ -231,7 +231,7 @@ namespace Page_Navigation_App.ViewModel
             
             // Calculate summary data
             int totalProducts = products.Count();
-            decimal totalValue = products.Sum(p => p.FinalPrice * p.StockQuantity);
+            decimal totalValue = products.Sum(p => p.ProductPrice * p.StockQuantity);
             
             var metalTypes = products
                 .GroupBy(p => p.MetalType)
@@ -240,7 +240,7 @@ namespace Page_Navigation_App.ViewModel
                     MetalType = g.Key,
                     Count = g.Count(),
                     TotalWeight = g.Sum(p => p.NetWeight * p.StockQuantity),
-                    TotalValue = g.Sum(p => p.FinalPrice * p.StockQuantity)
+                    TotalValue = g.Sum(p => p.ProductPrice * p.StockQuantity)
                 })
                 .OrderByDescending(x => x.TotalValue)
                 .ToList();

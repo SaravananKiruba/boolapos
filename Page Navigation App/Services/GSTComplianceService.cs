@@ -231,12 +231,10 @@ namespace Page_Navigation_App.Services
                     await _logService.LogErrorAsync($"Failed to calculate GST for order: {orderId}");
                     return false;
                 }
-                
-                // Apply calculations to order
-                order.CGST = calculation.CGST;
-                order.SGST = calculation.SGST;
-                order.IGST = calculation.IGST;
-                order.GrandTotal = calculation.GrandTotal;
+                  // Apply calculations to order - update with new simplified tax calculation
+                order.PriceBeforeTax = order.TotalAmount + order.DiscountAmount;
+                if (order.PriceBeforeTax < 0) order.PriceBeforeTax = 0;
+                order.GrandTotal = Math.Round(order.PriceBeforeTax * 1.03m, 2); // Apply 3% tax
                 
                 // Update order
                 _context.Orders.Update(order);

@@ -48,22 +48,19 @@ namespace Page_Navigation_App.Services
                 };
 
                 // 2. Calculate values
-                decimal returnValue = returnedProduct.FinalPrice * returnedQuantity;
-                decimal newValue = newProduct.FinalPrice * newQuantity;
+                decimal returnValue = returnedProduct.ProductPrice * returnedQuantity;
+                decimal newValue = newProduct.ProductPrice * newQuantity;
                 decimal balanceAmount = newValue - returnValue;
 
                 // 3. Add order details for both products
-                var orderDetails = new List<OrderDetail>();
-
-                // Returned product (negative quantity)
+                var orderDetails = new List<OrderDetail>();                // Returned product (negative quantity)
                 var returnDetail = new OrderDetail
                 {
                     ProductID = returnedProduct.ProductID,
-                    NetWeight = returnedProduct.NetWeight,
-                    GrossWeight = returnedProduct.GrossWeight,
-                    MetalRate = returnedProduct.BasePrice,
-                    MakingCharges = returnedProduct.MakingCharges,
-
+                    Product = returnedProduct,
+                    UnitPrice = returnedProduct.ProductPrice,
+                    Quantity = returnedQuantity,
+                    TotalAmount = returnedProduct.ProductPrice * returnedQuantity
                 };
                 orderDetails.Add(returnDetail);
 
@@ -71,37 +68,30 @@ namespace Page_Navigation_App.Services
                 var newDetail = new OrderDetail
                 {
                     ProductID = newProduct.ProductID,
-                    NetWeight = newProduct.NetWeight,
-                    GrossWeight = newProduct.GrossWeight,
-                    MetalRate = newProduct.BasePrice,
-                    MakingCharges = newProduct.MakingCharges,
-
+                    Product = newProduct,
+                    UnitPrice = newProduct.ProductPrice,
+                    Quantity = newQuantity,
+                    TotalAmount = newProduct.ProductPrice * newQuantity
                 };
                 orderDetails.Add(newDetail);
 
                 // 4. Complete exchange calculations
-                exchangeOrder.TotalAmount = balanceAmount > 0 ? balanceAmount : 0;
-
-                // Calculate GST on the balance amount if customer pays extra
+                exchangeOrder.TotalAmount = balanceAmount > 0 ? balanceAmount : 0;                // Calculate the price before tax
                 if (balanceAmount > 0)
                 {
-                    exchangeOrder.CGST = Math.Round(balanceAmount * 0.015m, 2); // 1.5% CGST
-                    exchangeOrder.SGST = Math.Round(balanceAmount * 0.015m, 2); // 1.5% SGST
-                    exchangeOrder.GrandTotal = balanceAmount + exchangeOrder.CGST + exchangeOrder.SGST;
+                    exchangeOrder.TotalAmount = balanceAmount;
+                    exchangeOrder.PriceBeforeTax = balanceAmount;
+                    exchangeOrder.GrandTotal = Math.Round(balanceAmount * 1.03m, 2); // Apply 3% tax
                 }
                 else
                 {
-                    exchangeOrder.CGST = 0;
-                    exchangeOrder.SGST = 0;
+                    exchangeOrder.TotalAmount = 0;
+                    exchangeOrder.PriceBeforeTax = 0;
                     exchangeOrder.GrandTotal = 0;
                 }
 
-                // Set exchange-specific fields
-                exchangeOrder.HasMetalExchange = true;
-                exchangeOrder.ExchangeMetalType = "Gold"; // Assuming gold for simplicity, can be dynamic
-                exchangeOrder.ExchangeMetalPurity = returnedProduct.Purity;
-                exchangeOrder.ExchangeMetalWeight = returnedProduct.NetWeight * returnedQuantity;
-                exchangeOrder.ExchangeValue = returnValue;
+                // Store exchange details in Notes field instead
+                exchangeOrder.Notes = $"Exchange: Returned {returnedQuantity} x {returnedProduct.ProductName} ({returnedProduct.Purity}) worth ₹{returnValue:F2} for {newQuantity} x {newProduct.ProductName} worth ₹{newValue:F2}";
 
                 // 5. Save order
                 await _context.Orders.AddAsync(exchangeOrder);

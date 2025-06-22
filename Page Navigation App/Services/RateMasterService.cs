@@ -104,21 +104,14 @@ namespace Page_Navigation_App.Services
                     // Apply wastage
                     decimal wastageWeight = product.NetWeight * (product.WastagePercentage / 100);
                     decimal wastageValue = wastageWeight * currentRate;
-                    
-                    // Apply making charges
-                    decimal makingValue = basePrice * (product.MakingCharges / 100);
+
                     
                     // Final price is base + wastage + making + stone value
-                    decimal finalPrice = basePrice + wastageValue + makingValue + product.StoneValue;
+                    decimal finalPrice = basePrice + wastageValue + product.MakingCharges + product.StoneValue;
                     
-                    // Apply value addition if any
-                    if (product.ValueAdditionPercentage > 0)
-                    {
-                        finalPrice += finalPrice * (product.ValueAdditionPercentage / 100);
-                    }
+                  
                     
-                    product.BasePrice = basePrice;
-                    product.FinalPrice = finalPrice;
+                    product.ProductPrice = finalPrice;
                     
                     updatedCount++;
                 }
@@ -133,9 +126,7 @@ namespace Page_Navigation_App.Services
                 await _logService.LogErrorAsync($"Error updating product prices: {ex.Message}");
                 return 0;
             }
-        }
-
-        /// <summary>
+        }        /// <summary>
         /// Calculate price for a product based on current rates
         /// </summary>
         public async Task<(decimal BasePrice, decimal FinalPrice)> CalculateProductPriceAsync(
@@ -160,11 +151,10 @@ namespace Page_Navigation_App.Services
                 decimal wastageWeight = weight * (wastagePercentage / 100);
                 decimal wastageValue = wastageWeight * currentRate;
                 
-                // Apply making charges
-                decimal makingValue = basePrice * (makingCharges / 100);
+                // Add making charges as flat amount
                 
                 // Final price is base + wastage + making + stone value
-                decimal finalPrice = basePrice + wastageValue + makingValue + stoneValue;
+                decimal finalPrice = basePrice + wastageValue + makingCharges + stoneValue;
                 
                 // Apply value addition if any
                 if (valueAddition > 0)
@@ -307,12 +297,10 @@ namespace Page_Navigation_App.Services
                 await _logService.LogErrorAsync($"Error calculating exchange value: {ex.Message}");
                 return 0;
             }
-        }
-
-        /// <summary>
-        /// Calculate price for a product based on current rates, including GST based on HUID
+        }        /// <summary>
+        /// Calculate price for a product based on current rates
         /// </summary>
-        public async Task<(decimal BasePrice, decimal FinalPrice, decimal GstAmount)> CalculateEnhancedProductPriceAsync(
+        public async Task<(decimal BasePrice, decimal FinalPrice)> CalculateEnhancedProductPriceAsync(
             decimal productWeight, 
             string metalType, 
             string purity, 
@@ -331,46 +319,23 @@ namespace Page_Navigation_App.Services
                 }
                 
                 if (currentRate <= 0)
-                    return (0, 0, 0);
+                    return (0, 0);
                 
                 // Step 1: Calculate effective weight
                 decimal effectiveWeight = productWeight + (productWeight * wastagePercentage / 100);
                 
                 // Step 2: Calculate base metal price
                 decimal basePrice = effectiveWeight * currentRate;
-                  // Initialize GST amounts
-                decimal gstOnBasePrice = 0;
-                decimal gstOnTotal = 0;
-                decimal totalGst = 0;
                 
-                // Step 3: If HUID is not empty, apply 3% GST to the base metal price
-                bool hasHuid = !string.IsNullOrWhiteSpace(huidNumber);
-                if (hasHuid)
-                {
-                    gstOnBasePrice = basePrice * 0.03m;
-                }
+                // Step 3: Add making charges (as a flat amount)
+                decimal finalPrice = basePrice + makingCharges;
                 
-                // Add GST to base price
-                decimal priceWithBaseGst = basePrice + gstOnBasePrice;
-                  // Step 4: Add making charges (as a flat value, not percentage)
-                decimal priceWithMakingCharges = priceWithBaseGst + makingCharges;
-                
-                // Step 5: If HUID is not empty, apply 3% GST on the total (base price + making charges)
-                if (hasHuid)
-                {
-                    gstOnTotal = priceWithMakingCharges * 0.03m;
-                    totalGst = gstOnBasePrice + gstOnTotal;
-                }
-                
-                // Final amount
-                decimal finalPrice = priceWithMakingCharges + gstOnTotal;
-                
-                return (basePrice, finalPrice, totalGst);
+                return (basePrice, finalPrice);
             }
             catch (Exception ex)
             {
-                await _logService.LogErrorAsync($"Error calculating enhanced product price: {ex.Message}");
-                return (0, 0, 0);
+                await _logService.LogErrorAsync($"Error calculating product price: {ex.Message}");
+                return (0, 0);
             }
         }
     }

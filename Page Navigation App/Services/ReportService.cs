@@ -158,13 +158,13 @@ namespace Page_Navigation_App.Services
                 return new InventoryReport
                 {
                     TotalProducts = products.Count,
-                    TotalValue = products.Sum(p => p.FinalPrice * p.StockQuantity),
+                    TotalValue = products.Sum(p => p.ProductPrice * p.StockQuantity),
                     GoldItems = goldProducts.Count,
                     GoldWeight = goldProducts.Sum(p => p.GrossWeight * p.StockQuantity),
-                    GoldValue = goldProducts.Sum(p => p.FinalPrice * p.StockQuantity),
+                    GoldValue = goldProducts.Sum(p => p.ProductPrice * p.StockQuantity),
                     SilverItems = silverProducts.Count,
                     SilverWeight = silverProducts.Sum(p => p.GrossWeight * p.StockQuantity),
-                    SilverValue = silverProducts.Sum(p => p.FinalPrice * p.StockQuantity),
+                    SilverValue = silverProducts.Sum(p => p.ProductPrice * p.StockQuantity),
                     LowStockItems = products.Count(p => p.StockQuantity <= p.ReorderLevel),
                     ProductDetails = products.Select(p => new ProductReportItem
                     {
@@ -175,7 +175,7 @@ namespace Page_Navigation_App.Services
                         GrossWeight = p.GrossWeight,
                         NetWeight = p.NetWeight,
                         StockQuantity = p.StockQuantity,
-                        Value = p.FinalPrice * p.StockQuantity,
+                        Value = p.ProductPrice * p.StockQuantity,
                         HUID = p.HUID,
                         TagNumber = p.TagNumber
                     }).ToList()
@@ -199,30 +199,28 @@ namespace Page_Navigation_App.Services
                     .Include(o => o.Customer)
                     .Where(o => o.OrderDate >= fromDate && o.OrderDate <= toDate)
                     .ToListAsync();
-                
-                return new GSTReport
+                  return new GSTReport
                 {
                     FromDate = fromDate,
                     ToDate = toDate,
                     TotalInvoices = orders.Count,
                     TotalSales = orders.Sum(o => o.TotalAmount),
-                    TotalCGST = orders.Sum(o => o.CGST),
-                    TotalSGST = orders.Sum(o => o.SGST),
-                    TotalIGST = orders.Sum(o => o.IGST),
-                    TotalTax = orders.Sum(o => o.CGST + o.SGST + o.IGST),
-                    B2BSales = orders.Where(o => !string.IsNullOrEmpty(o.GSTNumber)).Sum(o => o.TotalAmount),
-                    B2CSales = orders.Where(o => string.IsNullOrEmpty(o.GSTNumber)).Sum(o => o.TotalAmount),
+                    TotalCGST = 0, // No longer tracking CGST separately
+                    TotalSGST = 0, // No longer tracking SGST separately
+                    TotalIGST = 0, // No longer tracking IGST separately                    TotalTax = orders.Sum(o => o.GrandTotal - o.PriceBeforeTax), // Total tax is the difference
+                    B2BSales = 0, // Not tracking GST numbers anymore
+                    B2CSales = orders.Sum(o => o.TotalAmount), // All sales are B2C now
                     InvoiceDetails = orders.Select(o => new GSTInvoiceDetail
                     {
                         InvoiceNumber = o.InvoiceNumber,
                         InvoiceDate = o.OrderDate,
                         CustomerName = o.Customer.CustomerName,
-                        CustomerGST = o.GSTNumber,
-                        HSNCode = o.HSNCode,
-                        TaxableValue = o.TotalAmount,
-                        CGST = o.CGST,
-                        SGST = o.SGST,
-                        IGST = o.IGST,
+                        CustomerGST = "", // No longer tracking GST numbers
+                        HSNCode = "7113", // Default HSN code for jewelry
+                        TaxableValue = o.PriceBeforeTax,
+                        CGST = 0, // No longer tracking separate components
+                        SGST = 0, // No longer tracking separate components
+                        IGST = o.GrandTotal - o.PriceBeforeTax, // Total tax amount
                         Total = o.GrandTotal
                     }).ToList()
                 };

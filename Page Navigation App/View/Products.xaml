@@ -180,10 +180,9 @@
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        
-                                        <!-- Making Charges with Label -->
+                                          <!-- Making Charges with Label -->
                                         <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                                            <TextBlock Text="Making Charges (%)" 
+                                            <TextBlock Text="Making Charges (₹)" 
                                                     FontSize="12" 
                                                     FontWeight="Medium"
                                                     Foreground="#4A5568"
@@ -223,8 +222,7 @@
                                                FontSize="13"
                                                Style="{StaticResource MahApps.Styles.TextBox}"/>
                                     </StackPanel>
-                                    
-                                    <!-- Final Price with enhanced visibility -->
+                                      <!-- Product Price with enhanced visibility -->
                                     <Border Background="#EBF8FF" 
                                            BorderBrush="#BEE3F8" 
                                            BorderThickness="1" 
@@ -232,7 +230,7 @@
                                            Padding="15,15,15,15" 
                                            Margin="0,0,0,16">
                                         <StackPanel>
-                                            <TextBlock Text="Final Price (₹)" 
+                                            <TextBlock Text="Product Price (₹)" 
                                                     FontSize="14" 
                                                     FontWeight="Bold"
                                                     Foreground="#2C5282"
@@ -243,7 +241,7 @@
                                                     <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
                                                 <TextBox Grid.Column="0" 
-                                                       Text="{Binding SelectedProduct.FinalPrice, StringFormat='₹ {0:N2}', UpdateSourceTrigger=PropertyChanged}"
+                                                       Text="{Binding SelectedProduct.ProductPrice, StringFormat='₹ {0:N2}', UpdateSourceTrigger=PropertyChanged}"
                                                        IsReadOnly="True"
                                                        Background="White"
                                                        Foreground="#2C5282"
@@ -263,84 +261,23 @@
                                             </Grid>
                                         </StackPanel>
                                     </Border>
-                                    
-                                    <!-- Divider for tax section -->
+                                      <!-- Divider for tax section -->
                                     <Rectangle Height="1" Fill="#E2E8F0" Margin="0,5,0,10"/>
                                     
                                     <!-- HUID Field -->
                                     <StackPanel Margin="0,5,0,10">
-                                        <TextBlock Text="HUID Number (Leave empty to skip GST)" 
+                                        <TextBlock Text="HUID Number" 
                                                 FontSize="12" 
                                                 FontWeight="Medium"
                                                 Foreground="#4A5568"
                                                 Margin="0,0,0,4"/>
                                         <TextBox Text="{Binding SelectedProduct.HUID, UpdateSourceTrigger=PropertyChanged}"
                                                mah:ControlsHelper.CornerRadius="6"
-                                               mah:TextBoxHelper.Watermark="HUID Impacts GST Calculation"
+                                               mah:TextBoxHelper.Watermark="HUID"
                                                Height="38"
                                                FontSize="13"
-                                               Style="{StaticResource MahApps.Styles.TextBox}"
-                                               TextChanged="PriceAffecting_TextChanged"/>
-                                    </StackPanel>
-                                      <!-- Price information section with enhanced visibility -->
-                                    <Grid Margin="0,0,0,10">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        
-                                        <!-- GST Amount Display -->
-                                        <Border Grid.Column="0" 
-                                               Background="#FFF5F5" 
-                                               BorderBrush="#FED7D7" 
-                                               BorderThickness="1" 
-                                               CornerRadius="8" 
-                                               Padding="12,10" 
-                                               Margin="0,0,8,0">
-                                            <StackPanel>
-                                                <TextBlock Text="GST Amount (₹)" 
-                                                        FontSize="13" 
-                                                        FontWeight="SemiBold"
-                                                        Foreground="#822727"
-                                                        Margin="0,0,0,6"/>
-                                                <TextBox Text="{Binding SelectedProduct.GstAmount, StringFormat='₹ {0:N2}', UpdateSourceTrigger=PropertyChanged}"
-                                                       IsReadOnly="True"
-                                                       Background="White"
-                                                       Foreground="#822727"
-                                                       mah:ControlsHelper.CornerRadius="6"
-                                                       Height="38"
-                                                       FontSize="14"
-                                                       FontWeight="Medium"
-                                                       Style="{StaticResource MahApps.Styles.TextBox}"/>
-                                            </StackPanel>
-                                        </Border>
-                                        
-                                        <!-- Base Price with enhanced visibility -->
-                                        <Border Grid.Column="1" 
-                                               Background="#F0FFF4" 
-                                               BorderBrush="#C6F6D5" 
-                                               BorderThickness="1" 
-                                               CornerRadius="8" 
-                                               Padding="12,10" 
-                                               Margin="8,0,0,0">
-                                            <StackPanel>
-                                                <TextBlock Text="Base Price (₹)" 
-                                                        FontSize="13" 
-                                                        FontWeight="SemiBold"
-                                                        Foreground="#276749"
-                                                        Margin="0,0,0,6"/>
-                                                <TextBox Text="{Binding SelectedProduct.BasePrice, StringFormat='₹ {0:N2}', UpdateSourceTrigger=PropertyChanged}"
-                                                       IsReadOnly="True"
-                                                       Background="White"
-                                                       Foreground="#276749"
-                                                       mah:ControlsHelper.CornerRadius="6"
-                                                       Height="38"
-                                                       FontSize="14"
-                                                       FontWeight="Medium"
-                                                       Style="{StaticResource MahApps.Styles.TextBox}"/>
-                                            </StackPanel>
-                                        </Border>
-                                    </Grid>
+                                               Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                    </StackPanel>                                    <!-- Remove Base Price section -->
                                 </StackPanel>
                             </Border>                            <!-- Product Details with enhanced visual grouping -->
                             <Border Background="#F9F9F9"
@@ -592,10 +529,9 @@
                                               Width="80"/>
                             <DataGridTextColumn Header="Net (g)" 
                                               Binding="{Binding NetWeight, StringFormat=N3}"
-                                              Width="80"/>
-                            <DataGridTextColumn Header="Price" 
-                                              Binding="{Binding FinalPrice, StringFormat=₹ {0:N2}}"
-                                              Width="100"/>                            <DataGridTextColumn Header="Collection" 
+                                              Width="80"/>                            <DataGridTextColumn Header="Price" 
+                                              Binding="{Binding ProductPrice, StringFormat=₹ {0:N2}}"
+                                              Width="100"/><DataGridTextColumn Header="Collection" 
                                               Binding="{Binding Collection}"
                                               Width="120"/>                            <DataGridTemplateColumn Width="Auto">
                                 <DataGridTemplateColumn.CellTemplate>

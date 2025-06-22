@@ -65,7 +65,7 @@ namespace Page_Navigation_App.Services
                     worksheet.Cell(row, 3).Value = item.Product.Purity;
                     worksheet.Cell(row, 4).Value = item.Location;
                     worksheet.Cell(row, 5).Value = item.Quantity;
-                    worksheet.Cell(row, 6).Value = item.Quantity * item.Product.BasePrice;
+                    worksheet.Cell(row, 6).Value = item.Quantity * item.Product.ProductPrice;
                     worksheet.Cell(row, 7).Value = item.StockStatus;
                     row++;
                 }
@@ -84,7 +84,7 @@ namespace Page_Navigation_App.Services
                     Purity = i.Product.Purity,
                     Location = i.Location,
                     Quantity = i.Quantity,
-                    Value = i.Quantity * i.Product.BasePrice,
+                    Value = i.Quantity * i.Product.ProductPrice,
                     Status = i.StockStatus
                 });
 

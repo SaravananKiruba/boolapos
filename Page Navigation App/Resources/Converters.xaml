@@ -11,6 +11,7 @@
     <utilities:LoginStatusTextConverter x:Key="LoginStatusTextConverter"/>
     <utilities:BooleanToActiveConverter x:Key="BooleanToActiveConverter"/>
     <utilities:BooleanToStatusBrushConverter x:Key="BooleanToStatusBrushConverter"/>
+    <utilities:NegativeToRedConverter x:Key="NegativeToRedConverter"/>
     
     <!-- Status Colors for Frozen Resources -->
     <SolidColorBrush x:Key="ActiveBrush" Color="#43A047" />

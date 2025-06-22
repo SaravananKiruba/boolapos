@@ -62,32 +62,30 @@ namespace Page_Navigation_App.Services
                 throw new Exception("Business information not configured");
             
             string currencySymbol = businessInfo.CurrencySymbol ?? "₹";
-                
-            // Format order details for the invoice
+                  // Format order details for the invoice
             var formattedItems = order.OrderDetails.Select(od => new
             {
-                ProductName = od.Product.ProductName,
-                HSNCode = od.HSNCode ?? "7113",  // Default HSN code for jewelry if not specified
-                MetalType = od.Product.MetalType,
-                Purity = od.Product.Purity,
-                NetWeight = $"{od.NetWeight:F3} g",
-                GrossWeight = $"{od.GrossWeight:F3} g",
+                ProductName = od.Product?.ProductName ?? "Unknown Product",
+                HSNCode = "7113",  // Default HSN code for jewelry
+                MetalType = od.Product?.MetalType ?? "Unknown",
+                Purity = od.Product?.Purity ?? "Unknown",
+                NetWeight = $"{(od.Product?.NetWeight ?? 0):F3} g",
+                GrossWeight = $"{(od.Product?.GrossWeight ?? 0):F3} g",
                 Quantity = od.Quantity,
                 UnitPrice = $"{currencySymbol}{od.UnitPrice:N2}",
                 Amount = $"{currencySymbol}{od.TotalAmount:N2}"
             }).ToList();
             
             // Calculate summary values
-            var totalNetWeight = order.OrderDetails.Sum(od => od.NetWeight * od.Quantity);
-            var totalGrossWeight = order.OrderDetails.Sum(od => od.GrossWeight * od.Quantity);
-            
-            // Format currency values with the appropriate currency symbol
+            var totalNetWeight = order.OrderDetails.Sum(od => (od.Product?.NetWeight ?? 0) * od.Quantity);
+            var totalGrossWeight = order.OrderDetails.Sum(od => (od.Product?.GrossWeight ?? 0) * od.Quantity);
+              // Format currency values with the appropriate currency symbol
             var formattedTotalAmount = $"{currencySymbol}{order.TotalAmount:N2}";
-            var formattedCGST = $"{currencySymbol}{order.CGST:N2}";
-            var formattedSGST = $"{currencySymbol}{order.SGST:N2}";
+            decimal taxAmount = order.GrandTotal - order.PriceBeforeTax;
+            var formattedTaxAmount = $"{currencySymbol}{taxAmount:N2}";
+            var formattedPriceBeforeTax = $"{currencySymbol}{order.PriceBeforeTax:N2}";
             var formattedGrandTotal = $"{currencySymbol}{order.GrandTotal:N2}";
-            
-            return new Dictionary<string, object>
+              return new Dictionary<string, object>
             {
                 ["Order"] = order,
                 ["BusinessInfo"] = businessInfo,
@@ -95,8 +93,8 @@ namespace Page_Navigation_App.Services
                 ["TotalNetWeight"] = $"{totalNetWeight:F3} g",
                 ["TotalGrossWeight"] = $"{totalGrossWeight:F3} g",
                 ["FormattedTotalAmount"] = formattedTotalAmount,
-                ["FormattedCGST"] = formattedCGST,
-                ["FormattedSGST"] = formattedSGST,
+                ["FormattedTaxAmount"] = formattedTaxAmount,
+                ["FormattedPriceBeforeTax"] = formattedPriceBeforeTax,
                 ["FormattedGrandTotal"] = formattedGrandTotal,
                 ["InvoiceDate"] = order.OrderDate.ToString("dd-MMM-yyyy"),
                 ["AmountInWords"] = ConvertAmountToWords(order.GrandTotal, businessInfo.CurrencyCode)

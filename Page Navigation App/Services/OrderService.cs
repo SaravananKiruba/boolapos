@@ -111,9 +111,7 @@ namespace Page_Navigation_App.Services
             
             await _context.SaveChangesAsync();
             return true;
-        }
-
-        public async Task<Order> CreateOrder(Order order, List<OrderDetail> details)
+        }        public async Task<Order> CreateOrder(Order order, List<OrderDetail> details)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -131,47 +129,19 @@ namespace Page_Navigation_App.Services
                 await _context.SaveChangesAsync();
 
                 decimal totalAmount = 0;
-                decimal hallmarkingCharges = 0;
                 int totalItems = 0;
                 
                 foreach (var detail in details)
                 {
                     detail.OrderID = order.OrderID;
                     
-                    // Get current metal rate - store the result as a decimal
-                    var metalRate = _rateService.GetCurrentRate(
-                        detail.Product.MetalType,
-                        detail.Product.Purity);
-
-                    if (metalRate <= 0)
-                        throw new InvalidOperationException($"No rate found for {detail.Product.MetalType} {detail.Product.Purity}");
-
-                    // Calculate base metal amount
-                    // metalRate is now a decimal, not an object with SaleRate property
-                    detail.MetalRate = metalRate;
-                    detail.BaseAmount = detail.NetWeight * detail.MetalRate;                    // Calculate wastage
-                    decimal wastagePercentage = detail.Product.WastagePercentage;
+                    // Set unit price from product price
+                    detail.UnitPrice = detail.Product.ProductPrice;
                     
-                    decimal wastageAmount = (detail.BaseAmount * wastagePercentage) / 100;                    // Calculate making charges
-                    decimal makingChargePercentage = detail.Product.MakingCharges;
-                    
-                    decimal makingAmount = (detail.BaseAmount * makingChargePercentage) / 100;
+                    // Calculate total for this item
+                    detail.TotalAmount = detail.UnitPrice * detail.Quantity;
 
-                    // Calculate total
-                    detail.MakingCharges = makingChargePercentage;
-                    detail.WastagePercentage = wastagePercentage;
-                    detail.WastageAmount = wastageAmount;
-                    detail.MakingAmount = makingAmount;
-                    detail.TotalAmount = detail.BaseAmount + makingAmount + wastageAmount + detail.StoneValue;
-
-                    // Add hallmarking charges if applicable (typically per piece)
-                    if (detail.Product.IsHallmarked)
-                    {
-                        hallmarkingCharges += 45; // ₹45 per piece
-                    }
-
-                    totalAmount += detail.TotalAmount * detail.Quantity;
-                    totalItems += (int)detail.Quantity;
+                    totalAmount += detail.TotalAmount;                    totalItems += (int)detail.Quantity;
                     
                     await _context.OrderDetails.AddAsync(detail);
                     
@@ -187,10 +157,9 @@ namespace Page_Navigation_App.Services
                 // Update order totals
                 order.TotalItems = totalItems;
                 order.TotalAmount = totalAmount;
-                order.HallmarkingCharges = hallmarkingCharges;
-                order.CGST = Math.Round(totalAmount * 0.015m, 2); // 1.5%
-                order.SGST = Math.Round(totalAmount * 0.015m, 2); // 1.5%
-                order.GrandTotal = totalAmount + hallmarkingCharges + order.CGST + order.SGST - order.DiscountAmount;
+                order.PriceBeforeTax = totalAmount + order.DiscountAmount; // Apply discount
+                if (order.PriceBeforeTax < 0) order.PriceBeforeTax = 0; // Ensure it doesn't go negative
+                order.GrandTotal = Math.Round(order.PriceBeforeTax * 1.03m, 2); // Add 3% tax
                 
                 await _context.SaveChangesAsync();
                 
@@ -245,18 +214,15 @@ namespace Page_Navigation_App.Services
             var orders = await _context.Orders
                 .Include(o => o.OrderDetails)
                 .Where(o => o.OrderDate >= startDateOnly && o.OrderDate <= endDateOnly)
-                .ToListAsync();
-
-            return new Dictionary<string, decimal>
+                .ToListAsync();            return new Dictionary<string, decimal>
             {
                 { "TotalSales", orders.Sum(o => o.GrandTotal) },
                 { "CashSales", orders.Where(o => o.PaymentType == "Cash").Sum(o => o.GrandTotal) },
                 { "CreditSales", orders.Where(o => o.PaymentType == "Credit").Sum(o => o.GrandTotal) },
                 { "EMISales", orders.Where(o => o.PaymentType == "EMI").Sum(o => o.GrandTotal) },
-                { "CGST", orders.Sum(o => o.OrderDetails.Sum(od => od.CGSTAmount)) },
-                { "SGST", orders.Sum(o => o.OrderDetails.Sum(od => od.SGSTAmount)) },
-                { "IGST", orders.Sum(o => o.OrderDetails.Sum(od => od.IGSTAmount)) },
-                { "ExchangeValue", orders.Where(o => o.HasMetalExchange).Sum(o => o.ExchangeValue) }
+                { "TotalBeforeTax", orders.Sum(o => o.PriceBeforeTax) },
+                { "TaxAmount", orders.Sum(o => o.GrandTotal - o.PriceBeforeTax) },
+                { "DiscountAmount", orders.Sum(o => o.DiscountAmount) }
             };
         }
 

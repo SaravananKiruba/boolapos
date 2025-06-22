@@ -13,14 +13,14 @@ namespace Page_Navigation_App.ViewModel
 {
     public class ProductVM : ViewModelBase
     {
-        private readonly ProductService _productService;
-        private readonly SupplierService _supplierService;
+        private readonly ProductService _productService;        private readonly SupplierService _supplierService;
         private readonly RateMasterService _rateService;  // Added RateMasterService
-
-        public ICommand AddOrUpdateCommand { get; }
-        public ICommand ClearCommand { get; }
-        public ICommand SearchCommand { get; }
-        public ICommand RecalculatePriceCommand { get; }
+        
+        public ICommand AddOrUpdateCommand { get; private set; }        public ICommand ClearCommand { get; private set; }
+        public ICommand SearchCommand { get; private set; }
+        public ICommand RecalculatePriceCommand { get; private set; }
+        public ICommand DeleteCommand { get; private set; }
+        public ICommand EditCommand { get; private set; }
 
         public ProductVM(
             ProductService productService, 
@@ -28,16 +28,18 @@ namespace Page_Navigation_App.ViewModel
             RateMasterService rateService)  // Added RateMasterService parameter
         {
             _productService = productService;
-            _supplierService = supplierService;
-            _rateService = rateService;
-            
-            LoadProducts();
+            _supplierService = supplierService;            _rateService = rateService;
+              LoadProducts();
             LoadSuppliers();
-            InitializeCollections();            AddOrUpdateCommand = new RelayCommand<object>(_ => AddOrUpdateProduct(), _ => CanAddOrUpdateProduct());
+            InitializeCollections();
+            
+            // Initialize commands
+            this.AddOrUpdateCommand = new RelayCommand<object>(_ => AddOrUpdateProduct(), _ => CanAddOrUpdateProduct());
             ClearCommand = new RelayCommand<object>(_ => ClearForm(), _ => true);
             SearchCommand = new RelayCommand<object>(_ => SearchProducts(), _ => true);
-            RecalculatePriceCommand = new RelayCommand<object>(_ => RecalculatePrice(_), _ => CanRecalculatePrice(_));
             RecalculatePriceCommand = new RelayCommand<object>(RecalculatePrice, CanRecalculatePrice);
+            DeleteCommand = new RelayCommand<object>(DeleteProduct, _ => true);
+            EditCommand = new RelayCommand<object>(EditProduct, _ => true);
         }
 
         public ObservableCollection<Product> Products { get; set; } = new ObservableCollection<Product>();
@@ -146,10 +148,14 @@ namespace Page_Navigation_App.ViewModel
             {
                 System.Windows.MessageBox.Show($"Error loading suppliers: {ex.Message}", "Error");
             }
-        }
-
-        private void AutoSelectProduct()
+        }        private void AutoSelectProduct()
         {
+            // Ensure suppliers are loaded first
+            if (Suppliers.Count == 0)
+            {
+                LoadSuppliers();
+            }
+
             var matchedProduct = Products.FirstOrDefault(p =>
                 !string.IsNullOrEmpty(SearchName) && p.ProductName.Contains(SearchName));
 
@@ -162,10 +168,11 @@ namespace Page_Navigation_App.ViewModel
                 SelectedProduct = new Product
                 {
                     ProductName = SearchName,
-                    IsActive = true
+                    IsActive = true,
+                    SupplierID = Suppliers.Count > 0 ? Suppliers[0].SupplierID : 0
                 };
             }
-        }        private async void AddOrUpdateProduct()
+        }private async void AddOrUpdateProduct()
         {
             try
             {
@@ -185,18 +192,15 @@ namespace Page_Navigation_App.ViewModel
                 }
                 
                 // Log for debugging
-                Console.WriteLine($"Saving product with SupplierID: {SelectedProduct.SupplierID}");                // Calculate prices in INR using enhanced calculation with GST
+                Console.WriteLine($"Saving product with SupplierID: {SelectedProduct.SupplierID}");                // Calculate prices in INR using enhanced calculation
                 decimal currentRate = await GetCurrentMetalRate();
                 if (currentRate == 0)
                 {
                     System.Windows.MessageBox.Show("No current rate found for selected metal type and purity", "Rate Error");
                     return;
                 }
-                
-                // Check HUID for GST applicability
-                SelectedProduct.IsGstApplicable = !string.IsNullOrWhiteSpace(SelectedProduct.HUID);
 
-                // Use the enhanced price calculation that includes GST logic based on HUID
+                // Use the enhanced price calculation 
                 var priceCalculation = await _rateService.CalculateEnhancedProductPriceAsync(
                     SelectedProduct.NetWeight, 
                     SelectedProduct.MetalType, 
@@ -205,16 +209,14 @@ namespace Page_Navigation_App.ViewModel
                     SelectedProduct.MakingCharges,
                     SelectedProduct.HUID,
                     currentRate);
+                  // Update product with calculated values
+                decimal metalPrice = Math.Round(priceCalculation.BasePrice, 2);
+                SelectedProduct.ProductPrice = Math.Round(priceCalculation.FinalPrice, 2);
                 
-                // Update product with calculated values
-                SelectedProduct.BasePrice = Math.Round(priceCalculation.BasePrice, 2);
-                SelectedProduct.FinalPrice = Math.Round(priceCalculation.FinalPrice, 2);
-                SelectedProduct.GstAmount = Math.Round(priceCalculation.GstAmount, 2);
-                
-                // Also consider stone value if set (add it after GST calculations)
+                // Also consider stone value if set (add it after calculations)
                 if (SelectedProduct.StoneValue > 0)
                 {
-                    SelectedProduct.FinalPrice += SelectedProduct.StoneValue;
+                    SelectedProduct.ProductPrice += SelectedProduct.StoneValue;
                 }
 
                 bool result;
@@ -288,9 +290,7 @@ namespace Page_Navigation_App.ViewModel
             {
                 Products.Add(product);
             }
-        }
-
-        // Method to recalculate product price when any input changes
+        }        // Method to recalculate product price when any input changes
         public async Task RecalculateProductPriceAsync()
         {
             if (SelectedProduct == null)
@@ -301,9 +301,6 @@ namespace Page_Navigation_App.ViewModel
                 decimal currentRate = await GetCurrentMetalRate();
                 if (currentRate <= 0)
                     return;
-                    
-                // Check HUID for GST applicability
-                SelectedProduct.IsGstApplicable = !string.IsNullOrWhiteSpace(SelectedProduct.HUID);
                 
                 // Use enhanced calculation method
                 var priceCalculation = await _rateService.CalculateEnhancedProductPriceAsync(
@@ -314,16 +311,14 @@ namespace Page_Navigation_App.ViewModel
                     SelectedProduct.MakingCharges,
                     SelectedProduct.HUID,
                     currentRate);
-                    
-                // Update product with calculated values
-                SelectedProduct.BasePrice = Math.Round(priceCalculation.BasePrice, 2);
-                SelectedProduct.FinalPrice = Math.Round(priceCalculation.FinalPrice, 2);
-                SelectedProduct.GstAmount = Math.Round(priceCalculation.GstAmount, 2);
+                      // Update product with calculated values
+                decimal metalPrice = Math.Round(priceCalculation.BasePrice, 2); 
+                SelectedProduct.ProductPrice = Math.Round(priceCalculation.FinalPrice, 2);
                 
-                // Also consider stone value if set (add it after GST calculations)
+                // Also consider stone value if set (add it to product price)
                 if (SelectedProduct.StoneValue > 0)
                 {
-                    SelectedProduct.FinalPrice += SelectedProduct.StoneValue;
+                    SelectedProduct.ProductPrice += SelectedProduct.StoneValue;
                 }
                 
                 // Notify UI of changes
@@ -358,12 +353,11 @@ namespace Page_Navigation_App.ViewModel
             {
                 var convertedValue = Convert.ChangeType(value, propInfo.PropertyType);
                 propInfo.SetValue(SelectedProduct, convertedValue);
-                
-                // List of properties that should trigger price recalculation
+                  // List of properties that should trigger price recalculation
                 string[] priceRelatedProperties = new[]
                 {
                     "NetWeight", "GrossWeight", "MetalType", "Purity", 
-                    "MakingCharges", "WastagePercentage", "HUID", "StoneValue"
+                    "MakingCharges", "WastagePercentage", "StoneValue"
                 };
                 
                 if (priceRelatedProperties.Contains(propertyName))
@@ -372,6 +366,75 @@ namespace Page_Navigation_App.ViewModel
                 }
                 
                 OnPropertyChanged(nameof(SelectedProduct));
+            }
+        }
+
+        // Method to delete a product
+        private async void DeleteProduct(object parameter)
+        {
+            try
+            {
+                // Parameter will be the product from the DataGrid
+                if (parameter is Product product)
+                {
+                    if (System.Windows.MessageBox.Show(
+                        $"Are you sure you want to delete product: {product.ProductName}?", 
+                        "Confirm Delete", 
+                        System.Windows.MessageBoxButton.YesNo) == System.Windows.MessageBoxResult.Yes)
+                    {
+                        bool result = await _productService.DeleteProduct(product.ProductID);
+                        if (result)
+                        {
+                            System.Windows.MessageBox.Show("Product deleted successfully!", "Success");
+                            // Reload products after deletion
+                            LoadProducts();
+                            ClearForm();
+                        }
+                        else
+                        {
+                            System.Windows.MessageBox.Show("Failed to delete product.", "Error");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Error deleting product: {ex.Message}", "Error");
+            }
+        }
+
+        // Method to handle editing a product
+        private void EditProduct(object parameter)
+        {
+            try
+            {
+                // Ensure suppliers are loaded
+                if (Suppliers.Count == 0)
+                {
+                    LoadSuppliers();
+                }
+                
+                // Parameter will be the product from the DataGrid
+                if (parameter is Product product)
+                {                // Use the productService to get the latest product data
+                    var freshProduct = _productService.GetProductById(product.ProductID).Result;
+                        
+                    if (freshProduct != null)
+                    {
+                        SelectedProduct = freshProduct;
+                        
+                        // Log for debugging
+                        Console.WriteLine($"Editing product with SupplierID: {SelectedProduct.SupplierID}");
+                        Console.WriteLine($"Available suppliers: {Suppliers.Count}");
+                        
+                        // Set search name for reference
+                        SearchName = product.ProductName;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Error editing product: {ex.Message}", "Error");
             }
         }
     }

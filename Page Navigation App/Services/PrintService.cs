@@ -171,23 +171,17 @@ namespace Page_Navigation_App.Services
             html += $@"
         </tbody>
     </table>
-    
-    <div class='totals'>
+      <div class='totals'>
         <p>Subtotal: ₹{order.TotalAmount:N2}</p>
         <p>Discount: ₹{order.DiscountAmount:N2}</p>
-        <p>CGST @1.5%: ₹{order.CGST:N2}</p>
-        <p>SGST @1.5%: ₹{order.SGST:N2}</p>
-        <p>IGST @3%: ₹{order.IGST:N2}</p>
+        <p>Price Before Tax: ₹{order.PriceBeforeTax:N2}</p>
+        <p>Tax @3%: ₹{(order.GrandTotal - order.PriceBeforeTax):N2}</p>
         <p><strong>Grand Total: ₹{order.GrandTotal:N2}</strong></p>
-        {(order.HasMetalExchange ? $@"
-        <p>Metal Exchange: {order.ExchangeMetalType} {order.ExchangeMetalPurity}</p>
-        <p>Exchange Weight: {order.ExchangeMetalWeight:N3}g</p>
-        <p>Exchange Value: ₹{order.ExchangeValue:N2}</p>" : "")}
+        {(!string.IsNullOrEmpty(order.Notes) && order.Notes.StartsWith("Exchange:") ? $@"
+        <p>{order.Notes}</p>" : "")}
     </div>
-    
-    <div class='gst-info'>
+      <div class='gst-info'>
         <p>Payment Method: {order.PaymentMethod}</p>
-        {(order.EMIMonths > 0 ? $"<p>EMI Plan: {order.EMIMonths} months x ₹{order.EMIAmount:N2}</p>" : "")}
         <p>Declaration: Goods once sold will not be taken back or exchanged. All disputes subject to local jurisdiction.</p>
     </div>
     
@@ -418,7 +412,7 @@ namespace Page_Navigation_App.Services
             {product.TagNumber}
         </div>
         <div class='tag-footer'>
-            <p>Price: ₹{product.FinalPrice:N2}</p>
+            <p>Price: ₹{product.ProductPrice:N2}</p>
         </div>
     </div>
 </body>

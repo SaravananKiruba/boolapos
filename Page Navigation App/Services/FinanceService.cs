@@ -167,12 +167,14 @@ namespace Page_Navigation_App.Services
                     };
 
                     await _context.EMIs.AddAsync(emi);
-                }
-
-                // Update order with EMI information
-                order.EMIMonths = numberOfMonths;
-                order.EMIAmount = emiAmount;
+                }                // Update payment method to indicate EMI
                 order.PaymentMethod = order.PaymentMethod + " (EMI)";
+                
+                // Store EMI information in Notes field
+                if (string.IsNullOrEmpty(order.Notes))
+                    order.Notes = $"EMI Plan: {numberOfMonths} months x ₹{emiAmount:N2} per month";
+                else
+                    order.Notes += $" | EMI Plan: {numberOfMonths} months x ₹{emiAmount:N2} per month";
 
                 await _context.SaveChangesAsync();
                 await _logService.LogInformationAsync($"EMI plan created for order {orderId}: {numberOfMonths} months, {emiAmount} per month");

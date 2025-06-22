@@ -145,24 +145,19 @@ namespace Page_Navigation_App.ViewModel
 
                 foreach (var product in products)
                 {
-                    product.BasePrice = product.NetWeight * newRate.Rate;
+                    product.ProductPrice = product.NetWeight * newRate.Rate;
                     
                     // Recalculate final price with all components
                     decimal makingCharges = product.MakingCharges;
                     decimal wastagePercentage = product.WastagePercentage;
                     
-                    decimal wastageAmount = (product.BasePrice * wastagePercentage) / 100;
-                    decimal makingAmount = (product.BasePrice * makingCharges) / 100;
+                    decimal wastageAmount = (product.ProductPrice * wastagePercentage) / 100;
 
-                    product.FinalPrice = Math.Round(
-                        product.BasePrice + 
-                        makingAmount + 
+                    product.ProductPrice = Math.Round(
+                        product.ProductPrice + 
+                        makingCharges + 
                         product.StoneValue +
-                        wastageAmount +
-                        (product.ValueAdditionPercentage > 0 
-                            ? (product.BasePrice * product.ValueAdditionPercentage) / 100 
-                            : 0), 
-                        2);
+                        wastageAmount);
 
                     await _productService.UpdateProduct(product);
                 }

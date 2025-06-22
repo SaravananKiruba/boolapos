@@ -195,23 +195,19 @@ namespace Page_Navigation_App.Services
             var products = await _context.Products
                 .Include(p => p.Stocks)
                 .Where(p => p.IsActive && p.Stocks.Any(s => s.Quantity > 0))
-                .ToListAsync();
-
-            return products
+                .ToListAsync();            return products
                 .GroupBy(p => p.MetalType)
                 .ToDictionary(
                     g => g.Key,
-                    g => g.Sum(p => p.Stocks.Sum(s => s.Quantity * p.BasePrice))
+                    g => g.Sum(p => p.Stocks.Sum(s => s.Quantity * p.ProductPrice))
                 );
-        }
-
-        public async Task<IEnumerable<Product>> GetProductsByPriceRange(
+        }        public async Task<IEnumerable<Product>> GetProductsByPriceRange(
             decimal minPrice,
             decimal maxPrice)
         {
             return await _context.Products
                 .Include(p => p.Stocks)
-                .Where(p => p.BasePrice >= minPrice && p.BasePrice <= maxPrice && p.IsActive)
+                .Where(p => p.ProductPrice >= minPrice && p.ProductPrice <= maxPrice && p.IsActive)
                 .ToListAsync();
         }
 
@@ -258,13 +254,83 @@ namespace Page_Navigation_App.Services
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Product>> GetProductsByMetal(string metalType, string purity)
+    public async Task<IEnumerable<Product>> GetProductsByMetal(string metalType, string purity)
         {
             return await _context.Products
                 .Where(p => p.MetalType == metalType && 
                            p.Purity == purity && 
                            p.IsActive)
                 .ToListAsync();
+        }
+        
+        /// <summary>
+        /// Update a product price based on the current rate per gram
+        /// </summary>
+        /// <param name="productId">The ID of the product to update</param>
+        /// <param name="ratePerGram">The current rate per gram for the metal</param>
+        public async Task<bool> UpdateProductPrice(int productId, decimal ratePerGram)
+        {
+            try
+            {
+                var product = await _context.Products.FindAsync(productId);
+                if (product == null) return false;
+                
+                // Calculate the price using our enhanced formula
+                product.CalculateProductPrice(ratePerGram);
+                
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating product price: {ex.Message}");
+                return false;
+            }
+        }
+        
+        /// <summary>
+        /// Update all product prices for a specific metal type and purity
+        /// </summary>
+        /// <param name="metalType">The metal type</param>
+        /// <param name="purity">The purity level</param>
+        /// <param name="ratePerGram">The current rate per gram for the metal</param>
+        public async Task<int> UpdateAllProductPrices(string metalType, string purity, decimal ratePerGram)
+        {
+            try
+            {
+                var products = await _context.Products
+                    .Where(p => p.MetalType == metalType &&
+                               p.Purity == purity &&
+                               p.IsActive)
+                    .ToListAsync();
+                
+                foreach (var product in products)
+                {
+                    product.CalculateProductPrice(ratePerGram);
+                }
+                
+                await _context.SaveChangesAsync();
+                return products.Count;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating product prices: {ex.Message}");
+                return 0;
+            }
+        }
+        
+        /// <summary>
+        /// Get price breakdown for a product
+        /// </summary>
+        /// <param name="productId">The ID of the product</param>
+        /// <param name="ratePerGram">The current rate per gram for the metal</param>
+        /// <returns>A string with the price breakdown</returns>
+        public async Task<string> GetProductPriceBreakdown(int productId, decimal ratePerGram)
+        {
+            var product = await GetProductById(productId);
+            if (product == null) return "Product not found";
+            
+            return product.GetPriceBreakdown(ratePerGram);
         }
     }
 }

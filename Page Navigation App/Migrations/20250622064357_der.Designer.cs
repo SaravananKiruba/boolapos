@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Page_Navigation_App.Data;
 
@@ -10,9 +11,10 @@ using Page_Navigation_App.Data;
 namespace Page_Navigation_App.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250622064357_der")]
+    partial class der
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.36");
@@ -561,22 +563,77 @@ namespace Page_Navigation_App.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<decimal>("CGST")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<int>("CustomerID")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("DeliveryAddress")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DeliveryDate")
+                        .HasColumnType("TEXT");
 
                     b.Property<decimal>("DiscountAmount")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<decimal>("EMIAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("EMIMonths")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("EWayBillNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ExchangeMetalPurity")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ExchangeMetalType")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("ExchangeMetalWeight")
+                        .HasColumnType("decimal(10,3)");
+
+                    b.Property<decimal>("ExchangeValue")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("GSTNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
                     b.Property<decimal>("GrandTotal")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("HSNCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("HUIDReferences")
                         .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
+                    b.Property<decimal>("HallmarkingCharges")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("HasMetalExchange")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("IGST")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("InvoiceNumber")
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsDelivered")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsGSTRegisteredCustomer")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(500)
@@ -594,13 +651,20 @@ namespace Page_Navigation_App.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal>("PriceBeforeTax")
+                    b.Property<decimal>("SGST")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("TEXT");
+
+                    b.Property<string>("TagReferences")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("TaxApplicable")
+                        .HasColumnType("INTEGER");
 
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
@@ -623,6 +687,34 @@ namespace Page_Navigation_App.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<decimal>("BaseAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("CGSTAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("FinalAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("GrossWeight")
+                        .HasColumnType("decimal(10,3)");
+
+                    b.Property<string>("HSNCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("IGSTAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("MakingCharges")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("MetalRate")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("NetWeight")
+                        .HasColumnType("decimal(10,3)");
+
                     b.Property<string>("Notes")
                         .HasMaxLength(500)
                         .HasColumnType("TEXT");
@@ -636,11 +728,30 @@ namespace Page_Navigation_App.Migrations
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(10,3)");
 
+                    b.Property<decimal>("SGSTAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Size")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("StoneValue")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TaxableAmount")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<decimal>("TotalPrice")
+                        .HasColumnType("TEXT");
+
                     b.Property<decimal>("UnitPrice")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("WastagePercentage")
+                        .HasColumnType("decimal(5,2)");
 
                     b.HasKey("OrderDetailID");
 
@@ -669,6 +780,9 @@ namespace Page_Navigation_App.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
+                    b.Property<decimal>("BasePrice")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("Collection")
                         .HasMaxLength(50)
                         .HasColumnType("TEXT");
@@ -680,6 +794,9 @@ namespace Page_Navigation_App.Migrations
                     b.Property<string>("Design")
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
+
+                    b.Property<decimal>("FinalPrice")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("GrossWeight")
                         .HasColumnType("decimal(10,3)");
@@ -733,9 +850,6 @@ namespace Page_Navigation_App.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
-
-                    b.Property<decimal>("ProductPrice")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Purity")
                         .IsRequired()

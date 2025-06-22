@@ -165,33 +165,19 @@ namespace Page_Navigation_App.Services
                     await _logService.LogInformationAsync($"No products found for {metalType} {purity}");
                     return true;
                 }
-                
-                foreach (var product in products)
+                  foreach (var product in products)
                 {
-                    // Update base price (metal value)
-                    decimal metalValue = product.GrossWeight * currentRate.RatePerGram;
+                    // Use our enhanced formula: ((Product weight + Wastage %) * Gold rate) + making charges
                     
-                    // Apply wastage if applicable
-                    if (product.Wastage > 0)
+                    // Calculate the product price using the formula
+                    product.CalculateProductPrice(currentRate.RatePerGram);
+                    
+                    // If there are stone values to add, include them
+                    if (product.StoneValue > 0)
                     {
-                        metalValue += (metalValue * product.Wastage / 100);
+                        // Add stone value to the product price
+                        product.ProductPrice += product.StoneValue;
                     }
-                    
-                    // Apply making charges
-                    decimal makingCharge = metalValue * (currentRate.MakingChargePercentage / 100);
-                    
-                    // For diamond or gemstone jewelry, add stone value
-                    decimal stoneValue = product.StoneValue;
-                    
-                    // Calculate final price
-                    decimal finalPrice = metalValue + makingCharge + stoneValue;
-                    
-                    // Save the price components
-                    product.MetalPrice = metalValue;
-                    product.MakingCharge = makingCharge;
-                    product.StoneValue = stoneValue;
-                    product.FinalPrice = finalPrice;
-                    product.LastPriceUpdate = DateOnly.FromDateTime(DateTime.Now);
                     
                     _context.Products.Update(product);
                 }
@@ -311,9 +297,8 @@ namespace Page_Navigation_App.Services
                     await _logService.LogErrorAsync($"Cannot calculate exchange: New product not found (ID: {newItemProductId})");
                     return null;
                 }
-                
-                // Calculate final amount to pay
-                decimal amountToPay = Math.Max(0, newItem.FinalPrice - oldItemValue);
+                  // Calculate final amount to pay
+                decimal amountToPay = Math.Max(0, newItem.ProductPrice - oldItemValue);
                 
                 return new ExchangeOffer
                 {
@@ -326,7 +311,7 @@ namespace Page_Navigation_App.Services
                     
                     NewItemProductId = newItemProductId,
                     NewItemName = newItem.ProductName,
-                    NewItemPrice = newItem.FinalPrice,
+                    NewItemPrice = newItem.ProductPrice,
                     
                     AmountToPay = amountToPay,
                     ExchangeDate = DateTime.Now

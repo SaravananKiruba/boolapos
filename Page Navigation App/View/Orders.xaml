@@ -171,22 +171,20 @@
                                                         IsReadOnly="True"/>
                                         <DataGridTextColumn Header="Type" 
                                                         Binding="{Binding Product.MetalType}"
-                                                        Width="80"
+                                                        Width="70"
                                                         IsReadOnly="True"/>
-                                        <DataGridTextColumn Header="Weight (g)" 
-                                                        Binding="{Binding NetWeight, StringFormat={}{0:F3}}"
-                                                        Width="80"
-                                                        IsReadOnly="True"/>                                        <DataGridTextColumn Header="Rate" 
-                                                        Binding="{Binding MetalRate, StringFormat='₹ {0:N2}'}"
-                                                        Width="100"
-                                                        IsReadOnly="True"/>
-                                        <DataGridTextColumn Header="Making %" 
-                                                        Binding="{Binding MakingCharges, StringFormat={}{0:F2}%}"
-                                                        Width="80"
+                                        <DataGridTextColumn Header="Purity" 
+                                                        Binding="{Binding Product.Purity}"
+                                                        Width="70"
+                                                        IsReadOnly="True"/>                                        
+                                        <DataGridTextColumn Header="Unit Price" 
+                                                        Binding="{Binding UnitPrice, StringFormat='₹ {0:N2}'}"
+                                                        Width="90"
                                                         IsReadOnly="True"/>
                                         <DataGridTextColumn Header="Quantity" 
                                                         Binding="{Binding Quantity}"
-                                                        Width="80"/>                                        <DataGridTextColumn Header="Price" 
+                                                        Width="70"/>
+                                        <DataGridTextColumn Header="Total" 
                                                         Binding="{Binding TotalAmount, StringFormat='₹ {0:N2}'}"
                                                         Width="120"
                                                         IsReadOnly="True"/>
@@ -243,10 +241,14 @@
                                                          FontSize="12" 
                                                          FontWeight="Medium"
                                                          Foreground="#4A5568"
-                                                         Margin="0,0,0,5"/>                                                <mah:NumericUpDown Value="{Binding DiscountAmount, UpdateSourceTrigger=PropertyChanged}"
+                                                         Margin="0,0,0,5"/>                                                
+                                                <mah:NumericUpDown Value="{Binding DiscountAmount, UpdateSourceTrigger=PropertyChanged}"
                                                                 Minimum="0"
                                                                 StringFormat="₹ {0:N2}"
                                                                 Width="200"
+                                                                Margin="0,0,0,10"
+                                                                Padding="5"
+                                                                HorizontalContentAlignment="Right"
                                                                 mah:TextBoxHelper.Watermark="Enter Discount Amount"
                                                                 mah:ControlsHelper.CornerRadius="5"/>
                                             </StackPanel>
@@ -257,30 +259,99 @@
                                             Background="#F9F9F9"
                                             CornerRadius="8"
                                             Padding="15"
-                                            Margin="15,0,0,0">
-                                        <StackPanel HorizontalAlignment="Right">
+                                            Margin="15,0,0,0">                                        <StackPanel HorizontalAlignment="Right">
                                             <TextBlock Text="Order Summary" 
                                                      Style="{StaticResource MahApps.Styles.TextBlock}" 
                                                      FontWeight="Bold"
                                                      Foreground="#2D3748"
-                                                     Margin="0,0,0,10"
-                                                     HorizontalAlignment="Center"/>                                            <TextBlock Text="{Binding SelectedOrder.TotalAmount, StringFormat='Base Amount: ₹ {0:N2}'}"
+                                                     Margin="0,0,0,15"
+                                                     HorizontalAlignment="Center"/>
+                                                     
+                                            <Grid Margin="0,0,0,10">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="15"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="8"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="8"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="8"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
+                                                
+                                                <TextBlock Text="Subtotal:" 
                                                     FontSize="14"
-                                                    Margin="0,0,0,5"/>                                            <TextBlock Text="{Binding SelectedOrder.DiscountAmount, StringFormat='Discount: -₹ {0:N2}'}"
+                                                    Grid.Row="0"
+                                                    Grid.Column="0"
+                                                    HorizontalAlignment="Right"/>
+                                                <TextBlock Text="{Binding SelectedOrder.TotalAmount, StringFormat='₹ {0:N2}'}"
                                                     FontSize="14"
-                                                    Margin="0,0,0,5"
-                                                    Foreground="#e53e3e"/>                                            <TextBlock Text="{Binding SelectedOrder.CGST, StringFormat='CGST: ₹ {0:N2}'}"
+                                                    Grid.Row="0"
+                                                    Grid.Column="2"
+                                                    HorizontalAlignment="Right"/>
+                                                
+                                                <TextBlock Text="Discount:" 
                                                     FontSize="14"
-                                                    Margin="0,0,0,5"/>                                            <TextBlock Text="{Binding SelectedOrder.SGST, StringFormat='SGST: ₹ {0:N2}'}"
+                                                    Grid.Row="2"
+                                                    Grid.Column="0"
+                                                    HorizontalAlignment="Right"/>
+                                                <TextBlock Text="{Binding SelectedOrder.DiscountAmount, StringFormat='₹ {0:N2}'}"
                                                     FontSize="14"
-                                                    Margin="0,0,0,5"/>
+                                                    Grid.Row="2"
+                                                    Grid.Column="2"
+                                                    Foreground="{Binding SelectedOrder.DiscountAmount, Converter={StaticResource NegativeToRedConverter}}"
+                                                    HorizontalAlignment="Right"/>
+                                                
+                                                <TextBlock Text="Price Before Tax:" 
+                                                    FontSize="14"
+                                                    Grid.Row="4"
+                                                    Grid.Column="0"
+                                                    HorizontalAlignment="Right"/>
+                                                <TextBlock Text="{Binding SelectedOrder.PriceBeforeTax, StringFormat='₹ {0:N2}'}"
+                                                    FontSize="14"
+                                                    Grid.Row="4"
+                                                    Grid.Column="2"
+                                                    HorizontalAlignment="Right"/>
+                                                
+                                                <TextBlock Text="Tax (3%):" 
+                                                    FontSize="14"
+                                                    Grid.Row="6"
+                                                    Grid.Column="0"
+                                                    HorizontalAlignment="Right"/>
+                                                <TextBlock Text="{Binding TaxValue, StringFormat='₹ {0:N2}'}"
+                                                    FontSize="14"
+                                                    Grid.Row="6"
+                                                    Grid.Column="2" 
+                                                    HorizontalAlignment="Right"/>
+                                            </Grid>
+                                            
                                             <Border Background="#E3F2FD"
                                                     CornerRadius="5"
-                                                    Padding="10,5"
-                                                    Margin="0,5,0,0">                                                <TextBlock Text="{Binding SelectedOrder.GrandTotal, StringFormat='Grand Total: ₹ {0:N2}'}"
+                                                    Padding="15,10"
+                                                    Width="220"
+                                                    Margin="0,5,0,0">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Grand Total:" 
                                                         FontSize="16"
                                                         FontWeight="Bold"
-                                                        Foreground="#2196F3"/>
+                                                        Foreground="#2196F3"
+                                                        Grid.Column="0"/>
+                                                    <TextBlock Text="{Binding SelectedOrder.GrandTotal, StringFormat='₹ {0:N2}'}"
+                                                        FontSize="16"
+                                                        FontWeight="Bold"
+                                                        Foreground="#2196F3"
+                                                        Grid.Column="2"
+                                                        HorizontalAlignment="Right"/>
+                                                </Grid>
                                             </Border>
                                         </StackPanel>
                                     </Border>

@@ -126,9 +126,7 @@ namespace Page_Navigation_App.ViewModel
                 }
                 OnPropertyChanged();
             }
-        }
-
-        private Product _selectedProduct;
+        }        private Product _selectedProduct;
         public Product SelectedProduct
         {
             get => _selectedProduct;
@@ -138,14 +136,15 @@ namespace Page_Navigation_App.ViewModel
                 OnPropertyChanged();
                 if (value != null)
                 {
+                    if (SelectedOrderItem == null)
+                        SelectedOrderItem = new OrderDetail();
                     SelectedOrderItem.ProductID = value.ProductID;
                     SelectedOrderItem.Product = value;
-                    SelectedOrderItem.UnitPrice = value.FinalPrice;
-                    SelectedOrderItem.MetalRate = value.BasePrice / value.NetWeight;
+                    SelectedOrderItem.UnitPrice = value.ProductPrice;
                     CalculateOrderItemTotal();
                 }
             }
-        }        private DateOnly _startDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(-1));
+        }private DateOnly _startDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(-1));
         public DateOnly StartDate
         {
             get => _startDate;
@@ -263,119 +262,74 @@ namespace Page_Navigation_App.ViewModel
             }
         }        private void CalculateOrderItemTotal()
         {
+            if (SelectedOrderItem == null)
+                SelectedOrderItem = new OrderDetail();
             if (SelectedOrderItem != null && SelectedProduct != null)
             {
                 SelectedOrderItem.Quantity = 1;  // Default quantity
+                SelectedOrderItem.UnitPrice = SelectedProduct.ProductPrice;
                 SelectedOrderItem.TotalAmount = Math.Round(SelectedOrderItem.UnitPrice * SelectedOrderItem.Quantity, 2);
-                SelectedOrderItem.NetWeight = SelectedProduct.NetWeight;
-                SelectedOrderItem.GrossWeight = SelectedProduct.GrossWeight;
-                
-                // Since GST is now calculated at the order level on the discounted total,
-                // we don't need to calculate it per line item
-                SelectedOrderItem.TaxableAmount = 0;
-                SelectedOrderItem.CGSTAmount = 0;
-                SelectedOrderItem.SGSTAmount = 0;
-                SelectedOrderItem.FinalAmount = SelectedOrderItem.TotalAmount;
-                
                 OnPropertyChanged(nameof(SelectedOrderItem));
             }
-        }        private void UpdateOrderTotal()
+        }private void UpdateOrderTotal()
         {
-            // Calculate base amount (sum of all item totals)
-            decimal baseAmount = OrderItems.Sum(item => item.TotalAmount);
-            SelectedOrder.TotalAmount = baseAmount;
-            SelectedOrder.TotalItems = OrderItems.Count;
-            
-            // Apply discount to base amount before GST calculation
-            decimal discountedBaseAmount = baseAmount - SelectedOrder.DiscountAmount;
-            if (discountedBaseAmount < 0) discountedBaseAmount = 0; // Ensure it doesn't go negative
-            
-            // Reset GST values
-            SelectedOrder.CGST = 0;
-            SelectedOrder.SGST = 0;
-            SelectedOrder.IGST = 0;
-            
-            // Calculate consolidated GST based on product details
-            decimal totalCGST = 0;
-            decimal totalSGST = 0;
-            
-            foreach (var item in OrderItems)
+            try
             {
-                if (item.Product != null)
+                // Ensure SelectedOrder is not null
+                if (SelectedOrder == null)
                 {
-                    bool hasValidHUID = !string.IsNullOrEmpty(item.Product.HUID) || 
-                                       item.Product.IsHallmarked || 
-                                       !string.IsNullOrEmpty(item.Product.HallmarkNumber);
-                    
-                    // Apply GST only if the product has HUID or hallmarking
-                    if (hasValidHUID)
+                    SelectedOrder = new Order
                     {
-                        // Calculate proportion of this item's amount to the total base amount
-                        decimal proportion = baseAmount > 0 ? item.TotalAmount / baseAmount : 0;
-                        // Apply the same proportion to the discounted amount
-                        decimal itemDiscountedAmount = discountedBaseAmount * proportion;
-                        
-                        // Standard GST rate for jewelry is 3% (1.5% CGST + 1.5% SGST)
-                        totalCGST += Math.Round(itemDiscountedAmount * 0.015m, 2);  // 1.5% CGST
-                        totalSGST += Math.Round(itemDiscountedAmount * 0.015m, 2);  // 1.5% SGST
-                    }
+                        OrderDate = DateOnly.FromDateTime(DateTime.Now),
+                        Status = "Pending",
+                        PaymentType = "Cash"
+                    };
                 }
+                
+                // 1. Calculate base amount (sum of all product prices)
+                decimal totalAmount = OrderItems?.Sum(item => item.TotalAmount) ?? 0;
+                SelectedOrder.TotalAmount = totalAmount;
+                
+                // Update total items count
+                SelectedOrder.TotalItems = OrderItems?.Sum(item => (int)item.Quantity) ?? 0;
+                
+                // 2. Calculate price before tax (after discount)
+                SelectedOrder.PriceBeforeTax = totalAmount + SelectedOrder.DiscountAmount;
+                if (SelectedOrder.PriceBeforeTax < 0) SelectedOrder.PriceBeforeTax = 0; // Ensure it doesn't go negative
+                
+                // 3. Calculate final price with 3% tax
+                SelectedOrder.GrandTotal = Math.Round(SelectedOrder.PriceBeforeTax * 1.03m, 2);
+                
+                OnPropertyChanged(nameof(SelectedOrder));
+                OnPropertyChanged(nameof(TaxValue));
             }
-            
-            SelectedOrder.CGST = totalCGST;
-            SelectedOrder.SGST = totalSGST;
-            
-            // Calculate grand total: discounted base amount + GST
-            SelectedOrder.GrandTotal = discountedBaseAmount + SelectedOrder.CGST + SelectedOrder.SGST;
-            
-            // Set GST value for tracking and visibility
-            SelectedOrder.TaxAmount = SelectedOrder.CGST + SelectedOrder.SGST + SelectedOrder.IGST;
-            
-            OnPropertyChanged(nameof(SelectedOrder));
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error in UpdateOrderTotal: {ex.Message}");
+            }
         }private void AddOrderItem()
         {
-            if (SelectedProduct == null)
-                return;
-
-            decimal metalRate = 0;
-            if (SelectedProduct.NetWeight > 0)
+            try
             {
-                metalRate = SelectedProduct.BasePrice / SelectedProduct.NetWeight;
-            }
-
-            // Determine if product has HUID or BIS hallmarking (for GST applicability)
-            bool hasValidHUID = !string.IsNullOrEmpty(SelectedProduct.HUID) || 
-                                SelectedProduct.IsHallmarked || 
-                                !string.IsNullOrEmpty(SelectedProduct.HallmarkNumber);
-
-            var newItem = new OrderDetail
-            {
-                ProductID = SelectedProduct.ProductID,
-                Product = SelectedProduct,
-                Quantity = 1,
-                UnitPrice = SelectedProduct.FinalPrice,
-                TotalAmount = SelectedProduct.FinalPrice,
-                NetWeight = SelectedProduct.NetWeight,
-                GrossWeight = SelectedProduct.GrossWeight,
-                MetalRate = metalRate,
-                MakingCharges = SelectedProduct.MakingCharges,
-                WastagePercentage = SelectedProduct.WastagePercentage,
-                HSNCode = "7113", // Standard HSN code for jewelry 
-                BaseAmount = SelectedProduct.BasePrice
-            };
-
-            // Final amount is same as total amount since GST will be calculated at order level
-            newItem.FinalAmount = newItem.TotalAmount;
-            
-            // We're not setting tax amounts at line item level anymore since GST
-            // will be calculated on the discounted base amount at order level
-            newItem.TaxableAmount = 0;
-            newItem.CGSTAmount = 0;
-            newItem.SGSTAmount = 0;
+                if (SelectedProduct == null)
+                    return;                var newItem = new OrderDetail
+                {
+                    ProductID = SelectedProduct.ProductID,
+                    Product = SelectedProduct,
+                    Quantity = 1,
+                    UnitPrice = SelectedProduct.ProductPrice,
+                    TotalAmount = SelectedProduct.ProductPrice
+                };
 
             OrderItems.Add(newItem);
             UpdateOrderTotal();
             SelectedProduct = null;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error in AddOrderItem: {ex.Message}");
+                System.Windows.MessageBox.Show($"Failed to add product to order: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
         }
 
         private void RemoveOrderItem(OrderDetail item)
@@ -565,6 +519,16 @@ namespace Page_Navigation_App.ViewModel
                     UpdateOrderTotal(); // Recalculate with new discount
                     OnPropertyChanged();
                 }
+            }
+        }
+
+        // Property for displaying tax amount in UI
+        public decimal TaxValue
+        {
+            get
+            {
+                if (SelectedOrder == null) return 0;
+                return Math.Round(SelectedOrder.GrandTotal - SelectedOrder.PriceBeforeTax, 2);
             }
         }
     }

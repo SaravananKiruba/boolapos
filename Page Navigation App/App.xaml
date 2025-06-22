@@ -18,6 +18,10 @@
 
                 <!-- Theme references -->
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Light.Blue.xaml"/>
+                
+                <!-- Application Resources -->
+                <ResourceDictionary Source="Resources/Converters.xaml"/>
+                <ResourceDictionary Source="Resources/Colors.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <!-- Updated theme colors -->

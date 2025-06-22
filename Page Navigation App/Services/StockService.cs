@@ -211,13 +211,11 @@ namespace Page_Navigation_App.Services
             var stocks = await _context.Stocks
                 .Include(s => s.Product)
                 .Where(s => s.Quantity > 0)
-                .ToListAsync();
-
-            return stocks
+                .ToListAsync();            return stocks
                 .GroupBy(s => s.Location)
                 .ToDictionary(
                     g => g.Key,
-                    g => g.Sum(s => s.Quantity * s.Product.BasePrice)
+                    g => g.Sum(s => s.Quantity * s.Product.ProductPrice)
                 );
         }
 
@@ -226,7 +224,7 @@ namespace Page_Navigation_App.Services
             return await _context.Stocks
                 .Include(s => s.Product)
                 .Where(s => s.Quantity > 0)
-                .SumAsync(s => s.Quantity * s.Product.BasePrice);
+                .SumAsync(s => s.Quantity * s.Product.ProductPrice);
         }
 
         public async Task<IEnumerable<Stock>> SearchStock(
@@ -427,9 +425,8 @@ namespace Page_Navigation_App.Services
         {
             return await _context.Stocks
                 .Include(s => s.Product)
-                .Where(s => s.Quantity > 0 && 
-                           (s.Quantity * s.Product.BasePrice) >= minValue)
-                .OrderByDescending(s => s.Quantity * s.Product.BasePrice)
+                .Where(s => s.Quantity > 0 &&                           (s.Quantity * s.Product.ProductPrice) >= minValue)
+                .OrderByDescending(s => s.Quantity * s.Product.ProductPrice)
                 .ToListAsync();
         }
 
@@ -459,7 +456,7 @@ namespace Page_Navigation_App.Services
                 // Use product's price if not specified
                 if (unitPrice <= 0)
                 {
-                    unitPrice = product.FinalPrice;
+                    unitPrice = product.ProductPrice;
                 }
 
                 // Calculate total amount
@@ -514,7 +511,7 @@ namespace Page_Navigation_App.Services
                 // Use product's price if not specified
                 if (unitPrice <= 0)
                 {
-                    unitPrice = product.BasePrice;
+                    unitPrice = product.ProductPrice;
                 }
 
                 // Calculate total amount

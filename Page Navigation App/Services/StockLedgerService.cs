@@ -298,7 +298,7 @@ namespace Page_Navigation_App.Services
             try
             {
                 return await _context.Products
-                    .SumAsync(p => p.FinalPrice * p.StockQuantity);
+                    .SumAsync(p => p.ProductPrice * p.StockQuantity);
             }
             catch (Exception ex)
             {
