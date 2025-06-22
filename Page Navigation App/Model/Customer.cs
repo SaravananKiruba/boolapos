@@ -13,12 +13,10 @@ namespace Page_Navigation_App.Model
         #region Basic Information
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int CustomerID { get; set; }
-
-        [Required]
-        [StringLength(100, MinimumLength = 2)]
+        public int CustomerID { get; set; }        [Required(ErrorMessage = "Customer Name is required")]
+        [StringLength(100, MinimumLength = 2, ErrorMessage = "Customer Name must be between 2 and 100 characters")]
         [Display(Name = "Customer Name")]
-        public string CustomerName { get; set; } = "Rajesh Kumar";
+        public string CustomerName { get; set; }
         
         // Add Name alias property for UI consistency
         [NotMapped]
@@ -31,43 +29,32 @@ namespace Page_Navigation_App.Model
         
         [StringLength(50)]
         [Display(Name = "Last Name")]
-        public string LastName { get; set; }
-
-        [Required]
+        public string LastName { get; set; }        [Required(ErrorMessage = "Phone Number is required")]
         [StringLength(15)]
         [RegularExpression(@"^\+?[1-9]\d{1,14}$", ErrorMessage = "Please enter a valid phone number")]
         [Display(Name = "Phone Number")]
-        public string PhoneNumber { get; set; } = "+919876543210";
+        public string PhoneNumber { get; set; }
         
         // Mobile alias property for UI consistency
         [NotMapped]
-        public string Mobile { get => PhoneNumber; set => PhoneNumber = value; }
-
-        [EmailAddress]
+        public string Mobile { get => PhoneNumber; set => PhoneNumber = value; }        [EmailAddress(ErrorMessage = "Please enter a valid email address")]
         [StringLength(100)]
         [Display(Name = "Email Address")]
-        public string Email { get; set; } = "rajesh.kumar@email.com";
-
-        [StringLength(15)]
+        public string Email { get; set; }        [StringLength(15)]
         [RegularExpression(@"^\+?[1-9]\d{1,14}$", ErrorMessage = "Please enter a valid WhatsApp number")]
         [Display(Name = "WhatsApp Number")]
-        public string WhatsAppNumber { get; set; } = "+919876543210";
+        public string WhatsAppNumber { get; set; }
         #endregion
 
-        #region Address Information
-        [StringLength(200)]
+        #region Address Information        [StringLength(200)]
         [Display(Name = "Address")]
-        public string Address { get; set; } = "123 Main Street, Bangalore";
-
-        [StringLength(100)]
+        public string Address { get; set; }        [StringLength(100)]
         [Display(Name = "City")]
-        public string City { get; set; } = "Bangalore";
-
-        [StringLength(20)]
+        public string City { get; set; }        [StringLength(20)]
         [RegularExpression(@"^(NA|na|^\d{2}[A-Z]{5}\d{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1})$", 
             ErrorMessage = "Enter a valid GST number or 'NA'")]
         [Display(Name = "GST Number")]
-        public string GSTNumber { get; set; } = "29ABCDE1234F1Z5";
+        public string GSTNumber { get; set; }
         #endregion
 
         #region Personal Details
@@ -81,12 +68,10 @@ namespace Page_Navigation_App.Model
         public bool IsActive { get; set; }
 
         [Display(Name = "Anniversary Date")]
-        public DateOnly? DateOfAnniversary { get; set; }
-
-        [Required]
+        public DateOnly? DateOfAnniversary { get; set; }        [Required(ErrorMessage = "Customer Type is required")]
         [StringLength(20)]
         [Display(Name = "Customer Type")]
-        public string CustomerType { get; set; } = "Gold";
+        public string CustomerType { get; set; }
         #endregion        // Preferences, Financial Information, and Jewelry Measurements have been removed
 
         #region Additional Information
