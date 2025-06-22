@@ -270,65 +270,63 @@ namespace Page_Navigation_App.ViewModel
                 SelectedOrderItem.NetWeight = SelectedProduct.NetWeight;
                 SelectedOrderItem.GrossWeight = SelectedProduct.GrossWeight;
                 
-                // Calculate tax amounts only if product has HUID
-                if (!string.IsNullOrEmpty(SelectedProduct.HUID))
-                {
-                    decimal taxableAmount = SelectedOrderItem.TotalAmount;
-                    SelectedOrderItem.TaxableAmount = taxableAmount;
-                    SelectedOrderItem.CGSTAmount = Math.Round(taxableAmount * 0.015m, 2);  // 1.5% CGST
-                    SelectedOrderItem.SGSTAmount = Math.Round(taxableAmount * 0.015m, 2);  // 1.5% SGST
-                    SelectedOrderItem.FinalAmount = taxableAmount + SelectedOrderItem.CGSTAmount + SelectedOrderItem.SGSTAmount;
-                }
-                else
-                {
-                    // No GST if no HUID
-                    SelectedOrderItem.TaxableAmount = 0;
-                    SelectedOrderItem.CGSTAmount = 0;
-                    SelectedOrderItem.SGSTAmount = 0;
-                    SelectedOrderItem.FinalAmount = SelectedOrderItem.TotalAmount;
-                }
+                // Since GST is now calculated at the order level on the discounted total,
+                // we don't need to calculate it per line item
+                SelectedOrderItem.TaxableAmount = 0;
+                SelectedOrderItem.CGSTAmount = 0;
+                SelectedOrderItem.SGSTAmount = 0;
+                SelectedOrderItem.FinalAmount = SelectedOrderItem.TotalAmount;
                 
                 OnPropertyChanged(nameof(SelectedOrderItem));
             }
         }        private void UpdateOrderTotal()
         {
-            SelectedOrder.TotalAmount = OrderItems.Sum(item => item.TotalAmount);
+            // Calculate base amount (sum of all item totals)
+            decimal baseAmount = OrderItems.Sum(item => item.TotalAmount);
+            SelectedOrder.TotalAmount = baseAmount;
             SelectedOrder.TotalItems = OrderItems.Count;
+            
+            // Apply discount to base amount before GST calculation
+            decimal discountedBaseAmount = baseAmount - SelectedOrder.DiscountAmount;
+            if (discountedBaseAmount < 0) discountedBaseAmount = 0; // Ensure it doesn't go negative
             
             // Reset GST values
             SelectedOrder.CGST = 0;
             SelectedOrder.SGST = 0;
             SelectedOrder.IGST = 0;
             
-            // Calculate GST only for products with HUID or hallmarking
-            decimal taxableAmount = 0;
+            // Calculate consolidated GST based on product details
+            decimal totalCGST = 0;
+            decimal totalSGST = 0;
+            
             foreach (var item in OrderItems)
             {
-                bool hasValidHUID = false;
-                
                 if (item.Product != null)
                 {
-                    hasValidHUID = !string.IsNullOrEmpty(item.Product.HUID) || 
-                                   item.Product.IsHallmarked || 
-                                   !string.IsNullOrEmpty(item.Product.HallmarkNumber);
-                }
-                
-                if (hasValidHUID)
-                {
-                    // Apply Indian GST only to products with HUID or hallmarking
-                    taxableAmount += item.TotalAmount;
+                    bool hasValidHUID = !string.IsNullOrEmpty(item.Product.HUID) || 
+                                       item.Product.IsHallmarked || 
+                                       !string.IsNullOrEmpty(item.Product.HallmarkNumber);
+                    
+                    // Apply GST only if the product has HUID or hallmarking
+                    if (hasValidHUID)
+                    {
+                        // Calculate proportion of this item's amount to the total base amount
+                        decimal proportion = baseAmount > 0 ? item.TotalAmount / baseAmount : 0;
+                        // Apply the same proportion to the discounted amount
+                        decimal itemDiscountedAmount = discountedBaseAmount * proportion;
+                        
+                        // Standard GST rate for jewelry is 3% (1.5% CGST + 1.5% SGST)
+                        totalCGST += Math.Round(itemDiscountedAmount * 0.015m, 2);  // 1.5% CGST
+                        totalSGST += Math.Round(itemDiscountedAmount * 0.015m, 2);  // 1.5% SGST
+                    }
                 }
             }
             
-            // Apply Indian GST rates (3% for gold/jewelry - 1.5% CGST, 1.5% SGST)
-            if (taxableAmount > 0)
-            {
-                SelectedOrder.CGST = Math.Round(taxableAmount * 0.015m, 2);  // 1.5% CGST
-                SelectedOrder.SGST = Math.Round(taxableAmount * 0.015m, 2);  // 1.5% SGST
-            }
+            SelectedOrder.CGST = totalCGST;
+            SelectedOrder.SGST = totalSGST;
             
-            // Calculate grand total in INR
-            SelectedOrder.GrandTotal = SelectedOrder.TotalAmount + SelectedOrder.CGST + SelectedOrder.SGST - SelectedOrder.DiscountAmount;
+            // Calculate grand total: discounted base amount + GST
+            SelectedOrder.GrandTotal = discountedBaseAmount + SelectedOrder.CGST + SelectedOrder.SGST;
             
             // Set GST value for tracking and visibility
             SelectedOrder.TaxAmount = SelectedOrder.CGST + SelectedOrder.SGST + SelectedOrder.IGST;
@@ -345,7 +343,7 @@ namespace Page_Navigation_App.ViewModel
                 metalRate = SelectedProduct.BasePrice / SelectedProduct.NetWeight;
             }
 
-            // Determine if product has HUID or BIS hallmarking
+            // Determine if product has HUID or BIS hallmarking (for GST applicability)
             bool hasValidHUID = !string.IsNullOrEmpty(SelectedProduct.HUID) || 
                                 SelectedProduct.IsHallmarked || 
                                 !string.IsNullOrEmpty(SelectedProduct.HallmarkNumber);
@@ -366,29 +364,14 @@ namespace Page_Navigation_App.ViewModel
                 BaseAmount = SelectedProduct.BasePrice
             };
 
-            // Calculate tax amounts only if product has HUID or hallmarking
-            if (hasValidHUID)
-            {
-                decimal taxableAmount = newItem.TotalAmount;
-                newItem.TaxableAmount = taxableAmount;
-                newItem.CGSTAmount = Math.Round(taxableAmount * 0.015m, 2);  // 1.5% CGST for GST rate of 3%
-                newItem.SGSTAmount = Math.Round(taxableAmount * 0.015m, 2);  // 1.5% SGST for GST rate of 3%
-                newItem.FinalAmount = taxableAmount + newItem.CGSTAmount + newItem.SGSTAmount;
-                
-                // Log for debugging
-                System.Diagnostics.Debug.WriteLine($"Product has HUID/Hallmark: {hasValidHUID}, Applying GST");
-            }
-            else
-            {
-                // No GST if no HUID/hallmarking
-                newItem.TaxableAmount = 0;
-                newItem.CGSTAmount = 0;
-                newItem.SGSTAmount = 0;
-                newItem.FinalAmount = newItem.TotalAmount;
-                
-                // Log for debugging
-                System.Diagnostics.Debug.WriteLine($"Product has no HUID/Hallmark, Skipping GST");
-            }
+            // Final amount is same as total amount since GST will be calculated at order level
+            newItem.FinalAmount = newItem.TotalAmount;
+            
+            // We're not setting tax amounts at line item level anymore since GST
+            // will be calculated on the discounted base amount at order level
+            newItem.TaxableAmount = 0;
+            newItem.CGSTAmount = 0;
+            newItem.SGSTAmount = 0;
 
             OrderItems.Add(newItem);
             UpdateOrderTotal();
@@ -554,16 +537,34 @@ namespace Page_Navigation_App.ViewModel
         // Method to manually reload customers and products data
         public void ReloadData()
         {
-            try
+            LoadOrders();
+            LoadCustomers();
+            LoadProducts();
+            
+            // Reset the selected order to a new one
+            SelectedOrder = new Order
             {
-                LoadCustomers();
-                LoadProducts();
-                System.Windows.MessageBox.Show("Customer and product data reloaded successfully.");
-            }
-            catch (Exception ex)
+                OrderDate = DateOnly.FromDateTime(DateTime.Now),
+                Status = "Pending",
+                PaymentMethod = "Cash"
+            };
+            
+            OrderItems.Clear();
+            System.Diagnostics.Debug.WriteLine("Data reloaded");
+        }
+
+        // Add a property to handle discount amount changes
+        public decimal DiscountAmount
+        {
+            get => SelectedOrder?.DiscountAmount ?? 0;
+            set
             {
-                System.Diagnostics.Debug.WriteLine($"Error reloading data: {ex.Message}");
-                System.Windows.MessageBox.Show($"Failed to reload data: {ex.Message}");
+                if (SelectedOrder != null)
+                {
+                    SelectedOrder.DiscountAmount = value;
+                    UpdateOrderTotal(); // Recalculate with new discount
+                    OnPropertyChanged();
+                }
             }
         }
     }
