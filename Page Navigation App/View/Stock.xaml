@@ -15,6 +15,174 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
+        <!-- Purchase Modal Popup -->
+        <Grid Visibility="{Binding IsPurchaseModalOpen, Converter={StaticResource BooleanToVisibilityConverter}}" 
+              Panel.ZIndex="100" 
+              Grid.ColumnSpan="2">
+            <Border Background="#80000000" 
+                    MouseDown="CloseModalOnBackgroundClick"/>
+            <Border Background="White" 
+                    CornerRadius="15" 
+                    Width="500" 
+                    MaxHeight="600"
+                    VerticalAlignment="Center" 
+                    HorizontalAlignment="Center"
+                    Padding="20">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="20" 
+                                      ShadowDepth="3" 
+                                      Opacity="0.3"/>
+                </Border.Effect>
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
+                        <TextBlock Text="Add Purchase" 
+                                   FontSize="22" 
+                                   FontWeight="SemiBold" 
+                                   VerticalAlignment="Center"/>
+                        <Button Content="×" 
+                                Command="{Binding ClosePurchaseModalCommand}"
+                                Style="{StaticResource MahApps.Styles.Button.Circle}"
+                                Height="30" 
+                                Width="30" 
+                                Margin="20,0,0,0" 
+                                HorizontalAlignment="Right" 
+                                VerticalAlignment="Top" 
+                                FontSize="16" 
+                                FontWeight="Bold"/>
+                    </StackPanel>
+
+                    <!-- Content -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <!-- Product Selection -->
+                            <TextBlock Text="Select Product" 
+                                       FontWeight="Medium" 
+                                       Margin="0,0,0,5"/>
+                            <ComboBox ItemsSource="{Binding Products}"
+                                      DisplayMemberPath="ProductName"
+                                      SelectedValue="{Binding SelectedProductId}"
+                                      SelectedValuePath="ProductID"
+                                      mah:TextBoxHelper.Watermark="Select Product"
+                                      Margin="0,0,0,15"
+                                      Height="38"
+                                      mah:ControlsHelper.CornerRadius="5"/>
+
+                            <!-- Supplier Selection -->
+                            <TextBlock Text="Select Supplier" 
+                                       FontWeight="Medium" 
+                                       Margin="0,0,0,5"/>
+                            <ComboBox ItemsSource="{Binding Suppliers}"
+                                      DisplayMemberPath="SupplierName"
+                                      SelectedValue="{Binding SelectedSupplierId}"
+                                      SelectedValuePath="SupplierID"
+                                      mah:TextBoxHelper.Watermark="Select Supplier"
+                                      Margin="0,0,0,15"
+                                      Height="38"
+                                      mah:ControlsHelper.CornerRadius="5"/>
+
+                            <!-- Quantity and Rate -->
+                            <Grid Margin="0,0,0,15">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0" Margin="0,0,5,0">
+                                    <TextBlock Text="Quantity" 
+                                               FontWeight="Medium" 
+                                               Margin="0,0,0,5"/>
+                                    <mah:NumericUpDown Value="{Binding NewPurchase.QuantityPurchased}"
+                                                       Minimum="0"
+                                                       StringFormat="N3"
+                                                       Height="38"
+                                                       mah:ControlsHelper.CornerRadius="5"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" Margin="5,0,0,0">
+                                    <TextBlock Text="Purchase Rate" 
+                                               FontWeight="Medium" 
+                                               Margin="0,0,0,5"/>
+                                    <mah:NumericUpDown Value="{Binding NewPurchase.PurchaseRate}"
+                                                       StringFormat="C2"
+                                                       Minimum="0"
+                                                       Height="38"
+                                                       mah:ControlsHelper.CornerRadius="5"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Invoice Number and Payment Status -->
+                            <Grid Margin="0,0,0,15">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0" Margin="0,0,5,0">
+                                    <TextBlock Text="Invoice Number" 
+                                               FontWeight="Medium" 
+                                               Margin="0,0,0,5"/>
+                                    <TextBox Text="{Binding NewPurchase.InvoiceNumber}"
+                                             mah:TextBoxHelper.Watermark="Invoice #"
+                                             Height="38"
+                                             mah:ControlsHelper.CornerRadius="5"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" Margin="5,0,0,0">
+                                    <TextBlock Text="Payment Status" 
+                                               FontWeight="Medium" 
+                                               Margin="0,0,0,5"/>
+                                    <ComboBox SelectedValue="{Binding NewPurchase.PaymentStatus}"
+                                              Height="38"
+                                              mah:ControlsHelper.CornerRadius="5">
+                                        <ComboBoxItem>Paid</ComboBoxItem>
+                                        <ComboBoxItem>Pending</ComboBoxItem>
+                                        <ComboBoxItem>Partial</ComboBoxItem>
+                                    </ComboBox>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Notes -->
+                            <TextBlock Text="Notes" 
+                                       FontWeight="Medium" 
+                                       Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding NewPurchase.Notes}"
+                                     mah:TextBoxHelper.Watermark="Additional notes"
+                                     TextWrapping="Wrap"
+                                     AcceptsReturn="True"
+                                     Height="60"
+                                     mah:ControlsHelper.CornerRadius="5"
+                                     Margin="0,0,0,15"/>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Buttons -->
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="Cancel" 
+                                Command="{Binding ClosePurchaseModalCommand}" 
+                                Style="{StaticResource MahApps.Styles.Button}"
+                                mah:ControlsHelper.CornerRadius="8"
+                                Height="40" 
+                                Width="120" 
+                                Margin="0,0,10,0"/>
+                        <Button Content="Add Purchase" 
+                                Command="{Binding AddPurchaseCommand}" 
+                                Style="{StaticResource MahApps.Styles.Button.Square.Accent}"
+                                mah:ControlsHelper.CornerRadius="8"
+                                Height="40" 
+                                Width="150"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
         <!-- Stock Entry Form with standardized visual design -->
         <Border Background="#FFFFFF"
                 CornerRadius="10">
@@ -98,10 +266,40 @@
                                                 IsOn="{Binding SelectedStock.IsDeadStock}"
                                                 OnContent="Yes"
                                                 OffContent="No"
-                                                Margin="0,10"/>
+                                                Style="{StaticResource MahApps.Styles.ToggleSwitch}"
+                                                Margin="0,10,0,5"/>
                             </StackPanel>
                         </Border>
-
+                        
+                        <!-- New Purchase Button -->
+                        <Border Background="#F9F9F9"
+                                CornerRadius="8"
+                                Padding="10"
+                                Margin="0,0,0,15">
+                            <Button Content="New Purchase"
+                                  Command="{Binding OpenPurchaseModalCommand}"
+                                  mah:ControlsHelper.CornerRadius="8"
+                                  Height="45"
+                                  Style="{StaticResource MahApps.Styles.Button.Square.Accent}"
+                                  Margin="0">
+                                <Button.ContentTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <iconPacks:PackIconMaterial Kind="CartPlus" 
+                                                                     Width="20" 
+                                                                     Height="20"
+                                                                     VerticalAlignment="Center"
+                                                                     Margin="0,0,10,0"/>
+                                            <TextBlock Text="New Purchase" 
+                                                     FontSize="14"
+                                                     FontWeight="Medium"
+                                                     VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </Button.ContentTemplate>
+                            </Button>
+                        </Border>
+                        
                         <!-- Action Buttons -->
                         <StackPanel Orientation="Horizontal" 
                                   Margin="0,20,0,0"
@@ -317,6 +515,91 @@
                         </DataGrid.Columns>
                     </DataGrid>
                 </mah:MetroHeader>
+            </Border>
+        </Grid>
+
+        <!-- Grid for Stock Items list modal -->
+        <Grid Visibility="{Binding IsStockItemsVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
+              Grid.ColumnSpan="2"
+              Panel.ZIndex="100">
+            <Border Background="#80000000" 
+                    MouseDown="CloseStockItemsModalOnClick"/>
+            <Border Background="White" 
+                    CornerRadius="15" 
+                    Width="700" 
+                    MaxHeight="600"
+                    VerticalAlignment="Center" 
+                    HorizontalAlignment="Center">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="20" 
+                                      ShadowDepth="3" 
+                                      Opacity="0.3"/>
+                </Border.Effect>
+                
+                <Grid Margin="20">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Header -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
+                        <TextBlock Text="Stock Item Details" 
+                                   FontSize="22" 
+                                   FontWeight="SemiBold" 
+                                   VerticalAlignment="Center"/>
+                        <Button Content="×" 
+                                Command="{Binding CloseStockItemsCommand}"
+                                Style="{StaticResource MahApps.Styles.Button.Circle}"
+                                Height="30" 
+                                Width="30" 
+                                Margin="20,0,0,0" 
+                                HorizontalAlignment="Right" 
+                                VerticalAlignment="Top" 
+                                FontSize="16" 
+                                FontWeight="Bold"/>
+                    </StackPanel>
+                    
+                    <!-- Stock Items DataGrid -->
+                    <DataGrid Grid.Row="1"
+                              ItemsSource="{Binding StockItems}"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              IsReadOnly="True"
+                              Margin="0,10"
+                              Style="{StaticResource MahApps.Styles.DataGrid}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Item Code" 
+                                              Binding="{Binding StockItemCode}"
+                                              Width="*"/>
+                            <DataGridTextColumn Header="Product" 
+                                              Binding="{Binding Product.ProductName}"
+                                              Width="*"/>
+                            <DataGridTextColumn Header="Status" 
+                                              Binding="{Binding Status}"
+                                              Width="100"/>
+                            <DataGridTextColumn Header="Added Date" 
+                                              Binding="{Binding AddedDate, StringFormat=\{0:dd/MM/yyyy\}}"
+                                              Width="100"/>
+                            <DataGridTextColumn Header="Sold Date" 
+                                              Binding="{Binding SoldDate, StringFormat=\{0:dd/MM/yyyy\}}"
+                                              Width="100"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    
+                    <!-- Close Button -->
+                    <Button Grid.Row="2"
+                            Content="Close"
+                            Command="{Binding CloseStockItemsCommand}"
+                            Style="{StaticResource MahApps.Styles.Button}"
+                            mah:ControlsHelper.CornerRadius="8"
+                            Height="40"
+                            Width="100"
+                            HorizontalAlignment="Right"
+                            Margin="0,10,0,0"/>
+                </Grid>
             </Border>
         </Grid>
     </Grid>

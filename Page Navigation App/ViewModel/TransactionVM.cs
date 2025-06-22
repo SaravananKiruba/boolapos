@@ -8,6 +8,7 @@ using Page_Navigation_App.Services;
 using Page_Navigation_App.Utilities;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
+using System.Globalization;
 
 namespace Page_Navigation_App.ViewModel
 {
@@ -348,5 +349,9 @@ namespace Page_Navigation_App.ViewModel
                 System.Windows.MessageBoxButton.OK,
                 System.Windows.MessageBoxImage.Information);
         }
+
+        public string FormattedTotalIncome => $"₹{TotalIncome:N2}";
+        public string FormattedTotalExpense => $"₹{TotalExpense:N2}";
+        public string FormattedNetBalance => $"₹{NetBalance:N2}";
     }
 }

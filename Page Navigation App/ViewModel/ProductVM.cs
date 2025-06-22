@@ -13,23 +13,56 @@ namespace Page_Navigation_App.ViewModel
 {
     public class ProductVM : ViewModelBase
     {
-        private readonly ProductService _productService;        private readonly SupplierService _supplierService;
-        private readonly RateMasterService _rateService;  // Added RateMasterService
+        private readonly ProductService _productService;        
+        private readonly SupplierService _supplierService;
+        private readonly RateMasterService _rateService;
         
-        public ICommand AddOrUpdateCommand { get; private set; }        public ICommand ClearCommand { get; private set; }
+        // Add StockService
+        private readonly StockService _stockService;
+        
+        public ICommand AddOrUpdateCommand { get; private set; }        
+        public ICommand ClearCommand { get; private set; }
         public ICommand SearchCommand { get; private set; }
         public ICommand RecalculatePriceCommand { get; private set; }
         public ICommand DeleteCommand { get; private set; }
         public ICommand EditCommand { get; private set; }
 
+        // Add property for initial stock quantity
+        private decimal _initialStockQuantity;
+        public decimal InitialStockQuantity
+        {
+            get => _initialStockQuantity;
+            set
+            {
+                _initialStockQuantity = value;
+                OnPropertyChanged();
+            }
+        }
+        
+        // Add property for stock location
+        private string _stockLocation = "Main";
+        public string StockLocation
+        {
+            get => _stockLocation;
+            set
+            {
+                _stockLocation = value;
+                OnPropertyChanged();
+            }
+        }
+
         public ProductVM(
             ProductService productService, 
             SupplierService supplierService,
-            RateMasterService rateService)  // Added RateMasterService parameter
+            RateMasterService rateService,
+            StockService stockService)  // Added StockService parameter
         {
             _productService = productService;
-            _supplierService = supplierService;            _rateService = rateService;
-              LoadProducts();
+            _supplierService = supplierService;            
+            _rateService = rateService;
+            _stockService = stockService;  // Initialize StockService
+              
+            LoadProducts();
             LoadSuppliers();
             InitializeCollections();
             
@@ -217,17 +250,43 @@ namespace Page_Navigation_App.ViewModel
                 if (SelectedProduct.StoneValue > 0)
                 {
                     SelectedProduct.ProductPrice += SelectedProduct.StoneValue;
-                }
-
-                bool result;
+                }                bool result;
                 if (SelectedProduct.ProductID > 0)
                 {
                     result = await _productService.UpdateProduct(SelectedProduct);
+                    
+                    // If update successful and initial stock quantity is specified, add to stock
+                    if (result && InitialStockQuantity > 0)
+                    {
+                        await _stockService.AddStock(new Stock
+                        {
+                            ProductID = SelectedProduct.ProductID,
+                            SupplierID = SelectedProduct.SupplierID,
+                            QuantityPurchased = InitialStockQuantity,
+                            PurchaseRate = SelectedProduct.ProductPrice * 0.7m,
+                            TotalAmount = SelectedProduct.ProductPrice * 0.7m * InitialStockQuantity,
+                            Location = StockLocation,
+                            PaymentStatus = "Paid",
+                            PurchaseDate = DateTime.Now
+                        });
+                    }
                 }
                 else
                 {
-                    var addedProduct = await _productService.AddProduct(SelectedProduct);
-                    result = addedProduct != null;
+                    // If initial stock quantity is specified, use the new method
+                    if (InitialStockQuantity > 0)
+                    {
+                        var addedProduct = await _productService.AddProductWithInitialStock(
+                            SelectedProduct,
+                            InitialStockQuantity,
+                            StockLocation);
+                        result = addedProduct != null;
+                    }
+                    else
+                    {
+                        var addedProduct = await _productService.AddProduct(SelectedProduct);
+                        result = addedProduct != null;
+                    }
                 }
 
                 if (result)

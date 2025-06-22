@@ -67,13 +67,15 @@ namespace Page_Navigation_App
             services.AddScoped<CustomerService>();
             services.AddScoped<ProductService>();
             services.AddScoped<OrderService>();
-            services.AddScoped<FinanceService>();            services.AddScoped<StockLedgerService>();
+            services.AddScoped<FinanceService>();
+            services.AddScoped<StockLedgerService>();
             services.AddScoped<SupplierService>();
             services.AddScoped<RateMasterService>();
             services.AddScoped<StockService>();
             services.AddScoped<ExchangeService>();
             services.AddScoped<UserService>();
             services.AddScoped<PrintService>();
+            services.AddScoped<PurchaseOrderService>();
 
             // ViewModels - Transient lifetime except for NavigationVM
             services.AddSingleton<NavigationVM>();
@@ -93,7 +95,8 @@ namespace Page_Navigation_App
             services.AddTransient<UserVM>();
             services.AddTransient<ReportVM>();
             services.AddTransient<SettingsVM>();
-            
+            services.AddTransient<PurchaseOrderVM>();
+
             // Login ViewModel
             services.AddTransient<LoginViewModel>();
 

@@ -144,8 +144,14 @@ namespace Page_Navigation_App.Services
                     totalAmount += detail.TotalAmount;                    totalItems += (int)detail.Quantity;
                     
                     await _context.OrderDetails.AddAsync(detail);
+                      // Update stock - Use the enhanced StockService with proper transaction tracking
+                    // Use our new method that also updates the individual stock items
+                    await _stockService.DecreaseStockForOrder(
+                        detail.ProductID,
+                        (int)detail.Quantity,
+                        order.OrderID);
                     
-                    // Update stock - Use the enhanced StockService with proper transaction tracking
+                    // Fallback to traditional stock reduction if individual item tracking fails
                     await _stockService.ReduceStock(
                         detail.ProductID, 
                         detail.Quantity, 
@@ -264,6 +270,103 @@ namespace Page_Navigation_App.Services
                     .ThenInclude(od => od.Product)
                 .OrderByDescending(o => o.OrderDate)
                 .ToListAsync();
+        }
+        
+        // New method to add order and update stock
+        public async Task<Order> AddOrderWithStockUpdate(Order order, List<OrderDetail> orderDetails, Finance payment)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // 1. Add the order
+                await _context.Orders.AddAsync(order);
+                await _context.SaveChangesAsync();
+                
+                // 2. Add order details and update stock
+                foreach (var detail in orderDetails)
+                {
+                    detail.OrderID = order.OrderID;
+                    await _context.OrderDetails.AddAsync(detail);
+
+                    // Reduce stock by marking StockItems as "Sold"
+                    await UpdateStockForOrderItem(detail, order.OrderID);
+                }
+                
+                await _context.SaveChangesAsync();
+                
+                // 3. Add payment record if provided
+                if (payment != null)
+                {
+                    payment.OrderReference = order.OrderID;
+                    payment.ReferenceType = "Order";
+                    payment.ReferenceNumber = order.InvoiceNumber;
+                    await _context.Finances.AddAsync(payment);
+                    await _context.SaveChangesAsync();
+                }
+                
+                await transaction.CommitAsync();
+                return order;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                await _logService.LogErrorAsync($"Error adding order with stock update: {ex.Message}");
+                return null;
+            }
+        }
+        
+        // Helper method to update stock for an order item
+        private async Task<bool> UpdateStockForOrderItem(OrderDetail orderDetail, int orderId)
+        {
+            try
+            {
+                // Get available stock items for this product
+                var stockItems = await _context.StockItems
+                    .Where(si => si.ProductID == orderDetail.ProductID && si.Status == "Available")
+                    .OrderBy(si => si.AddedDate) // First In, First Out
+                    .Take((int)orderDetail.Quantity)
+                    .ToListAsync();
+                
+                if (stockItems.Count < orderDetail.Quantity)
+                {
+                    await _logService.LogWarningAsync($"Insufficient stock for product ID {orderDetail.ProductID}. Needed: {orderDetail.Quantity}, Available: {stockItems.Count}");
+                    return false;
+                }
+                
+                // Mark stock items as sold
+                foreach (var item in stockItems)
+                {
+                    item.Status = "Sold";
+                    item.OrderID = orderId;
+                    item.SoldDate = DateTime.Now;
+                }
+                
+                await _context.SaveChangesAsync();
+                
+                // Update the stock quantities
+                var stockGroups = stockItems.GroupBy(si => si.StockID);
+                foreach (var group in stockGroups)
+                {
+                    var stockId = group.Key;
+                    var count = group.Count();
+                    
+                    var stock = await _context.Stocks.FindAsync(stockId);
+                    if (stock != null)
+                    {
+                        stock.QuantityPurchased -= count;
+                        stock.LastUpdated = DateTime.Now;
+                        stock.LastSold = DateTime.Now;
+                    }
+                }
+                
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await _logService.LogErrorAsync($"Error updating stock for order item: {ex.Message}");
+                return false;
+            }
         }
     }
 }

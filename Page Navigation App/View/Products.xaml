@@ -352,7 +352,72 @@
                                         </StackPanel>
                                     </Grid>
                                 </StackPanel>
-                            </Border>                            <!-- Action Buttons with enhanced styling -->
+                            </Border>                            <!-- Initial Stock Section -->
+                            <Border Background="#F9F9F9"
+                                    CornerRadius="10"
+                                    Padding="18,15"
+                                    Margin="0,0,0,18">
+                                <StackPanel>
+                                    <Grid>
+                                        <TextBlock Text="Initial Stock" 
+                                              Style="{StaticResource MahApps.Styles.TextBlock}" 
+                                              FontWeight="Bold"
+                                              Foreground="#2D3748"
+                                              Margin="0,0,0,12"
+                                              FontSize="14"/>
+                                        <Rectangle Height="2" Fill="#E2E8F0" VerticalAlignment="Bottom" Margin="0,10,0,0"/>
+                                    </Grid>
+                                    
+                                    <!-- Initial Stock Quantity and Location side by side -->
+                                    <Grid Margin="0,8,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="2*"/>
+                                            <ColumnDefinition Width="3*"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <!-- Initial Stock Quantity with Label -->
+                                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                            <TextBlock Text="Initial Quantity" 
+                                                     FontSize="12" 
+                                                     FontWeight="Medium"
+                                                     Foreground="#4A5568"
+                                                     Margin="0,0,0,4"/>
+                                            <mah:NumericUpDown Value="{Binding InitialStockQuantity}"
+                                                           StringFormat="N3"
+                                                           Minimum="0"
+                                                           Maximum="9999.999"
+                                                           Interval="1"
+                                                           mah:ControlsHelper.CornerRadius="6"
+                                                           Height="38"
+                                                           FontSize="13"
+                                                           Style="{StaticResource {x:Type mah:NumericUpDown}}"/>
+                                        </StackPanel>
+                                        
+                                        <!-- Location with Label -->
+                                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                                            <TextBlock Text="Stock Location" 
+                                                     FontSize="12" 
+                                                     FontWeight="Medium"
+                                                     Foreground="#4A5568"
+                                                     Margin="0,0,0,4"/>
+                                            <TextBox Text="{Binding StockLocation, UpdateSourceTrigger=PropertyChanged}"
+                                                  mah:TextBoxHelper.Watermark="Location (e.g. Main)"
+                                                  mah:ControlsHelper.CornerRadius="6"
+                                                  Height="38"
+                                                  FontSize="13"
+                                                  Style="{StaticResource MahApps.Styles.TextBox}"/>
+                                        </StackPanel>
+                                    </Grid>
+                                    
+                                    <TextBlock Text="Enter quantity to create initial stock when saving new product" 
+                                             Foreground="#718096"
+                                             FontSize="11"
+                                             FontStyle="Italic"
+                                             Margin="0,8,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Action Buttons with enhanced styling -->
                             <StackPanel Orientation="Horizontal" 
                                       Margin="0,25,0,0"
                                       HorizontalAlignment="Right">
@@ -514,8 +579,7 @@
                                 </Setter>
                             </Style>
                         </DataGrid.CellStyle>
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="Name" 
+                        <DataGrid.Columns>                            <DataGridTextColumn Header="Name" 
                                               Binding="{Binding ProductName}"
                                               Width="*"/>
                             <DataGridTextColumn Header="Metal" 
@@ -529,7 +593,10 @@
                                               Width="80"/>
                             <DataGridTextColumn Header="Net (g)" 
                                               Binding="{Binding NetWeight, StringFormat=N3}"
-                                              Width="80"/>                            <DataGridTextColumn Header="Price" 
+                                              Width="80"/>
+                            <DataGridTextColumn Header="Stock" 
+                                              Binding="{Binding StockItems.Count, StringFormat=N0}"
+                                              Width="60"/><DataGridTextColumn Header="Price" 
                                               Binding="{Binding ProductPrice, StringFormat=₹ {0:N2}}"
                                               Width="100"/><DataGridTextColumn Header="Collection" 
                                               Binding="{Binding Collection}"

@@ -65,7 +65,11 @@ namespace Page_Navigation_App.View
 
         private void RegisterServices(ServiceCollection services)
         {
-            // Core services
+            // Database contexts
+            services.AddSingleton(provider => 
+                new AppDbContextFactory().CreateDbContext(new string[] {}));
+            
+            // Application services
             services.AddSingleton<LogService>();
             services.AddSingleton<ConfigurationService>();
             services.AddSingleton<ILogger<BackupService>>(provider => 
@@ -81,30 +85,32 @@ namespace Page_Navigation_App.View
             // Business services
             services.AddSingleton<StockLedgerService>();
             services.AddSingleton<RateMasterService>();
-            services.AddSingleton<StockService>();            services.AddSingleton<FinanceService>();
+            services.AddSingleton<StockService>();            
+            services.AddSingleton<FinanceService>();
             services.AddSingleton<ProductService>();
             services.AddSingleton<OrderService>();
             services.AddSingleton<CustomerService>();
             services.AddSingleton<SupplierService>();
+            services.AddSingleton<PurchaseOrderService>();
             services.AddSingleton<BackupService>();
-        }
-        
-        private void RegisterViewModels(ServiceCollection services)
+        }        private void RegisterViewModels(ServiceCollection services)
         {
-            // Navigation
-            services.AddSingleton<NavigationVM>();
-            
-            // Feature ViewModels
+            // Feature ViewModels first (NavigationVM depends on these)
             services.AddSingleton<HomeVM>();
             services.AddSingleton<CustomerVM>();
             services.AddSingleton<ProductVM>();
-            services.AddSingleton<OrderVM>();            services.AddSingleton<TransactionVM>();
+            services.AddSingleton<OrderVM>();
+            services.AddSingleton<TransactionVM>();
             services.AddSingleton<SupplierVM>();
             services.AddSingleton<RateMasterVM>();
             services.AddSingleton<StockVM>();
             services.AddSingleton<UserVM>();
             services.AddSingleton<ReportVM>();
             services.AddSingleton<SettingsVM>();
+            services.AddSingleton<PurchaseOrderVM>();
+            
+            // Navigation VM (depends on all feature ViewModels)
+            services.AddSingleton<NavigationVM>();
             
             // Login ViewModel
             services.AddSingleton<LoginViewModel>();

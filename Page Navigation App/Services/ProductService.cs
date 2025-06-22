@@ -332,5 +332,102 @@ namespace Page_Navigation_App.Services
             
             return product.GetPriceBreakdown(ratePerGram);
         }
+
+        // Create product with initial stock
+        public async Task<Product> AddProductWithInitialStock(Product product, decimal initialQuantity, string location = "Main")
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // First add the product
+                var addedProduct = await AddProduct(product);
+                
+                if (addedProduct == null)
+                {
+                    await transaction.RollbackAsync();
+                    return null;
+                }
+                
+                if (initialQuantity > 0)
+                {
+                    // Create stock record
+                    var stock = new Stock
+                    {
+                        ProductID = addedProduct.ProductID,
+                        SupplierID = addedProduct.SupplierID,
+                        QuantityPurchased = initialQuantity,
+                        PurchaseRate = addedProduct.ProductPrice * 0.7m, // Estimate purchase rate as 70% of product price
+                        TotalAmount = addedProduct.ProductPrice * 0.7m * initialQuantity,
+                        Location = location,
+                        PaymentStatus = "Paid",
+                        PurchaseDate = DateTime.Now,
+                        LastUpdated = DateTime.Now,
+                        AddedDate = DateTime.Now
+                    };
+                    
+                    await _context.Stocks.AddAsync(stock);
+                    await _context.SaveChangesAsync();
+                    
+                    // Generate individual StockItems
+                    await GenerateStockItemsForProduct(addedProduct.ProductID, stock.StockID, initialQuantity);
+                }
+                
+                await transaction.CommitAsync();
+                return addedProduct;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                Console.WriteLine($"Error adding product with initial stock: {ex.Message}");
+                return null;
+            }
+        }
+        
+        // Generate StockItems for a product
+        private async Task<bool> GenerateStockItemsForProduct(int productId, int stockId, decimal quantity)
+        {
+            try
+            {
+                // Get the product to access its product code
+                var product = await _context.Products.FindAsync(productId);
+                if (product == null) return false;
+                
+                // Get the product code (using first 8 chars of product name if no code exists)
+                string productCode = !string.IsNullOrEmpty(product.Barcode) 
+                    ? product.Barcode 
+                    : product.ProductName.Length > 8 
+                        ? product.ProductName.Substring(0, 8).ToUpper().Replace(" ", "") 
+                        : product.ProductName.ToUpper().Replace(" ", "");
+                
+                // Get current count of stock items for this product
+                int currentCount = await _context.StockItems
+                    .Where(si => si.ProductID == productId)
+                    .CountAsync();
+                
+                // Create individual stock items based on quantity
+                for (int i = 0; i < (int)quantity; i++)
+                {                    // Format: ${productId}_${PRODUCTCODE}_${count:0001}
+                    string itemCode = $"{productId}_{productCode}_{(currentCount + i + 1).ToString("0000")}";
+                    var stockItem = new StockItem
+                    {
+                        ProductID = productId,
+                        StockID = stockId,
+                        StockItemCode = itemCode,
+                        Status = "Available",
+                        AddedDate = DateTime.Now
+                    };
+                    
+                    await _context.StockItems.AddAsync(stockItem);
+                }
+                
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error generating stock items: {ex.Message}");
+                return false;
+            }
+        }
     }
 }

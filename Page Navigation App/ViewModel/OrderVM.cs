@@ -377,19 +377,39 @@ namespace Page_Navigation_App.ViewModel
                         System.Windows.MessageBox.Show("Failed to update order");
                         return;
                     }
-                }
-                else
+                }                else
                 {
-                    // Create new order with details
-                    var newOrder = await _orderService.CreateOrder(SelectedOrder, orderDetails);
+                    // Create new order with details and update stock
+                    Finance payment = null;
+                    
+                    // If payment is "Paid", create a finance entry
+                    if (SelectedOrder.Status == "Completed" || CreateFinanceEntryOnSave)
+                    {
+                        payment = new Finance
+                        {
+                            TransactionDate = DateTime.Now,
+                            TransactionType = "Income",
+                            Amount = SelectedOrder.GrandTotal,
+                            PaymentMode = SelectedOrder.PaymentMethod,
+                            Category = "Sales",
+                            Description = $"Payment for order from {SelectedCustomer?.CustomerName}",
+                            IsPaymentReceived = true,
+                            CustomerID = SelectedOrder.CustomerID,
+                            Status = "Completed",
+                            CreatedBy = "System",
+                            Currency = "INR"
+                        };
+                    }
+                    
+                    // Create new order with stock integration 
+                    var newOrder = await _orderService.AddOrderWithStockUpdate(SelectedOrder, orderDetails, payment);
                     if (newOrder == null)
                     {
-                        System.Windows.MessageBox.Show("Failed to create order");
+                        System.Windows.MessageBox.Show("Failed to create order or insufficient stock");
                         return;
                     }
                     
-                    SelectedOrder = newOrder;                    
-                    // Loyalty points functionality has been removed
+                    SelectedOrder = newOrder;
                 }
 
                 System.Windows.MessageBox.Show($"Order {(SelectedOrder.OrderID > 0 ? "updated" : "created")} successfully!");
@@ -596,6 +616,17 @@ namespace Page_Navigation_App.ViewModel
             {
                 if (SelectedOrder == null) return 0;
                 return Math.Round(SelectedOrder.GrandTotal - SelectedOrder.PriceBeforeTax, 2);
+            }
+        }
+
+        private bool _createFinanceEntryOnSave = true;
+        public bool CreateFinanceEntryOnSave
+        {
+            get => _createFinanceEntryOnSave;
+            set
+            {
+                _createFinanceEntryOnSave = value;
+                OnPropertyChanged();
             }
         }
     }

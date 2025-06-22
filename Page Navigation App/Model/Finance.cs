@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Page_Navigation_App.Utilities;
 
 namespace Page_Navigation_App.Model
 {
@@ -50,6 +51,14 @@ namespace Page_Navigation_App.Model
         [NotMapped]
         public string ReferenceID { get => ReferenceNumber; set => ReferenceNumber = value; }
         
+        // Formatted currency amount with INR symbol
+        [NotMapped]
+        public string FormattedAmount => CurrencyFormatting.FormatAsINR(Amount);
+        
+        // Currency symbol
+        [NotMapped]
+        public string CurrencySymbol => CurrencyFormatting.GetCurrencySymbol();
+
         // Add ReferenceType property
         [StringLength(50)]
         public string ReferenceType { get; set; }

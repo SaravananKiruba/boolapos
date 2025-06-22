@@ -39,6 +39,7 @@ namespace Page_Navigation_App.ViewModel
         public ICommand TransactionsCommand { get; set; }
         public ICommand SuppliersCommand { get; set; }        public ICommand RateMasterCommand { get; set; }
         public ICommand StockCommand { get; set; }
+        public ICommand PurchaseOrderCommand { get; set; }
         public ICommand UserCommand { get; set; }
         public ICommand ReportCommand { get; set; }
         public ICommand SettingsCommand { get; set; }
@@ -51,6 +52,7 @@ namespace Page_Navigation_App.ViewModel
             TransactionVM transactionVM,
             SupplierVM supplierVM,            RateMasterVM rateMasterVM,
             StockVM stockVM,
+            PurchaseOrderVM purchaseOrderVM,
             UserVM userVM,
             ReportVM reportVM,
             SettingsVM settingsVM,
@@ -63,9 +65,9 @@ namespace Page_Navigation_App.ViewModel
             CustomersCommand = new RelayCommand<object>(_ => NavigateTo(customerVM));
             ProductsCommand = new RelayCommand<object>(_ => NavigateTo(productVM));
             OrdersCommand = new RelayCommand<object>(_ => NavigateTo(orderVM));
-            TransactionsCommand = new RelayCommand<object>(_ => NavigateTo(transactionVM));
-            SuppliersCommand = new RelayCommand<object>(_ => NavigateTo(supplierVM));            RateMasterCommand = new RelayCommand<object>(_ => NavigateTo(rateMasterVM));
+            TransactionsCommand = new RelayCommand<object>(_ => NavigateTo(transactionVM));            SuppliersCommand = new RelayCommand<object>(_ => NavigateTo(supplierVM));            RateMasterCommand = new RelayCommand<object>(_ => NavigateTo(rateMasterVM));
             StockCommand = new RelayCommand<object>(_ => NavigateTo(stockVM));
+            PurchaseOrderCommand = new RelayCommand<object>(_ => NavigateTo(purchaseOrderVM));
             UserCommand = new RelayCommand<object>(_ => NavigateTo(userVM), _ => CanAccessUserManagement());
             ReportCommand = new RelayCommand<object>(_ => NavigateTo(reportVM));
             SettingsCommand = new RelayCommand<object>(_ => NavigateTo(settingsVM));
