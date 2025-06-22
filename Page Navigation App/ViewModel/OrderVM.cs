@@ -9,6 +9,11 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Threading.Tasks;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
+using System.IO;
+using System.Diagnostics;
 
 namespace Page_Navigation_App.ViewModel
 {
@@ -435,12 +440,74 @@ namespace Page_Navigation_App.ViewModel
             {
                 System.Windows.MessageBox.Show($"Error creating finance entry: {ex.Message}");
             }
-        }
-
-        private void GenerateInvoice()
+        }        private void GenerateInvoice()
         {
-            // This would typically call a reporting or printing service
-            System.Windows.MessageBox.Show($"Invoice for Order #{SelectedOrder.OrderID} has been generated");
+            try
+            {
+                if (SelectedOrder == null || SelectedOrder.OrderID <= 0)
+                {
+                    System.Windows.MessageBox.Show("Please select an order first");
+                    return;
+                }
+            
+                // Get the order details
+                List<OrderDetail> orderDetails = new List<OrderDetail>();
+                if (OrderItems.Count > 0)
+                {
+                    // Use current items if we're viewing the selected order details
+                    orderDetails = OrderItems.ToList();
+                }
+                else
+                {                    // Load the order details from the database
+                    orderDetails = _orderService.GetOrderDetails(SelectedOrder.OrderID).Result.ToList();
+                }
+                
+                // Business Information - you might want to load this from settings or database
+                string businessName = "BOOLA Jewelry";
+                string businessAddress = "123 Jewelry Street, Luxury Lane, Golden City";
+                
+                try
+                {
+                    // Generate the invoice PDF
+                    string pdfPath = Utilities.InvoiceGenerator.GenerateInvoice(
+                        SelectedOrder,
+                        orderDetails,
+                        businessName,
+                        businessAddress
+                    );
+                      // Open the PDF file with the default PDF viewer
+                    var psi = new ProcessStartInfo
+                    {
+                        FileName = pdfPath,
+                        UseShellExecute = true
+                    };
+                    Process.Start(psi);
+                    
+                    System.Windows.MessageBox.Show($"Invoice PDF has been generated and saved to:\n{pdfPath}", "Success", 
+                        System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                }                catch (QuestPDF.Drawing.Exceptions.DocumentDrawingException fontEx)
+                {
+                    // Special handling for font issues
+                    System.Diagnostics.Debug.WriteLine($"Font error in invoice generation: {fontEx.Message}");
+                    System.Windows.MessageBox.Show(
+                        "There was an issue with fonts while generating the invoice. " +
+                        "Using INR currency notation instead of the Rupee symbol. " +
+                        "Please check the output PDF.",
+                        "Font Warning",
+                        System.Windows.MessageBoxButton.OK, 
+                        System.Windows.MessageBoxImage.Warning);
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.MessageBox.Show($"Failed to generate invoice: {ex.Message}", "Error", 
+                        System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Error generating invoice: {ex.Message}", "Error", 
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
         }
 
         private void ClearForm()
