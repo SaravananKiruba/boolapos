@@ -32,8 +32,6 @@
         <view:Suppliers />
     </DataTemplate>
 
-    <DataTemplate DataType="{x:Type vm:RepairJobVM}">
-        <view:RepairJobs />
-    </DataTemplate>
+   
    
 </ResourceDictionary>

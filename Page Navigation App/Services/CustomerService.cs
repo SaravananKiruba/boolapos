@@ -61,7 +61,6 @@ namespace Page_Navigation_App.Services
         {
             return await _context.Customers
                 .Include(c => c.Orders)
-                .Include(c => c.RepairJobs)
                 .FirstOrDefaultAsync(c => c.PhoneNumber == phoneNumber);
         }
 
@@ -69,7 +68,6 @@ namespace Page_Navigation_App.Services
         {
             return await _context.Customers
                 .Include(c => c.Orders)
-                .Include(c => c.RepairJobs)
                 .Include(c => c.Payments)
                 .FirstOrDefaultAsync(c => c.CustomerID == customerId);
         }
@@ -80,7 +78,6 @@ namespace Page_Navigation_App.Services
         {
             var query = _context.Customers
                 .Include(c => c.Orders)
-                .Include(c => c.RepairJobs)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
@@ -104,20 +101,17 @@ namespace Page_Navigation_App.Services
         {
             var customer = await _context.Customers
                 .Include(c => c.Orders)
-                .Include(c => c.RepairJobs)
                 .FirstOrDefaultAsync(c => c.CustomerID == customerId);
 
             if (customer == null)
                 return null;
 
             var totalPurchases = customer.Orders.Sum(o => o.GrandTotal);
-            var totalRepairs = customer.RepairJobs.Sum(r => r.FinalAmount);
-            var pendingAmount = await _financeService.GetCustomerDues(customerId);            return new CustomerStats
+            var pendingAmount = await _financeService.GetCustomerDues(customerId); 
+            return new CustomerStats
             {
                 TotalOrders = customer.Orders.Count,
                 TotalPurchases = totalPurchases,
-                TotalRepairJobs = customer.RepairJobs.Count,
-                TotalRepairAmount = totalRepairs,
                 PendingAmount = pendingAmount,
                 LastPurchaseDate = customer.Orders
                     .OrderByDescending(o => o.OrderDate)
@@ -176,7 +170,6 @@ namespace Page_Navigation_App.Services
 
             return await query
                 .Include(c => c.Orders)
-                .Include(c => c.RepairJobs)
                 .OrderBy(c => c.CustomerName)
                 .ToListAsync();
         }
@@ -187,7 +180,6 @@ namespace Page_Navigation_App.Services
         {
             var query = _context.Customers
                 .Include(c => c.Orders)
-                .Include(c => c.RepairJobs)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
@@ -214,10 +206,9 @@ namespace Page_Navigation_App.Services
             {
                 // Check for dependencies before deleting
                 bool hasOrders = await _context.Orders.AnyAsync(o => o.CustomerID == customerId);
-                bool hasRepairJobs = await _context.RepairJobs.AnyAsync(r => r.CustomerID == customerId);
                 bool hasPayments = await _context.Finances.AnyAsync(f => f.CustomerID == customerId);
 
-                if (hasOrders || hasRepairJobs || hasPayments)
+                if (hasOrders ||  hasPayments)
                 {
                     // Instead of hard delete, perform a soft delete by marking as inactive
                     customer.IsActive = false;
@@ -252,9 +243,7 @@ namespace Page_Navigation_App.Services
     }    public class CustomerStats
     {
         public int TotalOrders { get; set; }
-        public decimal TotalPurchases { get; set; }
-        public int TotalRepairJobs { get; set; }
-        public decimal TotalRepairAmount { get; set; }
+        public decimal TotalPurchases { get; set; }        
         public decimal PendingAmount { get; set; }
         public DateOnly? LastPurchaseDate { get; set; }
         public string PreferredPaymentMode { get; set; }

@@ -83,7 +83,6 @@ namespace Page_Navigation_App.Model
         #region Navigation Properties
         // Navigation properties
         public virtual ICollection<Order> Orders { get; set; }
-        public virtual ICollection<RepairJob> RepairJobs { get; set; }
         public virtual ICollection<Finance> Payments { get; set; }
         #endregion
     }

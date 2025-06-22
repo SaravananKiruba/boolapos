@@ -19,9 +19,7 @@ namespace Page_Navigation_App.Data
         public DbSet<User> Users { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<LogEntry> LogEntries { get; set; }
-        public DbSet<SecurityLog> SecurityLogs { get; set; }
-        public DbSet<RateMaster> RateMaster { get; set; }
-        public DbSet<RepairJob> RepairJobs { get; set; }
+        public DbSet<SecurityLog> SecurityLogs { get; set; }        public DbSet<RateMaster> RateMaster { get; set; }
         public DbSet<BusinessInfo> BusinessInfo { get; set; }
         public DbSet<Model.Setting> Settings { get; set; }
         public DbSet<EmailSettings> EmailSettings { get; set; }
@@ -68,12 +66,8 @@ namespace Page_Navigation_App.Data
                 
             modelBuilder.Entity<Order>()
                 .HasIndex(o => o.OrderDate);
-                
-            modelBuilder.Entity<Customer>()
+                  modelBuilder.Entity<Customer>()
                 .HasIndex(c => c.PhoneNumber);
-                
-            modelBuilder.Entity<RepairJob>()
-                .HasIndex(r => r.Status);
         }
     }
 }

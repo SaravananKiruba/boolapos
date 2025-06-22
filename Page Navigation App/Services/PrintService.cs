@@ -195,138 +195,7 @@ namespace Page_Navigation_App.Services
             return html;
         }
 
-        /// <summary>
-        /// Generate and print a repair job receipt
-        /// </summary>
-        public async Task<string> GenerateRepairReceiptAsync(int repairId, bool isPrintPreview = false)
-        {
-            try
-            {
-                var repair = await _context.RepairJobs
-                    .Include(r => r.Customer)
-                    .FirstOrDefaultAsync(r => r.RepairID == repairId);
-
-                if (repair == null)
-                {
-                    await _logService.LogErrorAsync($"Repair job not found with ID: {repairId}");
-                    return null;
-                }
-
-                // Get business info for receipt header
-                var businessInfo = await _context.BusinessInfo.FirstOrDefaultAsync();
-
-                // Create HTML content for repair receipt
-                string repairHtml = await GenerateRepairReceiptHtmlAsync(repair, businessInfo);
-                
-                // Path to save the receipt file
-                string fileName = $"RepairReceipt_{repairId}.html";
-                string filePath = Path.Combine(_templatePath, fileName);
-                
-                // Save HTML to file
-                await File.WriteAllTextAsync(filePath, repairHtml);
-                
-                if (!isPrintPreview)
-                {
-                    // Trigger printing (implementation would depend on your printer setup)
-                    await _logService.LogInformationAsync($"Repair receipt printed for Repair ID: {repairId}");
-                }
-
-                await _logService.LogInformationAsync($"Repair receipt generated for Repair ID: {repairId}, File: {filePath}");
-                return filePath;
-            }
-            catch (Exception ex)
-            {
-                await _logService.LogErrorAsync($"Error generating repair receipt: {ex.Message}");
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Generate HTML for a repair receipt
-        /// </summary>
-        private async Task<string> GenerateRepairReceiptHtmlAsync(RepairJob repair, BusinessInfo businessInfo)
-        {
-            string htmlContent = $@"
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset='utf-8'>
-    <title>Repair Receipt #{repair.RepairID}</title>
-    <style>
-        body {{ font-family: Arial, sans-serif; margin: 0; padding: 20px; }}
-        .receipt-header {{ display: flex; justify-content: space-between; margin-bottom: 20px; }}
-        .business-info {{ width: 50%; }}
-        .receipt-info {{ width: 50%; text-align: right; }}
-        .customer-info {{ margin-bottom: 20px; }}
-        .repair-details {{ margin-bottom: 20px; }}
-        .terms {{ margin-top: 20px; border-top: 1px solid #ddd; padding-top: 10px; }}
-        .signatures {{ margin-top: 40px; display: flex; justify-content: space-between; }}
-        .signature-line {{ width: 45%; border-top: 1px solid #000; padding-top: 5px; text-align: center; }}
-        .footer {{ margin-top: 50px; text-align: center; font-size: 12px; }}
-    </style>
-</head>
-<body>
-    <div class='receipt-header'>
-        <div class='business-info'>
-            <h2>{businessInfo?.BusinessName ?? "Jewelry Shop"}</h2>
-            <p>{businessInfo?.Address ?? ""}</p>
-            <p>Phone: {businessInfo?.PhoneNumber ?? ""}</p>
-        </div>
-        <div class='receipt-info'>
-            <h1>REPAIR RECEIPT</h1>
-            <p>Receipt #: R-{repair.RepairID}</p>
-            <p>Date: {repair.ReceiptDate:dd-MMM-yyyy}</p>
-            <p>Expected Delivery: {repair.EstimatedDeliveryDate?.ToString("dd-MMM-yyyy") ?? "To be determined"}</p>
-            <p>Status: {repair.Status}</p>
-        </div>
-    </div>
-    
-    <div class='customer-info'>
-        <h3>Customer Information:</h3>
-        <p>Name: {repair.Customer?.CustomerName}</p>
-        <p>Phone: {repair.Customer?.PhoneNumber}</p>
-        <p>Address: {repair.Customer?.Address}</p>
-    </div>
-    
-    <div class='repair-details'>
-        <h3>Item Details:</h3>
-        <p>Description: {repair.ItemDescription}</p>
-        <p>Metal Type: {repair.MetalType ?? "N/A"}</p>
-        <p>Purity: {repair.Purity ?? "N/A"}</p>
-        <p>Weight: {repair.ItemWeight}g</p>
-        <p>Work Type: {repair.WorkType}</p>
-        <p>Work Description: {repair.WorkDescription}</p>
-        {(!string.IsNullOrEmpty(repair.StoneDetails) ? $"<p>Stone Details: {repair.StoneDetails}</p>" : "")}
-        <p>Estimated Cost: ₹{repair.EstimatedCost:N2}</p>
-        {(repair.AdvanceAmount > 0 ? $"<p>Advance Received: ₹{repair.AdvanceAmount:N2}</p>" : "")}
-        <p>Final Amount: {(repair.FinalAmount > 0 ? $"₹{repair.FinalAmount:N2}" : "To be determined")}</p>
-    </div>
-    
-    <div class='terms'>
-        <h3>Terms & Conditions:</h3>
-        <ol>
-            <li>Customer must present this receipt when collecting the item.</li>
-            <li>The shop is not responsible for items not collected within 90 days of completion.</li>
-            <li>Any change in design or additional work will incur extra charges.</li>
-            <li>Metal or stone replacement will be charged separately.</li>
-            <li>Final charges may vary based on actual work required.</li>
-        </ol>
-    </div>
-    
-    <div class='signatures'>
-        <div class='signature-line'>Customer's Signature</div>
-        <div class='signature-line'>Authorized Signature</div>
-    </div>
-    
-    <div class='footer'>
-        <p>Thank you for choosing us for your jewelry repair needs!</p>
-        <p>{businessInfo?.TagLine ?? "Quality Jewelry Service Since 1990"}</p>
-    </div>
-</body>
-</html>";
-
-            return htmlContent;
-        }
+       
 
         /// <summary>
         /// Generate and print product tags with barcode/RFID
@@ -820,7 +689,6 @@ namespace Page_Navigation_App.Services
                     <td>₹{customer.TotalPurchases:N2}</td>
                     <td>{customer.OrderCount}</td>
                     <td>{customer.LastPurchaseDate?.ToString("dd-MMM-yyyy") ?? "N/A"}</td>
-                    <td>{customer.RepairJobCount}</td>
                     <td>₹{customer.PendingAmount:N2}</td>
                     <td>{customer.LoyaltyPoints}</td>
                 </tr>";

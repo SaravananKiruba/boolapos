@@ -41,16 +41,13 @@ namespace Page_Navigation_App.Services
                     .Where(p => p.StockQuantity <= p.ReorderLevel)
                     .ToListAsync();
 
-                var repairJobs = await _context.RepairJobs
-                    .Where(r => r.ReceiptDate >= fromDate && r.ReceiptDate <= toDate)
-                    .ToListAsync();
+              
 
                 return new DashboardData
                 {
                     TotalSales = orders.Sum(o => o.GrandTotal),
                     OrderCount = orders.Count,
                     NewCustomers = customers.Count,
-                    PendingRepairs = repairJobs.Count(r => r.Status == "Received" || r.Status == "In Progress"),
                     LowStockCount = products.Count,
                     TopSellingProducts = await GetTopSellingProductsAsync(fromDate, toDate, 5),
                     MonthlySalesData = await GetMonthlySalesAsync(fromDate, toDate),
@@ -233,57 +230,6 @@ namespace Page_Navigation_App.Services
         }
 
         /// <summary>
-        /// Generate repair jobs report
-        /// </summary>
-        public async Task<RepairJobsReport> GenerateRepairJobsReportAsync(
-            DateOnly fromDate, 
-            DateOnly toDate, 
-            string status = null)
-        {
-            try
-            {
-                var query = _context.RepairJobs
-                    .Include(rj => rj.Customer)
-                    .Where(rj => rj.ReceiptDate >= fromDate && rj.ReceiptDate <= toDate);
-                
-                if (!string.IsNullOrEmpty(status))
-                {
-                    query = query.Where(rj => rj.Status == status);
-                }
-                
-                var repairJobs = await query.ToListAsync();
-                
-                return new RepairJobsReport
-                {
-                    FromDate = fromDate,
-                    ToDate = toDate,
-                    Status = status,
-                    TotalJobs = repairJobs.Count,
-                    CompletedJobs = repairJobs.Count(rj => rj.Status == "Delivered"),
-                    PendingJobs = repairJobs.Count(rj => rj.Status == "Received" || rj.Status == "In Progress"),
-                    TotalRevenue = repairJobs.Where(rj => rj.Status == "Delivered").Sum(rj => rj.FinalAmount),
-                    JobDetails = repairJobs.Select(rj => new RepairJobDetail
-                    {
-                        RepairID = rj.RepairID,
-                        CustomerName = rj.Customer.CustomerName,
-                        ItemDescription = rj.ItemDescription,
-                        ReceiptDate = rj.ReceiptDate,
-                        DeliveryDate = rj.DeliveryDate ?? default(DateOnly),
-                        Status = rj.Status,
-                        EstimatedCost = rj.EstimatedCost,
-                        FinalAmount = rj.FinalAmount,
-                        WorkType = rj.WorkType
-                    }).ToList()
-                };
-            }
-            catch (Exception ex)
-            {
-                await _logService.LogErrorAsync($"Error generating repair jobs report: {ex.Message}");
-                return new RepairJobsReport();
-            }
-        }
-
-        /// <summary>
         /// Generate customer purchase report
         /// </summary>
         public async Task<CustomerReport> GenerateCustomerReportAsync(
@@ -311,12 +257,7 @@ namespace Page_Navigation_App.Services
                                     o.OrderDate >= fromDate && 
                                     o.OrderDate <= toDate)
                         .ToListAsync();
-                    
-                    var repairJobs = await _context.RepairJobs
-                        .Where(rj => rj.CustomerId == customer.CustomerID && 
-                                     rj.ReceiptDate >= fromDate && 
-                                     rj.ReceiptDate <= toDate)
-                        .ToListAsync();
+                   
                       // Calculate pending amount from orders and payments
                     var totalOrders = orders.Sum(o => o.GrandTotal);
                     var totalPayments = _context.Finances
@@ -332,7 +273,6 @@ namespace Page_Navigation_App.Services
                         TotalPurchases = orders.Sum(o => o.GrandTotal),
                         OrderCount = orders.Count,
                         LastPurchaseDate = orders.Any() ? orders.Max(o => o.OrderDate) : (DateOnly?)null,
-                        RepairJobCount = repairJobs.Count,
                         PendingAmount = pendingAmount,
                         LoyaltyPoints = 0 // LoyaltyPoints property removed from Customer model
                     });
@@ -425,13 +365,7 @@ namespace Page_Navigation_App.Services
             }
         }
 
-        /// <summary>
-        /// Get repair analytics data
-        /// </summary>
-        public RepairJobsReport GetRepairAnalytics(DateOnly fromDate, DateOnly toDate, string status = null)
-        {
-            return GenerateRepairJobsReportAsync(fromDate, toDate, status).GetAwaiter().GetResult();
-        }
+       
     }
 
     // Report data classes
@@ -440,7 +374,6 @@ namespace Page_Navigation_App.Services
         public decimal TotalSales { get; set; }
         public int OrderCount { get; set; }
         public int NewCustomers { get; set; }
-        public int PendingRepairs { get; set; }
         public int LowStockCount { get; set; }       
         public List<TopSellingProduct> TopSellingProducts { get; set; } = new List<TopSellingProduct>();
         public List<MonthlySales> MonthlySalesData { get; set; } = new List<MonthlySales>();
@@ -563,7 +496,6 @@ namespace Page_Navigation_App.Services
         public decimal TotalPurchases { get; set; }
         public int OrderCount { get; set; }
         public DateOnly? LastPurchaseDate { get; set; }
-        public int RepairJobCount { get; set; }
         public decimal PendingAmount { get; set; }
         // LoyaltyPoints system has been removed
         public int LoyaltyPoints { get; set; } = 0; // Default to 0

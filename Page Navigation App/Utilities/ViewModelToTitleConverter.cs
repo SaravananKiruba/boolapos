@@ -21,7 +21,6 @@ namespace Page_Navigation_App.Utilities
                 TransactionVM => "Transactions",
                 SupplierVM => "Suppliers",
                 RateMasterVM => "Rate Master",
-                RepairJobVM => "Repair Jobs",
                 StockVM => "Stock",
                 UserVM => "Users",
                 ReportVM => "Reports",

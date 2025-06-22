@@ -188,24 +188,6 @@
                         </Button>
 
                         <Button Style="{StaticResource NavigationButton}"
-                                Command="{Binding RepairJobsCommand}">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <iconPacks:PackIconMaterial Kind="Tools"
-                                                       Width="20"
-                                                       Height="20"
-                                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
-                                <TextBlock Grid.Column="1"
-                                       Text="Repair Jobs"
-                                       Margin="15,0,0,0"
-                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
-                            </Grid>
-                        </Button>
-
-                        <Button Style="{StaticResource NavigationButton}"
                                 Command="{Binding StockCommand}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
