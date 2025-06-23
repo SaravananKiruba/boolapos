@@ -62,6 +62,9 @@ namespace Page_Navigation_App
             services.AddScoped<HUIDTrackingService>();
             services.AddScoped<TaggingService>();
             services.AddScoped<GSTComplianceService>();
+            
+            // Register StockIntegrationService
+            services.AddScoped<StockIntegrationService>();
 
             // Business Services - Scoped lifetime
             services.AddScoped<CustomerService>();
@@ -96,6 +99,7 @@ namespace Page_Navigation_App
             services.AddTransient<ReportVM>();
             services.AddTransient<SettingsVM>();
             services.AddTransient<PurchaseOrderVM>();
+            services.AddTransient<StockIntegrationVM>();
 
             // Login ViewModel
             services.AddTransient<LoginViewModel>();

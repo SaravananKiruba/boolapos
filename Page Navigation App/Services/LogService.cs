@@ -537,6 +537,34 @@ namespace Page_Navigation_App.Services
                 WriteToLogFile("INFO", message);
                 WriteToLogFile("ERROR", $"Failed to log info to database: {ex.Message}", ex);
             }
+        }        /// <summary>
+        /// Add a log entry with specified module, message, and level
+        /// </summary>
+        public async Task AddLogEntryAsync(string module, string message, string logLevel)
+        {
+            try
+            {
+                // Create log entry
+                var logEntry = new LogEntry
+                {
+                    LogLevel = logLevel.ToUpper(),
+                    Message = message,
+                    Timestamp = DateTime.Now,
+                    Source = module
+                };
+                
+                // Add to database
+                await _context.LogEntries.AddAsync(logEntry);
+                await _context.SaveChangesAsync();
+                
+                // Also write to log file
+                WriteToLogFile(logLevel.ToUpper(), $"[{module}] {message}");
+            }
+            catch (Exception ex)
+            {
+                // If we can't write to the database, at least try to write to the log file
+                WriteToLogFile("ERROR", $"Failed to log message: {ex.Message}", ex);
+            }
         }
     }
 }

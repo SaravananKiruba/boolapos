@@ -177,8 +177,7 @@ namespace Page_Navigation_App.ViewModel
         private async Task GenerateSalesReport()
         {
             ReportTitle = $"Sales Report ({StartDate:d} - {EndDate:d})";
-            
-            // Get all orders in date range
+              // Get all orders in date range
             var orders = await _orderService.GetOrdersByDate(StartDate, EndDate);
             ReportData = orders.ToList();
             

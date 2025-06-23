@@ -632,6 +632,59 @@ namespace Page_Navigation_App.Services
                 return new List<Finance>();
             }
         }
+
+        /// <summary>
+        /// Record an expense for a purchase order
+        /// </summary>
+        public async Task<(bool success, Finance finance, Expense expense)> RecordPurchaseExpenseAsync(PurchaseOrder purchaseOrder, string description = null)
+        {
+            try
+            {
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                
+                // Create finance entry for expense
+                var finance = new Finance
+                {
+                    TransactionDate = DateTime.Now,
+                    TransactionType = "Expense",
+                    Amount = purchaseOrder.TotalAmount,
+                    PaymentMode = purchaseOrder.PaymentMethod,
+                    Category = "Purchase",
+                    Description = description ?? $"Purchase Order #{purchaseOrder.PurchaseOrderNumber}",
+                    ReferenceNumber = purchaseOrder.PurchaseOrderNumber,
+                    Notes = $"Automated entry for Purchase Order #{purchaseOrder.PurchaseOrderNumber}"
+                };
+                
+                await _context.Finances.AddAsync(finance);
+                await _context.SaveChangesAsync();
+                
+                // Create expense entry linked to purchase order
+                var expense = new Expense
+                {
+                    Description = description ?? $"Purchase Order #{purchaseOrder.PurchaseOrderNumber}",
+                    ExpenseDate = DateTime.Now,
+                    Amount = purchaseOrder.TotalAmount,
+                    Category = "Purchase",
+                    PaymentMethod = purchaseOrder.PaymentMethod,
+                    PurchaseOrderID = purchaseOrder.PurchaseOrderID,
+                    ReferenceNumber = purchaseOrder.PurchaseOrderNumber,
+                    Notes = "Created via stock module"
+                };
+                
+                await _context.Expenses.AddAsync(expense);
+                await _context.SaveChangesAsync();
+                
+                await transaction.CommitAsync();
+                await _logService.LogInformationAsync($"Recorded purchase expense for PO#{purchaseOrder.PurchaseOrderNumber}: {purchaseOrder.TotalAmount}");
+                
+                return (true, finance, expense);
+            }
+            catch (Exception ex)
+            {
+                await _logService.LogErrorAsync($"Failed to record purchase expense: {ex.Message}");
+                return (false, null, null);
+            }
+        }
     }
 
     // Financial report data classes

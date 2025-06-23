@@ -51,7 +51,18 @@ namespace Page_Navigation_App.ViewModel
             }
         }
 
-        public ProductVM(
+        // Add property for selected supplier
+        private Supplier _selectedSupplier;
+        public Supplier SelectedSupplier
+        {
+            get => _selectedSupplier;
+            set
+            {
+                _selectedSupplier = value;
+                OnPropertyChanged();
+            }
+        }
+          public ProductVM(
             ProductService productService, 
             SupplierService supplierService,
             RateMasterService rateService,
@@ -63,7 +74,7 @@ namespace Page_Navigation_App.ViewModel
             _stockService = stockService;  // Initialize StockService
               
             LoadProducts();
-            LoadSuppliers();
+            Task.Run(async () => await LoadSuppliers()).Wait();
             InitializeCollections();
             
             // Initialize commands
@@ -76,9 +87,11 @@ namespace Page_Navigation_App.ViewModel
         }
 
         public ObservableCollection<Product> Products { get; set; } = new ObservableCollection<Product>();
-        public ObservableCollection<Supplier> Suppliers { get; set; } = new ObservableCollection<Supplier>();
         public ObservableCollection<string> MetalTypes { get; set; } = new ObservableCollection<string>();
-        public ObservableCollection<string> Purities { get; set; } = new ObservableCollection<string>();        private Product _selectedProduct = new Product();
+        public ObservableCollection<string> Purities { get; set; } = new ObservableCollection<string>();
+        public ObservableCollection<Supplier> Suppliers { get; set; } = new ObservableCollection<Supplier>();
+        
+        private Product _selectedProduct = new Product();
         private Product _previousProduct;
         
         public Product SelectedProduct
@@ -163,7 +176,9 @@ namespace Page_Navigation_App.ViewModel
             {
                 Products.Add(product);
             }
-        }        private async void LoadSuppliers()
+        }        
+        // Load suppliers
+        private async Task LoadSuppliers()
         {
             try
             {
@@ -174,19 +189,22 @@ namespace Page_Navigation_App.ViewModel
                     Suppliers.Add(supplier);
                 }
                 
-                // Log supplier count for debugging
-                Console.WriteLine($"Loaded {Suppliers.Count} suppliers");
+                // Set default selected supplier if any
+                if (Suppliers.Count > 0)
+                {
+                    SelectedSupplier = Suppliers[0];
+                }
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error loading suppliers: {ex.Message}", "Error");
+                Console.WriteLine($"Error loading suppliers: {ex.Message}");
             }
-        }        private void AutoSelectProduct()
+        }        private async void AutoSelectProduct()
         {
             // Ensure suppliers are loaded first
             if (Suppliers.Count == 0)
             {
-                LoadSuppliers();
+                await LoadSuppliers();
             }
 
             var matchedProduct = Products.FirstOrDefault(p =>
@@ -272,15 +290,21 @@ namespace Page_Navigation_App.ViewModel
                     }
                 }
                 else
-                {
-                    // If initial stock quantity is specified, use the new method
+                {                    // If initial stock quantity is specified, use the new method
                     if (InitialStockQuantity > 0)
                     {
-                        var addedProduct = await _productService.AddProductWithInitialStock(
-                            SelectedProduct,
-                            InitialStockQuantity,
-                            StockLocation);
-                        result = addedProduct != null;
+                        // Create a stock object for the initial quantity
+                        var initialStock = new Stock
+                        {
+                            QuantityPurchased = InitialStockQuantity,
+                            PurchaseRate = SelectedProduct.ProductPrice * 0.7m,
+                            TotalAmount = InitialStockQuantity * (SelectedProduct.ProductPrice * 0.7m),
+                            Location = StockLocation,
+                            PaymentStatus = "Paid",
+                            SupplierID = SelectedProduct.SupplierID > 0 ? SelectedProduct.SupplierID : 1
+                        };
+                          var addResult = await _productService.AddProductWithInitialStock(SelectedProduct, initialStock);
+                        result = addResult.product != null;
                     }
                     else
                     {
@@ -309,6 +333,24 @@ namespace Page_Navigation_App.ViewModel
                 {
                     System.Windows.MessageBox.Show($"Inner exception: {ex.InnerException.Message}", "Error Details");
                 }
+            }
+        }
+
+        // Asynchronous method to load products
+        private async Task LoadProductsAsync()
+        {
+            try
+            {
+                Products.Clear();
+                var products = await _productService.GetAllProducts();
+                foreach (var product in products)
+                {
+                    Products.Add(product);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading products: {ex.Message}");
             }
         }
 
@@ -460,9 +502,7 @@ namespace Page_Navigation_App.ViewModel
             {
                 System.Windows.MessageBox.Show($"Error deleting product: {ex.Message}", "Error");
             }
-        }
-
-        // Method to handle editing a product
+        }        // Method to handle editing a product
         private void EditProduct(object parameter)
         {
             try
@@ -470,7 +510,7 @@ namespace Page_Navigation_App.ViewModel
                 // Ensure suppliers are loaded
                 if (Suppliers.Count == 0)
                 {
-                    LoadSuppliers();
+                    Task.Run(async () => await LoadSuppliers()).Wait();
                 }
                 
                 // Parameter will be the product from the DataGrid
@@ -494,6 +534,149 @@ namespace Page_Navigation_App.ViewModel
             catch (Exception ex)
             {
                 System.Windows.MessageBox.Show($"Error editing product: {ex.Message}", "Error");
+            }
+        }
+
+        private async void SaveProduct()
+        {
+            try
+            {
+                // Validate the product data
+                if (string.IsNullOrEmpty(SelectedProduct.MetalType) ||
+                    string.IsNullOrEmpty(SelectedProduct.Purity))
+                {
+                    System.Windows.MessageBox.Show("Please fill in all required fields", "Validation Error");
+                    return;
+                }
+                
+                // Ensure supplier is selected
+                if (SelectedProduct.SupplierID <= 0 && Suppliers.Count > 0)
+                {
+                    System.Windows.MessageBox.Show("Please select a supplier", "Validation Error");
+                    return;
+                }
+                
+                // Log for debugging
+                Console.WriteLine($"Saving product with SupplierID: {SelectedProduct.SupplierID}");                // Calculate prices in INR using enhanced calculation
+                decimal currentRate = await GetCurrentMetalRate();
+                if (currentRate == 0)
+                {
+                    System.Windows.MessageBox.Show("No current rate found for selected metal type and purity", "Rate Error");
+                    return;
+                }
+
+                // Use the enhanced price calculation 
+                var priceCalculation = await _rateService.CalculateEnhancedProductPriceAsync(
+                    SelectedProduct.NetWeight, 
+                    SelectedProduct.MetalType, 
+                    SelectedProduct.Purity, 
+                    SelectedProduct.WastagePercentage, 
+                    SelectedProduct.MakingCharges,
+                    SelectedProduct.HUID,
+                    currentRate);
+                  // Update product with calculated values
+                decimal metalPrice = Math.Round(priceCalculation.BasePrice, 2);
+                SelectedProduct.ProductPrice = Math.Round(priceCalculation.FinalPrice, 2);
+                
+                // Also consider stone value if set (add it after calculations)
+                if (SelectedProduct.StoneValue > 0)
+                {
+                    SelectedProduct.ProductPrice += SelectedProduct.StoneValue;
+                }                bool result;
+                if (SelectedProduct.ProductID > 0)
+                {
+                    result = await _productService.UpdateProduct(SelectedProduct);
+                    
+                    // If update successful and initial stock quantity is specified, add to stock
+                    if (result && InitialStockQuantity > 0)
+                    {
+                        await _stockService.AddStock(new Stock
+                        {
+                            ProductID = SelectedProduct.ProductID,
+                            SupplierID = SelectedProduct.SupplierID,
+                            QuantityPurchased = InitialStockQuantity,
+                            PurchaseRate = SelectedProduct.ProductPrice * 0.7m,
+                            TotalAmount = SelectedProduct.ProductPrice * 0.7m * InitialStockQuantity,
+                            Location = StockLocation,
+                            PaymentStatus = "Paid",
+                            PurchaseDate = DateTime.Now
+                        });
+                    }
+                }
+                else
+                {                    if (InitialStockQuantity > 0)
+                    {
+                        // Create a stock object for the initial quantity
+                        var initialStock = new Stock
+                        {
+                            QuantityPurchased = InitialStockQuantity,
+                            PurchaseRate = SelectedProduct.ProductPrice * 0.7m, // Default purchase rate as 70% of selling price
+                            TotalAmount = InitialStockQuantity * (SelectedProduct.ProductPrice * 0.7m),
+                            Location = StockLocation,
+                            PaymentStatus = "Pending"
+                        };
+                        
+                        // Get supplier ID from SelectedProduct or use default
+                        initialStock.SupplierID = SelectedProduct.SupplierID > 0 
+                            ? SelectedProduct.SupplierID 
+                            : (Suppliers.Count > 0 ? Suppliers[0].SupplierID : 1);
+                          var addResult = await _productService.AddProductWithInitialStock(SelectedProduct, initialStock);
+                        
+                        if (addResult.product != null)
+                        {
+                            System.Windows.MessageBox.Show($"Product '{SelectedProduct.ProductName}' added with {addResult.stockItems?.Count ?? 0} stock items.", 
+                                "Success", 
+                                System.Windows.MessageBoxButton.OK, 
+                                System.Windows.MessageBoxImage.Information);
+                            
+                            // Clear the form and reload products
+                            ClearForm();
+                            await LoadProductsAsync();
+                            
+                            // Reset initial stock quantity
+                            InitialStockQuantity = 0;
+                            
+                            // Set the result to true since we succeeded
+                            result = true;
+                        }
+                        else
+                        {
+                            System.Windows.MessageBox.Show("Failed to add product with initial stock.", 
+                                "Error", 
+                                System.Windows.MessageBoxButton.OK, 
+                                System.Windows.MessageBoxImage.Error);
+                            
+                            // Set the result to false
+                            result = false;
+                        }
+                    }
+                    else
+                    {
+                        var addedProduct = await _productService.AddProduct(SelectedProduct);
+                        result = addedProduct != null;
+                    }
+                }
+
+                if (result)
+                {
+                    System.Windows.MessageBox.Show("Product saved successfully!", "Success");
+                    LoadProducts();
+                    ClearForm();
+                }
+                else
+                {
+                    System.Windows.MessageBox.Show("Failed to save product. Please check your inputs.", "Error");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Show full exception details for debugging
+                System.Windows.MessageBox.Show($"Error saving product: {ex.Message}\n{ex.StackTrace}", "Error");
+                
+                if (ex.InnerException != null)
+                {
+                    System.Windows.MessageBox.Show($"Inner exception: {ex.InnerException.Message}", "Error Details");
+                }
             }
         }
     }

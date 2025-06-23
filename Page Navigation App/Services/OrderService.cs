@@ -232,143 +232,377 @@ namespace Page_Navigation_App.Services
             };
         }
 
-        public async Task<string> GenerateInvoiceNumber()
-        {            var today = DateOnly.FromDateTime(DateTime.Today);
-            var lastOrder = await _context.Orders
-                .Where(o => o.OrderDate == today)
-                .OrderByDescending(o => o.OrderID)
-                .FirstOrDefaultAsync();
-
-            int sequence = 1;
-            if (lastOrder != null && lastOrder.InvoiceNumber != null)
-            {
-                var lastSequence = int.Parse(lastOrder.InvoiceNumber.Split('-')[1]);
-                sequence = lastSequence + 1;
-            }
-
-            return $"{today:yyyyMMdd}-{sequence:D4}";
-        }        public async Task<IEnumerable<Order>> GetOrdersByDate(DateTime startDate, DateTime endDate)
-        {
-            // Convert DateTime to DateOnly for query
-            var startDateOnly = DateOnly.FromDateTime(startDate);
-            var endDateOnly = DateOnly.FromDateTime(endDate);
-            
-            return await _context.Orders
-                .Include(o => o.Customer)
-                .Include(o => o.OrderDetails)
-                    .ThenInclude(od => od.Product)
-                .Where(o => o.OrderDate >= startDateOnly && o.OrderDate <= endDateOnly)
-                .OrderByDescending(o => o.OrderDate)
-                .ToListAsync();
-        }
-
-        public async Task<IEnumerable<Order>> GetAllOrdersWithDetails()
-        {
-            return await _context.Orders
-                .Include(o => o.Customer)
-                .Include(o => o.OrderDetails)
-                    .ThenInclude(od => od.Product)
-                .OrderByDescending(o => o.OrderDate)
-                .ToListAsync();
-        }
-        
-        // New method to add order and update stock
-        public async Task<Order> AddOrderWithStockUpdate(Order order, List<OrderDetail> orderDetails, Finance payment)
+        // Create new order with stock updates and financial entry
+        public async Task<(Order order, List<StockItem> usedStockItems, Finance financeEntry)> CreateOrderWithStockAndFinance(
+            Order order, 
+            List<OrderDetail> orderDetails)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
+            
             try
             {
-                // 1. Add the order
+                // Generate invoice number if not provided
+                if (string.IsNullOrEmpty(order.InvoiceNumber))
+                {
+                    order.InvoiceNumber = await GenerateInvoiceNumber();
+                }
+                
+                // Add order
                 await _context.Orders.AddAsync(order);
                 await _context.SaveChangesAsync();
                 
-                // 2. Add order details and update stock
+                // Process each order detail
+                var allUsedStockItems = new List<StockItem>();
                 foreach (var detail in orderDetails)
                 {
                     detail.OrderID = order.OrderID;
+                    
+                    // Calculate totals
+                    detail.TotalAmount = detail.UnitPrice * detail.Quantity;
+                    
                     await _context.OrderDetails.AddAsync(detail);
-
-                    // Reduce stock by marking StockItems as "Sold"
-                    await UpdateStockForOrderItem(detail, order.OrderID);
+                    
+                    // Update stock - find and mark stock items as sold
+                    var stockItems = await _context.StockItems
+                        .Where(si => si.ProductID == detail.ProductID && si.Status == "Available")
+                        .OrderBy(si => si.AddedDate)
+                        .Take((int)Math.Ceiling(detail.Quantity))
+                        .ToListAsync();
+                    
+                    if (stockItems.Count < (int)Math.Ceiling(detail.Quantity))
+                    {
+                        await _logService.LogWarningAsync($"Not enough stock items for product {detail.ProductID}. Needed: {detail.Quantity}, Available: {stockItems.Count}");
+                    }
+                    
+                    foreach (var stockItem in stockItems)
+                    {
+                        stockItem.Status = "Sold";
+                        stockItem.SoldDate = DateTime.Now;
+                        stockItem.OrderID = order.OrderID;
+                        
+                        allUsedStockItems.Add(stockItem);
+                    }
+                      // Add stock ledger entry for the sale
+                    var stockLedger = new StockLedger
+                    {
+                        ProductID = detail.ProductID,
+                        TransactionDate = DateTime.Now,
+                        TransactionType = "Sale",
+                        Quantity = detail.Quantity * -1, // Negative for outgoing stock
+                        ReferenceID = order.OrderID.ToString(),
+                        ReferenceNumber = order.InvoiceNumber,
+                        UnitPrice = detail.UnitPrice,
+                        TotalAmount = detail.TotalAmount,
+                        Notes = "Sold via order",
+                        OrderID = order.OrderID
+                    };
+                    
+                    await _context.StockLedgers.AddAsync(stockLedger);
                 }
                 
+                // Calculate order totals
+                order.TotalItems = orderDetails.Count;
+                order.TotalAmount = orderDetails.Sum(d => d.TotalAmount);
+                
+                // Create finance entry for the income
+                var finance = new Finance
+                {
+                    TransactionDate = DateTime.Now,
+                    TransactionType = "Income",
+                    Amount = order.TotalAmount,
+                    PaymentMode = order.PaymentMethod,
+                    Category = "Sales",
+                    Description = $"Sale Invoice #{order.InvoiceNumber}",
+                    ReferenceNumber = order.InvoiceNumber,
+                    OrderID = order.OrderID,
+                    CustomerID = order.CustomerID
+                };
+                
+                await _context.Finances.AddAsync(finance);
+                
+                // Save all changes
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                
+                await _logService.LogInformationAsync($"Created order #{order.OrderID} with {orderDetails.Count} items and updated stock");
+                
+                return (order, allUsedStockItems, finance);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                await _logService.LogErrorAsync($"Error creating order with stock updates: {ex.Message}");
+                return (null, null, null);
+            }
+        }
+        
+        /// <summary>
+        /// Creates a new order with complete integration to stock management and finance
+        /// </summary>
+        /// <param name="order">The order to create</param>
+        /// <param name="orderDetails">The order details</param>
+        /// <returns>Tuple containing order creation result, used stock items, and finance record</returns>
+        public async Task<(Order order, List<StockItem> usedStockItems, Finance financeEntry)> 
+            CreateOrderWithIntegration(Order order, List<OrderDetail> orderDetails)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            
+            try
+            {
+                // Generate invoice number if not provided
+                if (string.IsNullOrEmpty(order.InvoiceNumber))
+                {
+                    order.InvoiceNumber = await GenerateInvoiceNumber();
+                }
+                
+                // Add the order
+                await _context.Orders.AddAsync(order);
                 await _context.SaveChangesAsync();
                 
-                // 3. Add payment record if provided
-                if (payment != null)
+                var usedStockItems = new List<StockItem>();
+                decimal totalAmount = 0;
+                
+                // Process each order detail
+                foreach (var detail in orderDetails)
                 {
-                    payment.OrderReference = order.OrderID;
-                    payment.ReferenceType = "Order";
-                    payment.ReferenceNumber = order.InvoiceNumber;
-                    await _context.Finances.AddAsync(payment);
-                    await _context.SaveChangesAsync();
+                    detail.OrderID = order.OrderID;
+                    
+                    // Calculate the total
+                    detail.TotalAmount = detail.UnitPrice * detail.Quantity;
+                    totalAmount += detail.TotalAmount;
+                    
+                    await _context.OrderDetails.AddAsync(detail);
+                    
+                    // Find available stock items for this product
+                    var stockItems = await _context.StockItems
+                        .Where(si => si.ProductID == detail.ProductID && si.Status == "Available")
+                        .OrderBy(si => si.AddedDate)
+                        .Take((int)Math.Ceiling(detail.Quantity))
+                        .ToListAsync();
+                    
+                    if (stockItems.Count < (int)Math.Ceiling(detail.Quantity))
+                    {
+                        await _logService.LogWarningAsync($"Insufficient stock for product {detail.ProductID}. Required: {detail.Quantity}, Available: {stockItems.Count}");
+                        await transaction.RollbackAsync();
+                        return (null, null, null);
+                    }
+                    
+                    // Mark stock items as sold
+                    foreach (var item in stockItems)
+                    {
+                        item.Status = "Sold";
+                        item.SoldDate = DateTime.Now;
+                        item.OrderID = order.OrderID;
+                        
+                        usedStockItems.Add(item);
+                    }
+                    
+                    // Create stock ledger entry for the sale
+                    var stockLedger = new StockLedger
+                    {
+                        ProductID = detail.ProductID,
+                        TransactionDate = DateTime.Now,
+                        TransactionType = "Sale",
+                        Quantity = detail.Quantity * -1, // Negative quantity for outgoing stock
+                        UnitPrice = detail.UnitPrice,
+                        TotalAmount = detail.TotalAmount,
+                        ReferenceID = order.OrderID.ToString(),
+                        ReferenceNumber = order.InvoiceNumber,
+                        Notes = "Sold via order",
+                        OrderID = order.OrderID
+                    };
+                    
+                    await _context.StockLedgers.AddAsync(stockLedger);
                 }
                 
+                // Update order totals
+                order.TotalAmount = totalAmount;
+                order.TotalItems = orderDetails.Count;
+                
+                // Create finance entry for income
+                var finance = new Finance
+                {
+                    TransactionDate = DateTime.Now,
+                    TransactionType = "Income",
+                    Amount = order.TotalAmount,
+                    PaymentMode = order.PaymentMethod,
+                    Category = "Sales",
+                    Description = $"Sale Invoice #{order.InvoiceNumber}",
+                    ReferenceNumber = order.InvoiceNumber,
+                    OrderID = order.OrderID,
+                    CustomerID = order.CustomerID
+                };
+                
+                await _context.Finances.AddAsync(finance);
+                await _context.SaveChangesAsync();
+                
                 await transaction.CommitAsync();
+                await _logService.LogInformationAsync($"Created order {order.OrderID} with {orderDetails.Count} products, {usedStockItems.Count} stock items and recorded income of {order.TotalAmount}");
+                
+                return (order, usedStockItems, finance);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                await _logService.LogErrorAsync($"Error creating order with integration: {ex.Message}");
+                return (null, null, null);
+            }
+        }
+        
+        // Generate invoice number for use in public methods
+        public async Task<string> GenerateInvoiceNumber()
+        {
+            var today = DateTime.Now;
+            var prefix = $"INV-{today:yyyyMMdd}-";
+            
+            // Find the last invoice number for today
+            var lastInvoice = await _context.Orders
+                .Where(o => o.InvoiceNumber.StartsWith(prefix))
+                .OrderByDescending(o => o.InvoiceNumber)
+                .Select(o => o.InvoiceNumber)
+                .FirstOrDefaultAsync();
+            
+            int sequence = 1;
+            
+            if (lastInvoice != null)
+            {
+                var lastSequence = lastInvoice.Substring(prefix.Length);
+                if (int.TryParse(lastSequence, out int lastSeq))
+                {
+                    sequence = lastSeq + 1;
+                }
+            }
+            
+            return $"{prefix}{sequence:D4}";
+        }
+        
+        // Method to add an order with automatic stock updates
+        public async Task<Order> AddOrderWithStockUpdate(Order order, List<OrderDetail> orderDetails, Finance payment = null)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            
+            try
+            {
+                // Generate invoice number if not provided
+                if (string.IsNullOrEmpty(order.InvoiceNumber))
+                {
+                    order.InvoiceNumber = await GenerateInvoiceNumber();
+                }
+                
+                // Add the order
+                await _context.Orders.AddAsync(order);
+                await _context.SaveChangesAsync();
+                
+                decimal totalAmount = 0;
+                
+                // Process each order detail
+                foreach (var detail in orderDetails)
+                {
+                    detail.OrderID = order.OrderID;
+                    
+                    // Calculate the total
+                    detail.TotalAmount = detail.UnitPrice * detail.Quantity;
+                    totalAmount += detail.TotalAmount;
+                    
+                    await _context.OrderDetails.AddAsync(detail);
+                    
+                    // Update stock quantities - find available stock items
+                    var stockItems = await _context.StockItems
+                        .Where(si => si.ProductID == detail.ProductID && si.Status == "Available")
+                        .OrderBy(si => si.AddedDate)
+                        .Take((int)Math.Ceiling(detail.Quantity))
+                        .ToListAsync();
+                    
+                    if (stockItems.Count < (int)Math.Ceiling(detail.Quantity))
+                    {
+                        await _logService.LogWarningAsync($"Insufficient stock for product {detail.ProductID}. Required: {detail.Quantity}, Available: {stockItems.Count}");
+                        await transaction.RollbackAsync();
+                        return null;
+                    }
+                    
+                    // Mark stock items as sold
+                    foreach (var item in stockItems)
+                    {
+                        item.Status = "Sold";
+                        item.SoldDate = DateTime.Now;
+                        item.OrderID = order.OrderID;
+                    }
+                    
+                    // Add stock ledger entry for the sale
+                    var stockLedger = new StockLedger
+                    {
+                        ProductID = detail.ProductID,
+                        TransactionDate = DateTime.Now,
+                        TransactionType = "Sale",
+                        Quantity = detail.Quantity * -1, // Negative for outgoing stock
+                        ReferenceID = order.OrderID.ToString(),
+                        ReferenceNumber = order.InvoiceNumber,
+                        UnitPrice = detail.UnitPrice,
+                        TotalAmount = detail.TotalAmount,
+                        Notes = "Sold via order",
+                        OrderID = order.OrderID
+                    };
+                    
+                    await _context.StockLedgers.AddAsync(stockLedger);
+                }
+                
+                // Update order totals
+                order.TotalAmount = totalAmount;
+                order.TotalItems = orderDetails.Count;
+                await _context.SaveChangesAsync();
+                
+                // Create finance entry if not provided
+                if (payment == null)
+                {
+                    payment = new Finance
+                    {
+                        TransactionDate = DateTime.Now,
+                        TransactionType = "Income",
+                        Amount = order.TotalAmount,
+                        PaymentMode = order.PaymentMethod,
+                        Category = "Sales",
+                        Description = $"Sale Invoice #{order.InvoiceNumber}",
+                        ReferenceNumber = order.InvoiceNumber,
+                        OrderID = order.OrderID,
+                        CustomerID = order.CustomerID
+                    };
+                }
+                else
+                {
+                    payment.OrderID = order.OrderID;
+                    payment.ReferenceNumber = order.InvoiceNumber;
+                }
+                
+                await _context.Finances.AddAsync(payment);
+                await _context.SaveChangesAsync();
+                
+                await transaction.CommitAsync();
+                await _logService.LogInformationAsync($"Created order {order.OrderID} with {orderDetails.Count} products and recorded income of {order.TotalAmount}");
+                
                 return order;
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                await _logService.LogErrorAsync($"Error adding order with stock update: {ex.Message}");
+                await _logService.LogErrorAsync($"Error creating order with stock update: {ex.Message}");
                 return null;
             }
         }
-          // Helper method to update stock for an order item
-        private async Task<bool> UpdateStockForOrderItem(OrderDetail orderDetail, int orderId)
+          // The duplicate methods have been removed to avoid confusion.
+        
+        // Get orders by date range
+        public async Task<IEnumerable<Order>> GetOrdersByDate(DateTime startDate, DateTime endDate)
         {
-            try
-            {
-                // Get available stock items for this product
-                var stockItems = await _context.StockItems
-                    .Where(si => si.ProductID == orderDetail.ProductID && si.Status == "Available")
-                    .OrderBy(si => si.AddedDate) // First In, First Out
-                    .Take((int)orderDetail.Quantity)
-                    .ToListAsync();
-                
-                if (stockItems.Count < orderDetail.Quantity)
-                {
-                    await _logService.LogWarningAsync($"Insufficient stock for product ID {orderDetail.ProductID}. Needed: {orderDetail.Quantity}, Available: {stockItems.Count}");
-                    return false;
-                }
-                
-                // Mark stock items as sold
-                foreach (var item in stockItems)
-                {
-                    item.Status = "Sold";
-                    item.OrderID = orderId;
-                    item.SoldDate = DateTime.Now;
-                    
-                    // Log in the order details for future reference
-                    await _logService.LogInformationAsync($"Stock item {item.StockItemCode} assigned to order {orderId}");
-                }
-                
-                await _context.SaveChangesAsync();
-                
-                // Update the stock quantities
-                var stockGroups = stockItems.GroupBy(si => si.StockID);
-                foreach (var group in stockGroups)
-                {
-                    var stockId = group.Key;
-                    var count = group.Count();
-                    
-                    var stock = await _context.Stocks.FindAsync(stockId);
-                    if (stock != null)
-                    {
-                        stock.QuantityPurchased -= count;
-                        stock.LastUpdated = DateTime.Now;
-                        stock.LastSold = DateTime.Now;
-                    }
-                }
-                
-                await _context.SaveChangesAsync();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                await _logService.LogErrorAsync($"Error updating stock for order item: {ex.Message}");
-                return false;
-            }
+            DateOnly start = DateOnly.FromDateTime(startDate);
+            DateOnly end = DateOnly.FromDateTime(endDate);
+            
+            return await _context.Orders
+                .Include(o => o.Customer)
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                .Where(o => o.OrderDate >= start && o.OrderDate <= end)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
         }
     }
 }

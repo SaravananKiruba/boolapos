@@ -184,5 +184,14 @@ namespace Page_Navigation_App.Services
                 return false;
             }
         }
+
+        // Get the first supplier from the database
+        public async Task<Supplier> GetFirstSupplier()
+        {
+            return await _context.Suppliers
+                .Where(s => s.IsActive)
+                .OrderBy(s => s.SupplierID)
+                .FirstOrDefaultAsync();
+        }
     }
 }

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Windows;
 using System.Windows.Input;
 using Page_Navigation_App.Model;
 using Page_Navigation_App.Services;
@@ -15,7 +16,64 @@ namespace Page_Navigation_App.ViewModel
         private readonly ProductService _productService;
         private readonly SupplierService _supplierService; // Added
         private readonly PurchaseOrderService _purchaseOrderService;
+        private readonly FinanceService _financeService;
+
+        // Adding missing properties
+        private int _selectedProductId;
+        public int SelectedProductId
+        {
+            get => _selectedProductId;
+            set
+            {
+                _selectedProductId = value;
+                OnPropertyChanged();
+            }
+        }
         
+        private int _selectedSupplierId;
+        public int SelectedSupplierId
+        {
+            get => _selectedSupplierId;
+            set
+            {
+                _selectedSupplierId = value;
+                OnPropertyChanged();
+            }
+        }
+        
+        private Expense _lastCreatedExpense;
+        public Expense LastCreatedExpense
+        {
+            get => _lastCreatedExpense;
+            set
+            {
+                _lastCreatedExpense = value;
+                OnPropertyChanged();
+            }
+        }
+        
+        private bool _showExpenseConfirmation;
+        public bool ShowExpenseConfirmation
+        {
+            get => _showExpenseConfirmation;
+            set
+            {
+                _showExpenseConfirmation = value;
+                OnPropertyChanged();
+            }
+        }
+        
+        private decimal _reorderThreshold = 5;
+        public decimal ReorderThreshold
+        {
+            get => _reorderThreshold;
+            set
+            {
+                _reorderThreshold = value;
+                OnPropertyChanged();
+            }
+        }
+
         public ObservableCollection<Stock> Stocks { get; } = new ObservableCollection<Stock>();
         public ObservableCollection<string> Locations { get; } = new ObservableCollection<string>();
         public ObservableCollection<Product> Products { get; } = new ObservableCollection<Product>();
@@ -99,62 +157,76 @@ namespace Page_Navigation_App.ViewModel
             }
         }
         
-        private int _selectedProductId;
-        public int SelectedProductId
+        private Product _selectedProduct;
+        public Product SelectedProduct
         {
-            get => _selectedProductId;
+            get => _selectedProduct;
             set
             {
-                _selectedProductId = value;
-                OnPropertyChanged();
-                UpdateSelectedProductInfo();
-            }
-        }
-        
-        private int _selectedSupplierId;
-        public int SelectedSupplierId
-        {
-            get => _selectedSupplierId;
-            set
-            {
-                _selectedSupplierId = value;
+                _selectedProduct = value;
                 OnPropertyChanged();
             }
         }
         
-        private Expense _lastCreatedExpense;
-        public Expense LastCreatedExpense
+        private Supplier _selectedSupplier;
+        public Supplier SelectedSupplier
         {
-            get => _lastCreatedExpense;
+            get => _selectedSupplier;
             set
             {
-                _lastCreatedExpense = value;
+                _selectedSupplier = value;
                 OnPropertyChanged();
             }
         }
         
-        private bool _showExpenseConfirmation;
-        public bool ShowExpenseConfirmation
+        private decimal _quantityToAdd;
+        public decimal QuantityToAdd
         {
-            get => _showExpenseConfirmation;
+            get => _quantityToAdd;
             set
             {
-                _showExpenseConfirmation = value;
+                _quantityToAdd = value;
+                OnPropertyChanged();
+                CalculateTotalAmount();
+            }
+        }
+        
+        private decimal _purchaseRate;
+        public decimal PurchaseRate
+        {
+            get => _purchaseRate;
+            set
+            {
+                _purchaseRate = value;
+                OnPropertyChanged();
+                CalculateTotalAmount();
+            }
+        }
+        
+        private decimal _totalAmount;
+        public decimal TotalAmount
+        {
+            get => _totalAmount;
+            set
+            {
+                _totalAmount = value;
                 OnPropertyChanged();
             }
         }
         
-        // Stock threshold for low stock warning
-        private decimal _reorderThreshold = 10;
-        public decimal ReorderThreshold
+        private string _invoiceNumber;
+        public string InvoiceNumber
         {
-            get => _reorderThreshold;
+            get => _invoiceNumber;
             set
             {
-                _reorderThreshold = value;
+                _invoiceNumber = value;
                 OnPropertyChanged();
             }
         }
+        
+        // Purchase List for display
+        public ObservableCollection<PurchaseOrder> RecentPurchases { get; } = new ObservableCollection<PurchaseOrder>();
         
         public ICommand AddOrUpdateCommand { get; }
         public ICommand TransferCommand { get; }
@@ -166,16 +238,24 @@ namespace Page_Navigation_App.ViewModel
         public ICommand ClosePurchaseModalCommand { get; }
         public ICommand AddPurchaseCommand { get; }
         public ICommand ViewStockDetailsCommand { get; }
-        public ICommand CreateExpenseCommand { get; }        public StockVM(
+        public ICommand CreateExpenseCommand { get; }        
+        public ICommand AddQuantityCommand { get; private set; }
+        public ICommand OpenAddQuantityModalCommand { get; private set; }
+        public ICommand CloseModalCommand { get; private set; }
+        public ICommand AddFinanceExpenseCommand { get; private set; }
+        
+        public StockVM(
             StockService stockService, 
             ProductService productService,
             SupplierService supplierService,
-            PurchaseOrderService purchaseOrderService)
+            PurchaseOrderService purchaseOrderService,
+            FinanceService financeService) // Add finance service
         {
             _stockService = stockService;
             _productService = productService;
             _supplierService = supplierService;
             _purchaseOrderService = purchaseOrderService;
+            _financeService = financeService;
             
             AddOrUpdateCommand = new RelayCommand<object>(_ => AddOrUpdateStock(), _ => CanAddOrUpdateStock());
             TransferCommand = new RelayCommand<object>(_ => TransferStock(), _ => CanTransferStock());
@@ -188,16 +268,30 @@ namespace Page_Navigation_App.ViewModel
             AddPurchaseCommand = new RelayCommand<object>(_ => AddPurchase(), _ => CanAddPurchase());
             ViewStockDetailsCommand = new RelayCommand<int>(productId => ViewStockDetails(productId));
             CreateExpenseCommand = new RelayCommand<Stock>(stock => CreateExpenseForPurchase(stock));
+              AddQuantityCommand = new RelayCommand<object>(AddQuantityExecute, CanAddQuantity);
+            OpenAddQuantityModalCommand = new RelayCommand<object>(OpenAddQuantityModal);
+            CloseModalCommand = new RelayCommand<object>(CloseModal);
+            AddFinanceExpenseCommand = new RelayCommand<PurchaseOrder>(AddFinanceExpense);
             
             CloseStockItemsCommand = new RelayCommand<object>(_ => CloseStockItems());
-            
-            LoadStocks();
-            LoadLocations();
-            LoadProducts();
-            LoadSuppliers();
+              // Load initial data asynchronously
+            InitializeAsync();
         }
 
-        private async void LoadProducts()
+        private void CalculateTotalAmount()
+        {
+            TotalAmount = QuantityToAdd * PurchaseRate;
+        }
+        
+        private async void InitializeAsync()
+        {
+            await LoadProducts();
+            await LoadSuppliers();
+            await LoadLocations();
+            await LoadRecentPurchases();
+        }
+        
+        private async Task LoadProducts()
         {
             Products.Clear();
             var products = await _productService.GetAllProducts();
@@ -205,8 +299,24 @@ namespace Page_Navigation_App.ViewModel
             {
                 Products.Add(product);
             }
+        }        private async Task LoadSuppliers()
+        {
+            Suppliers.Clear();
+            var suppliers = await _supplierService.GetAllSuppliers();
+            foreach (var supplier in suppliers)
+            {
+                Suppliers.Add(supplier);
+            }
+        }        private async Task LoadRecentPurchases()
+        {
+            var purchases = await _purchaseOrderService.GetPurchaseOrders(); // Use default parameters
+            RecentPurchases.Clear();
+            foreach (var purchase in purchases.Take(10))
+            {
+                RecentPurchases.Add(purchase);
+            }
         }
-
+        
         private async void LoadStocks()
         {
             Stocks.Clear();
@@ -215,25 +325,13 @@ namespace Page_Navigation_App.ViewModel
             {
                 Stocks.Add(stock);
             }
-        }
-
-        private async void LoadLocations()
+        }        private async Task LoadLocations()
         {
             Locations.Clear();
             var locations = await _stockService.GetAllLocations();
             foreach (var location in locations)
             {
                 Locations.Add(location);
-            }
-        }
-
-        private async void LoadSuppliers()
-        {
-            Suppliers.Clear();
-            var suppliers = await _supplierService.GetAllSuppliers();
-            foreach (var supplier in suppliers)
-            {
-                Suppliers.Add(supplier);
             }
         }
         
@@ -744,5 +842,109 @@ namespace Page_Navigation_App.ViewModel
                 return false;
             }
         }
-    }
+
+        private void OpenAddQuantityModal(object parameter)
+        {
+            // If parameter is a product, set selected product
+            if (parameter is Product product)
+            {
+                SelectedProduct = product;
+            }
+            
+            // Default values
+            QuantityToAdd = 1;
+            PurchaseRate = 0;
+            TotalAmount = 0;
+            InvoiceNumber = $"INV-{DateTime.Now:yyyyMMdd}-{new Random().Next(1000, 9999)}";
+            
+            // If there's at least one supplier, select the first one
+            if (Suppliers.Count > 0)
+            {
+                SelectedSupplier = Suppliers[0];
+            }
+            
+            IsPurchaseModalOpen = true;
+        }
+        
+        private void CloseModal(object parameter)
+        {
+            IsPurchaseModalOpen = false;
+        }
+        
+        private bool CanAddQuantity(object parameter)
+        {
+            return SelectedProduct != null && SelectedSupplier != null && 
+                   QuantityToAdd > 0 && PurchaseRate > 0;
+        }
+        
+        private async void AddQuantityExecute(object parameter)
+        {
+            try
+            {
+                // Create a stock object
+                var stock = new Stock
+                {
+                    ProductID = SelectedProduct.ProductID,
+                    SupplierID = SelectedSupplier.SupplierID,
+                    QuantityPurchased = QuantityToAdd,
+                    PurchaseRate = PurchaseRate,
+                    TotalAmount = TotalAmount,
+                    InvoiceNumber = InvoiceNumber,
+                    PaymentStatus = "Pending",
+                    Location = SelectedLocation ?? "Main"
+                };
+                
+                // Add stock with purchase order
+                var (newStock, purchaseOrder) = await _stockService.AddStockWithPurchaseOrder(stock, SelectedSupplier.SupplierID);
+                
+                if (newStock != null && purchaseOrder != null)
+                {
+                    // Show success message
+                    MessageBox.Show($"Successfully added {QuantityToAdd} units of {SelectedProduct.ProductName} to stock", 
+                        "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    
+                    // Reload data
+                    await LoadRecentPurchases();
+                    
+                    // Close modal
+                    IsPurchaseModalOpen = false;
+                }
+                else
+                {
+                    MessageBox.Show("Failed to add stock. Please try again.", 
+                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred: {ex.Message}", 
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        
+        private async void AddFinanceExpense(PurchaseOrder purchaseOrder)
+        {
+            try
+            {
+                if (purchaseOrder == null) return;
+                
+                var result = await _financeService.RecordPurchaseExpenseAsync(purchaseOrder);
+                
+                if (result.success)
+                {
+                    MessageBox.Show($"Successfully recorded expense for purchase order {purchaseOrder.PurchaseOrderNumber}", 
+                        "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show("Failed to record expense. Please try again.", 
+                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred: {ex.Message}", 
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }    }
 }

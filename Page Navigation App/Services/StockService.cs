@@ -812,5 +812,129 @@ namespace Page_Navigation_App.Services
                 return null;
             }
         }
+
+        // Add a new method for adding stock items for a product
+        public async Task<List<StockItem>> AddStockItemsForProduct(int productId, decimal quantity, int stockId)
+        {
+            try
+            {
+                var product = await _context.Products.FindAsync(productId);
+                if (product == null) return null;
+
+                var existingCount = await _context.StockItems.CountAsync(si => si.ProductID == productId);
+                var newStockItems = new List<StockItem>();
+                
+                // Convert decimal quantity to integer for individual items
+                int itemCount = (int)Math.Ceiling(quantity);
+                
+                for (int i = 0; i < itemCount; i++)
+                {
+                    var stockItem = new StockItem
+                    {
+                        ProductID = productId,
+                        StockID = stockId,
+                        AddedDate = DateTime.Now,
+                        Status = "Available",
+                        StockItemCode = GenerateStockItemCode(productId, existingCount + i)
+                    };
+                    
+                    await _context.StockItems.AddAsync(stockItem);
+                    newStockItems.Add(stockItem);
+                }
+                
+                await _context.SaveChangesAsync();
+                return newStockItems;
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                Console.WriteLine($"Error adding stock items: {ex.Message}");
+                return null;
+            }
+        }
+        
+        // Generate a stock item code
+        private string GenerateStockItemCode(int productId, int currentCount)
+        {
+            // Format: ProductID_PREFIX_XXXX
+            string sequenceNumber = (currentCount + 1).ToString().PadLeft(4, '0');
+            return $"{productId}_KAMJEW_{sequenceNumber}";
+        }
+        
+        // Add stock with automatic creation of stock items and purchase order
+        public async Task<(Stock, PurchaseOrder)> AddStockWithPurchaseOrder(Stock stock, int supplierId)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            
+            try
+            {
+                // Add the stock entry
+                var newStock = await AddStock(stock);
+                if (newStock == null)
+                {
+                    await transaction.RollbackAsync();
+                    return (null, null);
+                }
+                
+                // Add stock items
+                var stockItems = await AddStockItemsForProduct(stock.ProductID, stock.QuantityPurchased, newStock.StockID);
+                if (stockItems == null || !stockItems.Any())
+                {
+                    await transaction.RollbackAsync();
+                    return (null, null);
+                }
+                
+                // Create a purchase order
+                var product = await _context.Products.FindAsync(stock.ProductID);
+                var supplier = await _context.Suppliers.FindAsync(supplierId);
+                
+                if (product == null || supplier == null)
+                {
+                    await transaction.RollbackAsync();
+                    return (null, null);
+                }
+                
+                var purchaseOrder = new PurchaseOrder
+                {
+                    SupplierID = supplierId,
+                    PurchaseDate = DateTime.Now,
+                    Status = "Completed",
+                    TotalAmount = stock.TotalAmount,
+                    PaidAmount = 0, // Default to 0, can be updated later
+                    BalanceAmount = stock.TotalAmount,
+                    PaymentStatus = "Pending",
+                    PaymentMethod = "Cash",
+                    DeliveryAddress = supplier.Address,
+                    PurchaseOrderNumber = $"PO-{DateTime.Now:yyyyMMdd}-{new Random().Next(1000, 9999)}"
+                };
+                
+                await _context.PurchaseOrders.AddAsync(purchaseOrder);
+                await _context.SaveChangesAsync();
+                
+                // Create purchase order item
+                var purchaseOrderItem = new PurchaseOrderItem
+                {
+                    PurchaseOrderID = purchaseOrder.PurchaseOrderID,
+                    ProductID = stock.ProductID,
+                    Quantity = stock.QuantityPurchased,
+                    UnitPrice = stock.PurchaseRate,
+                    TotalPrice = stock.TotalAmount,
+                    Notes = $"Added via stock module on {DateTime.Now}"
+                };
+                
+                await _context.PurchaseOrderItems.AddAsync(purchaseOrderItem);
+                await _context.SaveChangesAsync();
+                
+                await transaction.CommitAsync();
+                return (newStock, purchaseOrder);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                // Log the exception
+                Console.WriteLine($"Error adding stock with purchase order: {ex.Message}");
+                return (null, null);
+            }
+        }
     }
 }
