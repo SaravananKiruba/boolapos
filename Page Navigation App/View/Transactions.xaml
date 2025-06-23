@@ -26,13 +26,11 @@
                                           SelectedItem="{Binding SelectedTransaction.TransactionType}"
                                           Margin="0,5"
                                           mah:TextBoxHelper.Watermark="Transaction Type"
-                                          Style="{StaticResource MahApps.Styles.ComboBox}"/>
-
-                                <mah:NumericUpDown Value="{Binding SelectedTransaction.Amount}"
+                                          Style="{StaticResource MahApps.Styles.ComboBox}"/>                                <mah:NumericUpDown Value="{Binding SelectedTransaction.Amount}"
                                                   Margin="0,5"
                                                   mah:TextBoxHelper.Watermark="Amount"
                                                   Style="{StaticResource {x:Type mah:NumericUpDown}}"
-                                                  StringFormat="C"
+                                                  StringFormat="₹ #,##0.00"
                                                   Minimum="0"/>
 
                                 <ComboBox ItemsSource="{Binding PaymentMethods}"
@@ -80,14 +78,13 @@
                                           SelectedItem="{Binding SelectedOrder}"
                                           Margin="0,5"
                                           mah:TextBoxHelper.Watermark="Select Related Order (Optional)"
-                                          Style="{StaticResource MahApps.Styles.ComboBox}">
-                                    <ComboBox.ItemTemplate>
+                                          Style="{StaticResource MahApps.Styles.ComboBox}">                                    <ComboBox.ItemTemplate>
                                         <DataTemplate>
                                             <TextBlock>
                                                 <Run Text="Order #"/>
                                                 <Run Text="{Binding OrderID}"/>
                                                 <Run Text=" - "/>
-                                                <Run Text="{Binding GrandTotal, StringFormat='{}{0:C}'}"/>
+                                                <Run Text="{Binding GrandTotal, StringFormat='₹ {0:N2}'}"/>
                                             </TextBlock>
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
@@ -124,11 +121,10 @@
                                 <TextBlock Text="{Binding SelectedCustomer.CustomerName, StringFormat='Customer: {0}'}" 
                                            FontWeight="Bold"
                                            Margin="0,0,0,5"/>
-                                           
-                                <TextBlock Text="{Binding SelectedCustomer.TotalPurchases, StringFormat='Total Purchases: {0:C}'}"
+                                             <TextBlock Text="{Binding SelectedCustomer.TotalPurchases, StringFormat='Total Purchases: ₹ {0:N2}'}"
                                            Margin="0,0,0,2"/>
                                            
-                                <TextBlock Text="{Binding SelectedCustomer.OutstandingAmount, StringFormat='Outstanding Amount: {0:C}'}"
+                                <TextBlock Text="{Binding SelectedCustomer.OutstandingAmount, StringFormat='Outstanding Amount: ₹ {0:N2}'}"
                                            Margin="0,0,0,2"/>
                                            
                                 <TextBlock Text="{Binding SelectedCustomer.LoyaltyPoints, StringFormat='Loyalty Points: {0}'}"
@@ -222,9 +218,7 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            
-                            <Border Grid.Column="0" 
+                            </Grid.ColumnDefinitions>                                <Border Grid.Column="0" 
                                     Background="#E8F5E9" 
                                     BorderBrush="#81C784" 
                                     BorderThickness="1" 
@@ -235,7 +229,7 @@
                                     <TextBlock Text="Total Income" 
                                                FontWeight="Bold" 
                                                HorizontalAlignment="Center"/>
-                                    <TextBlock Text="{Binding TotalIncome, StringFormat='{}{0:C}'}" 
+                                    <TextBlock Text="{Binding FormattedTotalIncome}" 
                                                FontSize="16" 
                                                HorizontalAlignment="Center"
                                                Foreground="#388E3C"/>
@@ -253,7 +247,7 @@
                                     <TextBlock Text="Total Expense" 
                                                FontWeight="Bold" 
                                                HorizontalAlignment="Center"/>
-                                    <TextBlock Text="{Binding TotalExpense, StringFormat='{}{0:C}'}" 
+                                    <TextBlock Text="{Binding FormattedTotalExpense}" 
                                                FontSize="16" 
                                                HorizontalAlignment="Center"
                                                Foreground="#D32F2F"/>
@@ -271,7 +265,7 @@
                                     <TextBlock Text="Net Balance" 
                                                FontWeight="Bold" 
                                                HorizontalAlignment="Center"/>
-                                    <TextBlock Text="{Binding NetBalance, StringFormat='{}{0:C}'}" 
+                                    <TextBlock Text="{Binding FormattedNetBalance}" 
                                                FontSize="16" 
                                                HorizontalAlignment="Center"
                                                Foreground="#1976D2"/>
