@@ -314,8 +314,7 @@ namespace Page_Navigation_App.Services
                 return null;
             }
         }
-        
-        // Helper method to update stock for an order item
+          // Helper method to update stock for an order item
         private async Task<bool> UpdateStockForOrderItem(OrderDetail orderDetail, int orderId)
         {
             try
@@ -339,6 +338,9 @@ namespace Page_Navigation_App.Services
                     item.Status = "Sold";
                     item.OrderID = orderId;
                     item.SoldDate = DateTime.Now;
+                    
+                    // Log in the order details for future reference
+                    await _logService.LogInformationAsync($"Stock item {item.StockItemCode} assigned to order {orderId}");
                 }
                 
                 await _context.SaveChangesAsync();

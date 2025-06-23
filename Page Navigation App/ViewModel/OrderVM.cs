@@ -381,25 +381,21 @@ namespace Page_Navigation_App.ViewModel
                 {
                     // Create new order with details and update stock
                     Finance payment = null;
-                    
-                    // If payment is "Paid", create a finance entry
-                    if (SelectedOrder.Status == "Completed" || CreateFinanceEntryOnSave)
+                      // Always create a finance entry for tracking purposes
+                    payment = new Finance
                     {
-                        payment = new Finance
-                        {
-                            TransactionDate = DateTime.Now,
-                            TransactionType = "Income",
-                            Amount = SelectedOrder.GrandTotal,
-                            PaymentMode = SelectedOrder.PaymentMethod,
-                            Category = "Sales",
-                            Description = $"Payment for order from {SelectedCustomer?.CustomerName}",
-                            IsPaymentReceived = true,
-                            CustomerID = SelectedOrder.CustomerID,
-                            Status = "Completed",
-                            CreatedBy = "System",
-                            Currency = "INR"
-                        };
-                    }
+                        TransactionDate = DateTime.Now,
+                        TransactionType = "Income",
+                        Amount = SelectedOrder.GrandTotal,
+                        PaymentMode = SelectedOrder.PaymentMethod,
+                        Category = "Sales",
+                        Description = $"Payment for order from {SelectedCustomer?.CustomerName} - ₹{SelectedOrder.GrandTotal}",
+                        IsPaymentReceived = SelectedOrder.Status == "Completed" || CreateFinanceEntryOnSave,
+                        CustomerID = SelectedOrder.CustomerID,
+                        Status = SelectedOrder.Status == "Completed" ? "Completed" : "Pending",
+                        CreatedBy = "System",
+                        Currency = "INR"
+                    };
                     
                     // Create new order with stock integration 
                     var newOrder = await _orderService.AddOrderWithStockUpdate(SelectedOrder, orderDetails, payment);
@@ -430,19 +426,20 @@ namespace Page_Navigation_App.ViewModel
 
             try
             {
-                // Create finance entry for the order (in INR)
+                // Create finance entry for the order with Rupee symbol (₹)
                 var finance = new Finance
                 {
                     TransactionDate = DateTime.Now,
                     Amount = SelectedOrder.GrandTotal,
                     TransactionType = "Income",
                     PaymentMethod = SelectedOrder.PaymentType,
-                    Description = $"Payment for Order #{SelectedOrder.OrderID} (INR)",
+                    Description = $"Payment for Order #{SelectedOrder.OrderID} - ₹{SelectedOrder.GrandTotal}",
                     CustomerID = SelectedOrder.CustomerID,
                     OrderID = SelectedOrder.OrderID,
                     ReferenceNumber = SelectedOrder.OrderID.ToString(),
                     CreatedBy = Environment.UserName,
-                    Currency = "INR"  // Explicitly specify currency as INR
+                    Currency = "INR",
+                    IsPaymentReceived = true
                 };
 
                 // Call AddFinanceRecord and handle result properly

@@ -148,8 +148,7 @@ namespace Page_Navigation_App.Services
                 return false;
             }
         }
-        
-        // Create an expense entry for a purchase order
+          // Create an expense entry for a purchase order
         public async Task<Expense> CreateExpenseFromPurchaseOrder(int purchaseOrderId, string additionalNotes = null)
         {
             try
@@ -172,7 +171,7 @@ namespace Page_Navigation_App.Services
                     Recipient = purchaseOrder.Supplier?.SupplierName,
                     ReferenceNumber = purchaseOrder.PurchaseOrderNumber,
                     Notes = string.IsNullOrEmpty(additionalNotes) ? 
-                        $"Expense for purchase order {purchaseOrder.PurchaseOrderNumber}" : 
+                        $"Expense for purchase order {purchaseOrder.PurchaseOrderNumber} - ₹{purchaseOrder.TotalAmount}" : 
                         additionalNotes
                 };
                 

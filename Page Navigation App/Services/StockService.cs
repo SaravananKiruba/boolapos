@@ -735,8 +735,7 @@ namespace Page_Navigation_App.Services
                 return null;
             }
         }
-        
-        // Generate StockItems for a product
+          // Generate StockItems for a product
         private async Task<bool> GenerateStockItemsForProduct(int productId, int stockId, decimal quantity)
         {
             try
@@ -745,13 +744,6 @@ namespace Page_Navigation_App.Services
                 var product = await _context.Products.FindAsync(productId);
                 if (product == null) return false;
                 
-                // Get the product code (using first 8 chars of product name if no code exists)
-                string productCode = !string.IsNullOrEmpty(product.Barcode) 
-                    ? product.Barcode 
-                    : product.ProductName.Length > 8 
-                        ? product.ProductName.Substring(0, 8).ToUpper().Replace(" ", "") 
-                        : product.ProductName.ToUpper().Replace(" ", "");
-                
                 // Get current count of stock items for this product
                 int currentCount = await _context.StockItems
                     .Where(si => si.ProductID == productId)
@@ -759,8 +751,9 @@ namespace Page_Navigation_App.Services
                 
                 // Create individual stock items based on quantity
                 for (int i = 0; i < (int)quantity; i++)
-                {                    // Format: ${productId}_${PRODUCTCODE}_${count:0001}
-                    string itemCode = $"{productId}_{productCode}_{(currentCount + i + 1).ToString("0000")}";
+                {
+                    // Format: productId_KAMJEW_0001
+                    string itemCode = $"{productId}_KAMJEW_{(currentCount + i + 1).ToString("0000")}";
                     
                     var stockItem = new StockItem
                     {
@@ -796,8 +789,7 @@ namespace Page_Navigation_App.Services
                 
                 var supplier = await _context.Suppliers
                     .FirstOrDefaultAsync(s => s.SupplierID == stock.SupplierID);
-                
-                var expense = new Expense
+                  var expense = new Expense
                 {
                     Description = $"Purchase of {stock.QuantityPurchased} units of {product.ProductName}",
                     ExpenseDate = stock.PurchaseDate,
@@ -806,7 +798,7 @@ namespace Page_Navigation_App.Services
                     PaymentMethod = stock.PaymentStatus == "Paid" ? "Cash" : "Credit",
                     ReferenceNumber = $"STK-{stock.StockID}",
                     Recipient = supplier?.SupplierName ?? "Unknown Supplier",
-                    Notes = $"Stock purchase recorded on {DateTime.Now}. Created by {createdBy}"
+                    Notes = $"Stock purchase recorded on {DateTime.Now}. Amount: ₹{stock.TotalAmount}. Created by {createdBy}"
                 };
                 
                 await _context.Expenses.AddAsync(expense);

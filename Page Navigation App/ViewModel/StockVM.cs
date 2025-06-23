@@ -5,6 +5,8 @@ using Page_Navigation_App.Services;
 using Page_Navigation_App.Utilities;
 using System.Linq;
 using System;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace Page_Navigation_App.ViewModel
 {
@@ -12,6 +14,7 @@ namespace Page_Navigation_App.ViewModel
     {        private readonly StockService _stockService;
         private readonly ProductService _productService;
         private readonly SupplierService _supplierService; // Added
+        private readonly PurchaseOrderService _purchaseOrderService;
         
         public ObservableCollection<Stock> Stocks { get; } = new ObservableCollection<Stock>();
         public ObservableCollection<string> Locations { get; } = new ObservableCollection<string>();
@@ -166,11 +169,13 @@ namespace Page_Navigation_App.ViewModel
         public ICommand CreateExpenseCommand { get; }        public StockVM(
             StockService stockService, 
             ProductService productService,
-            SupplierService supplierService)
+            SupplierService supplierService,
+            PurchaseOrderService purchaseOrderService)
         {
             _stockService = stockService;
             _productService = productService;
             _supplierService = supplierService;
+            _purchaseOrderService = purchaseOrderService;
             
             AddOrUpdateCommand = new RelayCommand<object>(_ => AddOrUpdateStock(), _ => CanAddOrUpdateStock());
             TransferCommand = new RelayCommand<object>(_ => TransferStock(), _ => CanTransferStock());
@@ -256,14 +261,14 @@ namespace Page_Navigation_App.ViewModel
                    NewPurchase.QuantityPurchased > 0 && 
                    NewPurchase.PurchaseRate > 0;
         }
-        
-        private async void AddPurchase()
+          private async void AddPurchase()
         {
             try
             {
                 NewPurchase.ProductID = SelectedProductId;
                 NewPurchase.SupplierID = SelectedSupplierId;
                 NewPurchase.TotalAmount = NewPurchase.QuantityPurchased * NewPurchase.PurchaseRate;
+                NewPurchase.Location = "Main"; // Default location
                 
                 var addedStock = await _stockService.AddStockWithPurchaseRecord(NewPurchase);
                 
@@ -277,11 +282,14 @@ namespace Page_Navigation_App.ViewModel
                     LastCreatedExpense = expense;
                     ShowExpenseConfirmation = expense != null;
                     
+                    // Create a simple purchase order for this stock entry
+                    await CreateSimplePurchaseOrder(addedStock);
+                    
                     LoadStocks();
                     ClosePurchaseModal();
                     
                     System.Windows.MessageBox.Show(
-                        "Purchase recorded successfully with stock items generated.", 
+                        "Purchase recorded successfully with stock items generated and expense entry created.", 
                         "Success", 
                         System.Windows.MessageBoxButton.OK, 
                         System.Windows.MessageBoxImage.Information);
@@ -686,6 +694,54 @@ namespace Page_Navigation_App.ViewModel
                     "Error", 
                     System.Windows.MessageBoxButton.OK, 
                     System.Windows.MessageBoxImage.Error);
+            }
+        }
+
+        private async Task<bool> CreateSimplePurchaseOrder(Stock stock)
+        {
+            try
+            {
+                if (stock == null) return false;
+
+                // Get product and supplier details
+                var product = await _productService.GetProductById(stock.ProductID);
+                var supplier = await _supplierService.GetSupplierById(stock.SupplierID);
+                if (product == null || supplier == null) return false;
+
+                // Create purchase order
+                var purchaseOrder = new PurchaseOrder
+                {
+                    SupplierID = stock.SupplierID,
+                    PurchaseDate = stock.PurchaseDate,
+                    Status = "Completed",
+                    TotalAmount = stock.TotalAmount,
+                    PaidAmount = stock.PaymentStatus == "Paid" ? stock.TotalAmount : 0,
+                    BalanceAmount = stock.PaymentStatus == "Paid" ? 0 : stock.TotalAmount,
+                    PaymentStatus = stock.PaymentStatus,
+                    PaymentMethod = stock.PaymentStatus == "Paid" ? "Cash" : "Credit",
+                    ActualDeliveryDate = DateTime.Now,
+                    Notes = $"Auto-generated purchase order for stock ID {stock.StockID}"
+                };
+
+                // Create purchase order item
+                var item = new PurchaseOrderItem
+                {
+                    ProductID = stock.ProductID,
+                    Quantity = stock.QuantityPurchased,
+                    UnitPrice = stock.PurchaseRate,
+                    TotalPrice = stock.TotalAmount,
+                    Notes = $"Auto-generated for stock entry"
+                };
+
+                // Add purchase order
+                var result = await _purchaseOrderService.CreatePurchaseOrder(purchaseOrder, new List<PurchaseOrderItem> { item });
+                
+                return result != null;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error creating purchase order: {ex.Message}");
+                return false;
             }
         }
     }
