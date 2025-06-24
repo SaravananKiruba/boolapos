@@ -19,7 +19,10 @@ if %ERRORLEVEL% NEQ 0 (
 
 REM Build and publish the application
 echo Step 1: Building and publishing the application...
-dotnet publish -c Release -p:PublishProfile=SelfContainedSingleFile
+REM Get the directory of this batch file
+set SCRIPT_DIR=%~dp0
+echo Using project file: "%SCRIPT_DIR%BoolaPOS.csproj"
+dotnet publish "%SCRIPT_DIR%BoolaPOS.csproj" -c Release -p:PublishProfile=SelfContainedSingleFile
 
 if %ERRORLEVEL% NEQ 0 (
     echo ERROR: Build failed. See error messages above.
