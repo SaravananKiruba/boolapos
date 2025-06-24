@@ -4,16 +4,30 @@ VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoolaPOS", "BoolaPOS.csproj", "{701A0F4D-5633-5248-26B1-CE04F70FF218}"
 EndProject
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "BoolaPOSInstaller", "BoolaPOSInstaller\BoolaPOSInstaller.wixproj", "{5F50239C-E02E-4F2A-9BE1-BE1D1E79E5C3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|x86 = Debug|x86
 		Release|Any CPU = Release|Any CPU
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{701A0F4D-5633-5248-26B1-CE04F70FF218}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{701A0F4D-5633-5248-26B1-CE04F70FF218}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{701A0F4D-5633-5248-26B1-CE04F70FF218}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{701A0F4D-5633-5248-26B1-CE04F70FF218}.Debug|x86.Build.0 = Debug|Any CPU
 		{701A0F4D-5633-5248-26B1-CE04F70FF218}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{701A0F4D-5633-5248-26B1-CE04F70FF218}.Release|Any CPU.Build.0 = Release|Any CPU
+		{701A0F4D-5633-5248-26B1-CE04F70FF218}.Release|x86.ActiveCfg = Release|Any CPU
+		{701A0F4D-5633-5248-26B1-CE04F70FF218}.Release|x86.Build.0 = Release|Any CPU
+		{5F50239C-E02E-4F2A-9BE1-BE1D1E79E5C3}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{5F50239C-E02E-4F2A-9BE1-BE1D1E79E5C3}.Debug|x86.ActiveCfg = Debug|x86
+		{5F50239C-E02E-4F2A-9BE1-BE1D1E79E5C3}.Debug|x86.Build.0 = Debug|x86
+		{5F50239C-E02E-4F2A-9BE1-BE1D1E79E5C3}.Release|Any CPU.ActiveCfg = Release|x86
+		{5F50239C-E02E-4F2A-9BE1-BE1D1E79E5C3}.Release|x86.ActiveCfg = Release|x86
+		{5F50239C-E02E-4F2A-9BE1-BE1D1E79E5C3}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

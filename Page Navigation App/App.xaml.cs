@@ -12,6 +12,7 @@ using Page_Navigation_App.Model;
 using Page_Navigation_App.Services;
 using Page_Navigation_App.View;
 using Page_Navigation_App.ViewModel;
+using Page_Navigation_App.Utilities;
 
 namespace Page_Navigation_App
 {
@@ -125,6 +126,9 @@ namespace Page_Navigation_App
                         // Seed default admin user if needed
                         var authService = scope.ServiceProvider.GetRequiredService<AuthenticationService>();
                         await authService.SeedDefaultUserAsync().ConfigureAwait(false);
+                        
+                        // Seed test users with different roles
+                        await TestDataSeeder.SeedTestUsersAsync(dbContext, authService).ConfigureAwait(false);
                         
                         // Setup automatic backup schedule
                         var backupService = scope.ServiceProvider.GetRequiredService<BackupService>();
