@@ -81,7 +81,7 @@ namespace Page_Navigation_App.Migrations
                     PhoneNumber = table.Column<string>(type: "TEXT", maxLength: 15, nullable: false),
                     Email = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
                     WhatsAppNumber = table.Column<string>(type: "TEXT", maxLength: 15, nullable: true),
-                    Address = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
+                    Address = table.Column<string>(type: "TEXT", nullable: true),
                     City = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
                     GSTNumber = table.Column<string>(type: "TEXT", maxLength: 20, nullable: true),
                     DateOfBirth = table.Column<DateOnly>(type: "TEXT", nullable: true),
@@ -148,6 +148,7 @@ namespace Page_Navigation_App.Migrations
                     MakingChargePercentage = table.Column<decimal>(type: "TEXT", nullable: false),
                     UpdatedDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     RateDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    Description = table.Column<string>(type: "TEXT", nullable: true),
                     MetalType = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
                     Purity = table.Column<string>(type: "TEXT", maxLength: 10, nullable: false),
                     Rate = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
@@ -156,18 +157,7 @@ namespace Page_Navigation_App.Migrations
                     IsActive = table.Column<bool>(type: "INTEGER", nullable: false),
                     Source = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
                     EnteredBy = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
-                    SaleRate = table.Column<decimal>(type: "TEXT", nullable: false),
-                    PurchaseRate = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    UpdatedBy = table.Column<string>(type: "TEXT", nullable: true),
-                    ExchangeRate = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    HallmarkingCharge = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    DefaultGst = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
-                    MarketSource = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
-                    IsSpecialRate = table.Column<bool>(type: "INTEGER", nullable: false),
-                    Description = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
-                    WastagePercentage = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
-                    FinalRate = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                    UpdatedBy = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -289,12 +279,6 @@ namespace Page_Navigation_App.Migrations
                     ContactPerson = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
                     GSTNumber = table.Column<string>(type: "TEXT", maxLength: 20, nullable: true),
                     IsActive = table.Column<bool>(type: "INTEGER", nullable: false),
-                    CreditLimit = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    OutstandingAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    PreferredPaymentTerms = table.Column<string>(type: "TEXT", nullable: true),
-                    BankName = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
-                    AccountNumber = table.Column<string>(type: "TEXT", maxLength: 20, nullable: true),
-                    IFSCCode = table.Column<string>(type: "TEXT", maxLength: 20, nullable: true),
                     RegistrationDate = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
@@ -333,33 +317,15 @@ namespace Page_Navigation_App.Migrations
                     OrderDate = table.Column<DateOnly>(type: "TEXT", nullable: false),
                     InvoiceNumber = table.Column<string>(type: "TEXT", maxLength: 20, nullable: true),
                     HUIDReferences = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
-                    TagReferences = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
                     Status = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
                     OrderType = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
                     PaymentMethod = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    EMIMonths = table.Column<int>(type: "INTEGER", nullable: true),
-                    EMIAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    GSTNumber = table.Column<string>(type: "TEXT", maxLength: 20, nullable: true),
-                    HSNCode = table.Column<string>(type: "TEXT", maxLength: 20, nullable: true),
-                    IsGSTRegisteredCustomer = table.Column<bool>(type: "INTEGER", nullable: false),
-                    EWayBillNumber = table.Column<string>(type: "TEXT", maxLength: 20, nullable: true),
                     TotalItems = table.Column<int>(type: "INTEGER", nullable: false),
                     TotalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     DiscountAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    CGST = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    SGST = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    IGST = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    PriceBeforeTax = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     GrandTotal = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    HallmarkingCharges = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    HasMetalExchange = table.Column<bool>(type: "INTEGER", nullable: false),
-                    ExchangeMetalType = table.Column<string>(type: "TEXT", nullable: true),
-                    ExchangeMetalPurity = table.Column<string>(type: "TEXT", nullable: true),
-                    ExchangeMetalWeight = table.Column<decimal>(type: "decimal(10,3)", nullable: false),
-                    ExchangeValue = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
-                    IsDelivered = table.Column<bool>(type: "INTEGER", nullable: false),
-                    DeliveryDate = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    DeliveryAddress = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true)
+                    Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -367,53 +333,6 @@ namespace Page_Navigation_App.Migrations
                     table.ForeignKey(
                         name: "FK_Orders_Customers_CustomerID",
                         column: x => x.CustomerID,
-                        principalTable: "Customers",
-                        principalColumn: "CustomerID",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "RepairJobs",
-                columns: table => new
-                {
-                    RepairID = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    CustomerId = table.Column<int>(type: "INTEGER", nullable: false),
-                    ItemDescription = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    ReceiptDate = table.Column<DateOnly>(type: "TEXT", nullable: false),
-                    CompletionDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
-                    DeliveryDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
-                    WorkStartDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
-                    EstimatedDeliveryDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
-                    ItemWeight = table.Column<decimal>(type: "decimal(10,3)", nullable: false),
-                    MetalType = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
-                    Purity = table.Column<string>(type: "TEXT", maxLength: 10, nullable: true),
-                    WorkType = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    WorkDescription = table.Column<string>(type: "TEXT", maxLength: 500, nullable: false),
-                    EstimatedCost = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    FinalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    AdditionalMetalWeight = table.Column<decimal>(type: "decimal(10,3)", nullable: true),
-                    AdditionalMetalCost = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    StoneCharge = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    StoneDetails = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
-                    Status = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    Priority = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    ExpectedDeliveryDate = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    AssignedTo = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
-                    Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
-                    AdvanceAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    IsStoneProvided = table.Column<bool>(type: "INTEGER", nullable: false),
-                    CustomerComments = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
-                    ImagePath = table.Column<string>(type: "TEXT", maxLength: 255, nullable: true),
-                    ItemPhotoUrl = table.Column<string>(type: "TEXT", maxLength: 255, nullable: true),
-                    PaymentMethod = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_RepairJobs", x => x.RepairID);
-                    table.ForeignKey(
-                        name: "FK_RepairJobs_Customers_CustomerId",
-                        column: x => x.CustomerId,
                         principalTable: "Customers",
                         principalColumn: "CustomerID",
                         onDelete: ReferentialAction.Cascade);
@@ -434,9 +353,8 @@ namespace Page_Navigation_App.Migrations
                     HUID = table.Column<string>(type: "TEXT", maxLength: 20, nullable: true),
                     TagNumber = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
                     Description = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
-                    BasePrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    FinalPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    MakingCharges = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
+                    ProductPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    MakingCharges = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     WastagePercentage = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
                     StoneValue = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     StoneDetails = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
@@ -446,7 +364,6 @@ namespace Page_Navigation_App.Migrations
                     Collection = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
                     IsBISCertified = table.Column<bool>(type: "INTEGER", nullable: false),
                     BISStandard = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
-                    ValueAdditionPercentage = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
                     IsCustomOrder = table.Column<bool>(type: "INTEGER", nullable: false),
                     IsActive = table.Column<bool>(type: "INTEGER", nullable: false),
                     StockQuantity = table.Column<int>(type: "int", nullable: false),
@@ -454,6 +371,7 @@ namespace Page_Navigation_App.Migrations
                     Design = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
                     Size = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
                     SupplierID = table.Column<int>(type: "INTEGER", nullable: false),
+                    AHCCode = table.Column<string>(type: "TEXT", nullable: true),
                     JewelType = table.Column<string>(type: "TEXT", nullable: true),
                     HUIDRegistrationDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
                     Wastage = table.Column<decimal>(type: "TEXT", nullable: false),
@@ -466,6 +384,38 @@ namespace Page_Navigation_App.Migrations
                     table.PrimaryKey("PK_Products", x => x.ProductID);
                     table.ForeignKey(
                         name: "FK_Products_Suppliers_SupplierID",
+                        column: x => x.SupplierID,
+                        principalTable: "Suppliers",
+                        principalColumn: "SupplierID",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PurchaseOrders",
+                columns: table => new
+                {
+                    PurchaseOrderID = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    PurchaseOrderNumber = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    SupplierID = table.Column<int>(type: "INTEGER", nullable: false),
+                    PurchaseDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    Status = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
+                    TotalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    PaidAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    BalanceAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    PaymentStatus = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    PaymentMethod = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
+                    DeliveryAddress = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
+                    ExpectedDeliveryDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    ActualDeliveryDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
+                    HasExpenseEntry = table.Column<bool>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PurchaseOrders", x => x.PurchaseOrderID);
+                    table.ForeignKey(
+                        name: "FK_PurchaseOrders_Suppliers_SupplierID",
                         column: x => x.SupplierID,
                         principalTable: "Suppliers",
                         principalColumn: "SupplierID",
@@ -578,8 +528,7 @@ namespace Page_Navigation_App.Migrations
                     RemainingAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     InterestRate = table.Column<decimal>(type: "decimal(5,2)", nullable: true),
                     NumberOfInstallments = table.Column<int>(type: "INTEGER", nullable: true),
-                    InstallmentNumber = table.Column<int>(type: "INTEGER", nullable: true),
-                    SupplierID = table.Column<int>(type: "INTEGER", nullable: true)
+                    InstallmentNumber = table.Column<int>(type: "INTEGER", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -594,11 +543,6 @@ namespace Page_Navigation_App.Migrations
                         column: x => x.OrderReference,
                         principalTable: "Orders",
                         principalColumn: "OrderID");
-                    table.ForeignKey(
-                        name: "FK_Finances_Suppliers_SupplierID",
-                        column: x => x.SupplierID,
-                        principalTable: "Suppliers",
-                        principalColumn: "SupplierID");
                 });
 
             migrationBuilder.CreateTable(
@@ -632,25 +576,10 @@ namespace Page_Navigation_App.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     OrderID = table.Column<int>(type: "INTEGER", nullable: false),
                     ProductID = table.Column<int>(type: "INTEGER", nullable: false),
-                    GrossWeight = table.Column<decimal>(type: "decimal(10,3)", nullable: false),
-                    NetWeight = table.Column<decimal>(type: "decimal(10,3)", nullable: false),
-                    UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Quantity = table.Column<decimal>(type: "decimal(10,3)", nullable: false),
+                    UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     TotalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    MetalRate = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    BaseAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    MakingCharges = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    WastagePercentage = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
-                    StoneValue = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    TaxableAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    CGSTAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    SGSTAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    IGSTAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    HSNCode = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
-                    FinalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Size = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
-                    Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
-                    TotalPrice = table.Column<decimal>(type: "TEXT", nullable: false)
+                    Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -700,6 +629,62 @@ namespace Page_Navigation_App.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Expenses",
+                columns: table => new
+                {
+                    ExpenseID = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Description = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    ExpenseDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Category = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    PaymentMethod = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
+                    PurchaseOrderID = table.Column<int>(type: "INTEGER", nullable: true),
+                    Recipient = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
+                    ReferenceNumber = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Expenses", x => x.ExpenseID);
+                    table.ForeignKey(
+                        name: "FK_Expenses_PurchaseOrders_PurchaseOrderID",
+                        column: x => x.PurchaseOrderID,
+                        principalTable: "PurchaseOrders",
+                        principalColumn: "PurchaseOrderID");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PurchaseOrderItems",
+                columns: table => new
+                {
+                    PurchaseOrderItemID = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    PurchaseOrderID = table.Column<int>(type: "INTEGER", nullable: false),
+                    ProductID = table.Column<int>(type: "INTEGER", nullable: false),
+                    Quantity = table.Column<decimal>(type: "decimal(10,3)", nullable: false),
+                    UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TotalPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PurchaseOrderItems", x => x.PurchaseOrderItemID);
+                    table.ForeignKey(
+                        name: "FK_PurchaseOrderItems_Products_ProductID",
+                        column: x => x.ProductID,
+                        principalTable: "Products",
+                        principalColumn: "ProductID",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PurchaseOrderItems_PurchaseOrders_PurchaseOrderID",
+                        column: x => x.PurchaseOrderID,
+                        principalTable: "PurchaseOrders",
+                        principalColumn: "PurchaseOrderID",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Stocks",
                 columns: table => new
                 {
@@ -718,7 +703,8 @@ namespace Page_Navigation_App.Migrations
                     LastSold = table.Column<DateTime>(type: "TEXT", nullable: true),
                     AddedDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     IsDeadStock = table.Column<bool>(type: "INTEGER", nullable: false),
-                    Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true)
+                    Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
+                    PurchaseOrderID = table.Column<int>(type: "INTEGER", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -730,10 +716,52 @@ namespace Page_Navigation_App.Migrations
                         principalColumn: "ProductID",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
+                        name: "FK_Stocks_PurchaseOrders_PurchaseOrderID",
+                        column: x => x.PurchaseOrderID,
+                        principalTable: "PurchaseOrders",
+                        principalColumn: "PurchaseOrderID");
+                    table.ForeignKey(
                         name: "FK_Stocks_Suppliers_SupplierID",
                         column: x => x.SupplierID,
                         principalTable: "Suppliers",
                         principalColumn: "SupplierID",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "StockItems",
+                columns: table => new
+                {
+                    StockItemID = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    StockItemCode = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    ProductID = table.Column<int>(type: "INTEGER", nullable: false),
+                    StockID = table.Column<int>(type: "INTEGER", nullable: false),
+                    AddedDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    Status = table.Column<string>(type: "TEXT", maxLength: 20, nullable: true),
+                    SoldDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    OrderID = table.Column<int>(type: "INTEGER", nullable: true),
+                    Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StockItems", x => x.StockItemID);
+                    table.ForeignKey(
+                        name: "FK_StockItems_Orders_OrderID",
+                        column: x => x.OrderID,
+                        principalTable: "Orders",
+                        principalColumn: "OrderID");
+                    table.ForeignKey(
+                        name: "FK_StockItems_Products_ProductID",
+                        column: x => x.ProductID,
+                        principalTable: "Products",
+                        principalColumn: "ProductID",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_StockItems_Stocks_StockID",
+                        column: x => x.StockID,
+                        principalTable: "Stocks",
+                        principalColumn: "StockID",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -753,6 +781,11 @@ namespace Page_Navigation_App.Migrations
                 column: "OrderID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Expenses_PurchaseOrderID",
+                table: "Expenses",
+                column: "PurchaseOrderID");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Finances_CustomerID",
                 table: "Finances",
                 column: "CustomerID");
@@ -761,11 +794,6 @@ namespace Page_Navigation_App.Migrations
                 name: "IX_Finances_OrderReference",
                 table: "Finances",
                 column: "OrderReference");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Finances_SupplierID",
-                table: "Finances",
-                column: "SupplierID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_HUIDLogs_ProductID",
@@ -808,14 +836,34 @@ namespace Page_Navigation_App.Migrations
                 column: "TagNumber");
 
             migrationBuilder.CreateIndex(
-                name: "IX_RepairJobs_CustomerId",
-                table: "RepairJobs",
-                column: "CustomerId");
+                name: "IX_PurchaseOrderItems_ProductID",
+                table: "PurchaseOrderItems",
+                column: "ProductID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_RepairJobs_Status",
-                table: "RepairJobs",
-                column: "Status");
+                name: "IX_PurchaseOrderItems_PurchaseOrderID",
+                table: "PurchaseOrderItems",
+                column: "PurchaseOrderID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PurchaseOrders_SupplierID",
+                table: "PurchaseOrders",
+                column: "SupplierID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StockItems_OrderID",
+                table: "StockItems",
+                column: "OrderID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StockItems_ProductID",
+                table: "StockItems",
+                column: "ProductID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StockItems_StockID",
+                table: "StockItems",
+                column: "StockID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_StockLedgers_ProductID",
@@ -826,6 +874,11 @@ namespace Page_Navigation_App.Migrations
                 name: "IX_Stocks_ProductID",
                 table: "Stocks",
                 column: "ProductID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Stocks_PurchaseOrderID",
+                table: "Stocks",
+                column: "PurchaseOrderID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Stocks_SupplierID",
@@ -858,6 +911,9 @@ namespace Page_Navigation_App.Migrations
                 name: "EMIs");
 
             migrationBuilder.DropTable(
+                name: "Expenses");
+
+            migrationBuilder.DropTable(
                 name: "Finances");
 
             migrationBuilder.DropTable(
@@ -870,10 +926,10 @@ namespace Page_Navigation_App.Migrations
                 name: "OrderDetails");
 
             migrationBuilder.DropTable(
-                name: "RateMaster");
+                name: "PurchaseOrderItems");
 
             migrationBuilder.DropTable(
-                name: "RepairJobs");
+                name: "RateMaster");
 
             migrationBuilder.DropTable(
                 name: "ReportData");
@@ -885,10 +941,10 @@ namespace Page_Navigation_App.Migrations
                 name: "Settings");
 
             migrationBuilder.DropTable(
-                name: "StockLedgers");
+                name: "StockItems");
 
             migrationBuilder.DropTable(
-                name: "Stocks");
+                name: "StockLedgers");
 
             migrationBuilder.DropTable(
                 name: "UserRoles");
@@ -897,7 +953,7 @@ namespace Page_Navigation_App.Migrations
                 name: "Orders");
 
             migrationBuilder.DropTable(
-                name: "Products");
+                name: "Stocks");
 
             migrationBuilder.DropTable(
                 name: "Roles");
@@ -907,6 +963,12 @@ namespace Page_Navigation_App.Migrations
 
             migrationBuilder.DropTable(
                 name: "Customers");
+
+            migrationBuilder.DropTable(
+                name: "Products");
+
+            migrationBuilder.DropTable(
+                name: "PurchaseOrders");
 
             migrationBuilder.DropTable(
                 name: "Suppliers");

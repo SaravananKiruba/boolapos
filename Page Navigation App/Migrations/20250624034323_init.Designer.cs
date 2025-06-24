@@ -11,8 +11,8 @@ using Page_Navigation_App.Data;
 namespace Page_Navigation_App.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250622075459_deoo")]
-    partial class deoo
+    [Migration("20250624034323_init")]
+    partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -348,6 +348,54 @@ namespace Page_Navigation_App.Migrations
                     b.HasIndex("OrderID");
 
                     b.ToTable("EMIs");
+                });
+
+            modelBuilder.Entity("Page_Navigation_App.Model.Expense", b =>
+                {
+                    b.Property<int>("ExpenseID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ExpenseDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PaymentMethod")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("PurchaseOrderID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Recipient")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ReferenceNumber")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ExpenseID");
+
+                    b.HasIndex("PurchaseOrderID");
+
+                    b.ToTable("Expenses");
                 });
 
             modelBuilder.Entity("Page_Navigation_App.Model.Finance", b =>
@@ -788,6 +836,104 @@ namespace Page_Navigation_App.Migrations
                     b.ToTable("Products");
                 });
 
+            modelBuilder.Entity("Page_Navigation_App.Model.PurchaseOrder", b =>
+                {
+                    b.Property<int>("PurchaseOrderID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("ActualDeliveryDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("BalanceAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("DeliveryAddress")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("ExpectedDeliveryDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("HasExpenseEntry")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("PaidAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("PaymentMethod")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PaymentStatus")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("PurchaseDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PurchaseOrderNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SupplierID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("PurchaseOrderID");
+
+                    b.HasIndex("SupplierID");
+
+                    b.ToTable("PurchaseOrders");
+                });
+
+            modelBuilder.Entity("Page_Navigation_App.Model.PurchaseOrderItem", b =>
+                {
+                    b.Property<int>("PurchaseOrderItemID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ProductID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("PurchaseOrderID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("decimal(10,3)");
+
+                    b.Property<decimal>("TotalPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("PurchaseOrderItemID");
+
+                    b.HasIndex("ProductID");
+
+                    b.HasIndex("PurchaseOrderID");
+
+                    b.ToTable("PurchaseOrderItems");
+                });
+
             modelBuilder.Entity("Page_Navigation_App.Model.RateMaster", b =>
                 {
                     b.Property<int>("RateID")
@@ -847,127 +993,6 @@ namespace Page_Navigation_App.Migrations
                     b.HasKey("RateID");
 
                     b.ToTable("RateMaster");
-                });
-
-            modelBuilder.Entity("Page_Navigation_App.Model.RepairJob", b =>
-                {
-                    b.Property<int>("RepairID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal?>("AdditionalMetalCost")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal?>("AdditionalMetalWeight")
-                        .HasColumnType("decimal(10,3)");
-
-                    b.Property<decimal?>("AdvanceAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("AssignedTo")
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateOnly?>("CompletionDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("CustomerComments")
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("CustomerId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateOnly?>("DeliveryDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("EstimatedCost")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateOnly?>("EstimatedDeliveryDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("ExpectedDeliveryDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("FinalAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("ImagePath")
-                        .HasMaxLength(255)
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsStoneProvided")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("ItemDescription")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ItemPhotoUrl")
-                        .HasMaxLength(255)
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("ItemWeight")
-                        .HasColumnType("decimal(10,3)");
-
-                    b.Property<string>("MetalType")
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("PaymentMethod")
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Priority")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Purity")
-                        .HasMaxLength(10)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateOnly>("ReceiptDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal?>("StoneCharge")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("StoneDetails")
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("WorkDescription")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateOnly?>("WorkStartDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("WorkType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("RepairID");
-
-                    b.HasIndex("CustomerId");
-
-                    b.HasIndex("Status");
-
-                    b.ToTable("RepairJobs");
                 });
 
             modelBuilder.Entity("Page_Navigation_App.Model.ReportData", b =>
@@ -1229,6 +1254,9 @@ namespace Page_Navigation_App.Migrations
                     b.Property<DateTime>("PurchaseDate")
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("PurchaseOrderID")
+                        .HasColumnType("INTEGER");
+
                     b.Property<decimal>("PurchaseRate")
                         .HasColumnType("decimal(18,2)");
 
@@ -1245,9 +1273,56 @@ namespace Page_Navigation_App.Migrations
 
                     b.HasIndex("ProductID");
 
+                    b.HasIndex("PurchaseOrderID");
+
                     b.HasIndex("SupplierID");
 
                     b.ToTable("Stocks");
+                });
+
+            modelBuilder.Entity("Page_Navigation_App.Model.StockItem", b =>
+                {
+                    b.Property<int>("StockItemID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("AddedDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("OrderID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ProductID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("SoldDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Status")
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("StockID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("StockItemCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("StockItemID");
+
+                    b.HasIndex("OrderID");
+
+                    b.HasIndex("ProductID");
+
+                    b.HasIndex("StockID");
+
+                    b.ToTable("StockItems");
                 });
 
             modelBuilder.Entity("Page_Navigation_App.Model.StockLedger", b =>
@@ -1437,6 +1512,15 @@ namespace Page_Navigation_App.Migrations
                     b.Navigation("Order");
                 });
 
+            modelBuilder.Entity("Page_Navigation_App.Model.Expense", b =>
+                {
+                    b.HasOne("Page_Navigation_App.Model.PurchaseOrder", "PurchaseOrder")
+                        .WithMany()
+                        .HasForeignKey("PurchaseOrderID");
+
+                    b.Navigation("PurchaseOrder");
+                });
+
             modelBuilder.Entity("Page_Navigation_App.Model.Finance", b =>
                 {
                     b.HasOne("Page_Navigation_App.Model.Customer", "Customer")
@@ -1504,15 +1588,34 @@ namespace Page_Navigation_App.Migrations
                     b.Navigation("Supplier");
                 });
 
-            modelBuilder.Entity("Page_Navigation_App.Model.RepairJob", b =>
+            modelBuilder.Entity("Page_Navigation_App.Model.PurchaseOrder", b =>
                 {
-                    b.HasOne("Page_Navigation_App.Model.Customer", "Customer")
-                        .WithMany("RepairJobs")
-                        .HasForeignKey("CustomerId")
+                    b.HasOne("Page_Navigation_App.Model.Supplier", "Supplier")
+                        .WithMany()
+                        .HasForeignKey("SupplierID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Customer");
+                    b.Navigation("Supplier");
+                });
+
+            modelBuilder.Entity("Page_Navigation_App.Model.PurchaseOrderItem", b =>
+                {
+                    b.HasOne("Page_Navigation_App.Model.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Page_Navigation_App.Model.PurchaseOrder", "PurchaseOrder")
+                        .WithMany("PurchaseOrderItems")
+                        .HasForeignKey("PurchaseOrderID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("PurchaseOrder");
                 });
 
             modelBuilder.Entity("Page_Navigation_App.Model.Stock", b =>
@@ -1523,6 +1626,10 @@ namespace Page_Navigation_App.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Page_Navigation_App.Model.PurchaseOrder", null)
+                        .WithMany("Stocks")
+                        .HasForeignKey("PurchaseOrderID");
+
                     b.HasOne("Page_Navigation_App.Model.Supplier", "Supplier")
                         .WithMany()
                         .HasForeignKey("SupplierID")
@@ -1532,6 +1639,31 @@ namespace Page_Navigation_App.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("Supplier");
+                });
+
+            modelBuilder.Entity("Page_Navigation_App.Model.StockItem", b =>
+                {
+                    b.HasOne("Page_Navigation_App.Model.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderID");
+
+                    b.HasOne("Page_Navigation_App.Model.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Page_Navigation_App.Model.Stock", "Stock")
+                        .WithMany()
+                        .HasForeignKey("StockID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Stock");
                 });
 
             modelBuilder.Entity("Page_Navigation_App.Model.StockLedger", b =>
@@ -1569,8 +1701,6 @@ namespace Page_Navigation_App.Migrations
                     b.Navigation("Orders");
 
                     b.Navigation("Payments");
-
-                    b.Navigation("RepairJobs");
                 });
 
             modelBuilder.Entity("Page_Navigation_App.Model.Order", b =>
@@ -1583,6 +1713,13 @@ namespace Page_Navigation_App.Migrations
             modelBuilder.Entity("Page_Navigation_App.Model.Product", b =>
                 {
                     b.Navigation("OrderDetails");
+
+                    b.Navigation("Stocks");
+                });
+
+            modelBuilder.Entity("Page_Navigation_App.Model.PurchaseOrder", b =>
+                {
+                    b.Navigation("PurchaseOrderItems");
 
                     b.Navigation("Stocks");
                 });
