@@ -25,20 +25,20 @@
             </ResourceDictionary.MergedDictionaries>
 
             <!-- Updated theme colors -->
-            <Color x:Key="BackgroundColor">#bbd3e8</Color>
-            <!-- Light blue background -->
-            <Color x:Key="PrimaryColor">#0462c2</Color>
-            <!-- Primary blue tone for main UI elements -->
-            <Color x:Key="SurfaceColor">#6ab2f2</Color>
-            <!-- Light blue surface tone -->
+            <Color x:Key="BackgroundColor">#f8fafb</Color>
+            <!-- Light neutral background -->
+            <Color x:Key="PrimaryColor">#018da5</Color>
+            <!-- Primary teal blue tone for main UI elements -->
+            <Color x:Key="SurfaceColor">#045b90</Color>
+            <!-- Dark blue surface tone -->
             <Color x:Key="TextPrimaryColor">#333333</Color>
             <!-- Dark text for contrast -->
-            <Color x:Key="TextSecondaryColor">#0c92f4</Color>
-            <!-- Medium blue for secondary text -->
+            <Color x:Key="TextSecondaryColor">#018da5</Color>
+            <!-- Primary teal for secondary text -->
             <Color x:Key="TextOnSurfaceColor">#444444</Color>
             <!-- Slightly lighter for surface readability -->
-            <Color x:Key="ErrorColor">#3e6c3f</Color>
-            <!-- Dark green for error/accent color -->
+            <Color x:Key="ErrorColor">#0b9b8a</Color>
+            <!-- Teal green for success/accent color -->
 
 
             <!-- Create brushes from the defined colors -->

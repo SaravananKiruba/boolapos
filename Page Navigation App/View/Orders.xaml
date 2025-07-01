@@ -68,7 +68,7 @@
                                         <TextBlock Text="{Binding SelectedCustomer.CustomerType}" 
                                                 VerticalAlignment="Center" 
                                                 FontWeight="Bold"
-                                                Foreground="#0462c2"/>
+                                                Foreground="#018da5"/>
                                     </StackPanel>
                                 </Border>
                             </Grid>

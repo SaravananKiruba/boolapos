@@ -223,7 +223,7 @@
                                                Style="{StaticResource MahApps.Styles.TextBox}"/>
                                     </StackPanel>
                                       <!-- Product Price with enhanced visibility -->
-                                    <Border Background="#bbd3e8" 
+                                    <Border Background="#e8f4f8" 
                                            BorderBrush="#BEE3F8" 
                                            BorderThickness="1" 
                                            CornerRadius="8" 
@@ -544,13 +544,13 @@
                             VerticalGridLinesBrush="Transparent">
                         <DataGrid.Resources>
                             <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
-                                           Color="#bbd3e8"/>
+                                           Color="#e8f4f8"/>
                             <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}"
-                                           Color="#bbd3e8"/>
+                                           Color="#e8f4f8"/>
                             <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}"
-                                           Color="#0462c2"/>
+                                           Color="#018da5"/>
                             <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}"
-                                           Color="#0462c2"/>
+                                           Color="#018da5"/>
                         </DataGrid.Resources>
                         <DataGrid.ColumnHeaderStyle>
                             <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}">
@@ -609,7 +609,7 @@
                                                   Height="36"
                                                   Margin="0,0,8,0"
                                                   ToolTip="Edit Product"
-                                                  Background="#bbd3e8"
+                                                  Background="#e8f4f8"
                                                   BorderBrush="#3182CE"
                                                   Command="{Binding DataContext.EditCommand, 
                                                          RelativeSource={RelativeSource AncestorType=DataGrid}}"

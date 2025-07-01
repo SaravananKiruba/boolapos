@@ -14,7 +14,7 @@
     <utilities:NegativeToRedConverter x:Key="NegativeToRedConverter"/>
     
     <!-- Status Colors for Frozen Resources -->
-    <SolidColorBrush x:Key="ActiveBrush" Color="#3e6c3f" />
-    <SolidColorBrush x:Key="InactiveBrush" Color="#0462c2" />
-    <SolidColorBrush x:Key="NeutralBrush" Color="#6ab2f2" />
+    <SolidColorBrush x:Key="ActiveBrush" Color="#0b9b8a" />
+    <SolidColorBrush x:Key="InactiveBrush" Color="#018da5" />
+    <SolidColorBrush x:Key="NeutralBrush" Color="#045b90" />
 </ResourceDictionary>

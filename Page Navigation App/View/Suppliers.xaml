@@ -248,9 +248,9 @@
                             VerticalGridLinesBrush="Transparent">
                         <DataGrid.Resources>
                             <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
-                                        Color="#bbd3e8"/>
+                                        Color="#e8f4f8"/>
                             <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}"
-                                        Color="#bbd3e8"/>
+                                        Color="#e8f4f8"/>
                             <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}"
                                         Color="Black"/>
                             <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}"
@@ -288,15 +288,15 @@
                                                     Height="32"
                                                     Margin="0,0,5,0"
                                                     ToolTip="Edit"
-                                                    Background="#bbd3e8"
-                                                    BorderBrush="#0462c2"
+                                                    Background="#e8f4f8"
+                                                    BorderBrush="#018da5"
                                                     Command="{Binding DataContext.EditCommand, 
                                                             RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                     CommandParameter="{Binding}">
                                                 <iconPacks:PackIconMaterial Kind="Pencil" 
                                                                         Width="16" 
                                                                         Height="16"
-                                                                        Foreground="#0462c2"/>
+                                                                        Foreground="#018da5"/>
                                             </Button>
                                             <Button Style="{StaticResource MahApps.Styles.Button.Circle}"
                                                     Width="32"
