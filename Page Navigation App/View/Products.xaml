@@ -241,7 +241,7 @@
                                                     <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
                                                 <TextBox Grid.Column="0" 
-                                                       Text="{Binding SelectedProduct.ProductPrice, StringFormat='? {0:N2}', UpdateSourceTrigger=PropertyChanged}"
+                                                       Text="{Binding SelectedProduct.ProductPrice, StringFormat='₹ {0:N2}', UpdateSourceTrigger=PropertyChanged}"
                                                        IsReadOnly="True"
                                                        Background="White"
                                                        Foreground="#2C5282"
@@ -597,7 +597,7 @@
                             <DataGridTextColumn Header="Stock" 
                                               Binding="{Binding StockItems.Count, StringFormat=N0}"
                                               Width="60"/><DataGridTextColumn Header="Price" 
-                                              Binding="{Binding ProductPrice, StringFormat=? {0:N2}}"
+                                              Binding="{Binding ProductPrice, StringFormat=₹ {0:N2}}"
                                               Width="100"/><DataGridTextColumn Header="Collection" 
                                               Binding="{Binding Collection}"
                                               Width="120"/>                            <DataGridTemplateColumn Width="Auto">

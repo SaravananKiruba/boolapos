@@ -212,9 +212,9 @@ namespace Page_Navigation_App.ViewModel
             
             ReportSummary = new Dictionary<string, object>
             {
-                { "Total Sales", totalSales },
+                { "Total Sales", $"₹{totalSales:N2}" },
                 { "Total Orders", totalOrders },
-                { "Average Order Value", averageOrderValue },
+                { "Average Order Value", $"₹{averageOrderValue:N2}" },
                 { "Payment Types", paymentTypes },
                 { "Top Customers", topCustomers }
             };
@@ -251,7 +251,7 @@ namespace Page_Navigation_App.ViewModel
             ReportSummary = new Dictionary<string, object>
             {
                 { "Total Products", totalProducts },
-                { "Total Inventory Value", totalValue },
+                { "Total Inventory Value", $"₹{totalValue:N2}" },
                 { "Metal Types", metalTypes },
                 { "Low Stock Products", lowStockProducts.Count() }
             };

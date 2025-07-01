@@ -145,13 +145,13 @@
                                             <ContentPresenter.Resources>
                                                 <!-- Default template for simple values -->
                                                 <DataTemplate DataType="{x:Type System:String}">
-                                                    <TextBlock Text="{Binding}"/>
+                                                    <TextBlock Text="{Binding}" FontWeight="Bold"/>
                                                 </DataTemplate>
                                                 <DataTemplate DataType="{x:Type System:Int32}">
                                                     <TextBlock Text="{Binding}"/>
                                                 </DataTemplate>
                                                 <DataTemplate DataType="{x:Type System:Decimal}">
-                                                    <TextBlock Text="{Binding StringFormat='{}{0:C}'}" FontWeight="Bold"/>
+                                                    <TextBlock Text="{Binding StringFormat='₹{0:N2}'}" FontWeight="Bold"/>
                                                 </DataTemplate>
                                                 
                                                 <!-- Template for collections -->

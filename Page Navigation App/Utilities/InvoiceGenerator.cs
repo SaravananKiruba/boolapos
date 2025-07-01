@@ -118,8 +118,8 @@ namespace Page_Navigation_App.Utilities
                                             table.Cell().Border(1).Text(productName);
                                             table.Cell().Border(1).Text(metalType);
                                             table.Cell().Border(1).Text(purity);
-                                            table.Cell().Border(1).AlignRight().Text($"INR {item.UnitPrice:N2}");
-                                            table.Cell().Border(1).AlignRight().Text($"INR {item.TotalAmount:N2}");
+                                            table.Cell().Border(1).AlignRight().Text($"₹ {item.UnitPrice:N2}");
+                                            table.Cell().Border(1).AlignRight().Text($"₹ {item.TotalAmount:N2}");
                                         }
                                     });
                                 });
@@ -131,30 +131,30 @@ namespace Page_Navigation_App.Utilities
                                     {
                                         column.Item().Text(txt =>
                                         {                                            txt.Span("Subtotal: ").Bold();
-                                            txt.Span($"INR {order.TotalAmount:N2}");
+                                            txt.Span($"₹ {order.TotalAmount:N2}");
                                         });
 
                                         column.Item().Text(txt =>
                                         {
                                             txt.Span("Discount: ").Bold();
-                                            txt.Span($"INR {order.DiscountAmount:N2}");
+                                            txt.Span($"₹ {order.DiscountAmount:N2}");
                                         });
 
                                         column.Item().Text(txt =>
                                         {
                                             txt.Span("Price Before Tax: ").Bold();
-                                            txt.Span($"INR {order.PriceBeforeTax:N2}");
+                                            txt.Span($"₹ {order.PriceBeforeTax:N2}");
                                         });
 
                                         column.Item().Text(txt =>
                                         {
                                             txt.Span("Tax (3%): ").Bold();
-                                            txt.Span($"INR {order.GrandTotal - order.PriceBeforeTax:N2}");
+                                            txt.Span($"₹ {order.GrandTotal - order.PriceBeforeTax:N2}");
                                         });
 
                                         column.Item().BorderTop(1).BorderColor(Colors.Grey.Medium).PaddingTop(5).Text(txt =>
                                         {                                            txt.Span("Grand Total: ").Bold().FontSize(12);
-                                            txt.Span($"INR {order.GrandTotal:N2}").Bold().FontSize(12);
+                                            txt.Span($"₹ {order.GrandTotal:N2}").Bold().FontSize(12);
                                         });
                                     });
                                 });
