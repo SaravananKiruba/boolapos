@@ -337,6 +337,14 @@ namespace Page_Navigation_App.Services
         }
 
         /// <summary>
+        /// Record expense (synchronous version)
+        /// </summary>
+        public bool RecordExpense(string category, decimal amount, string description, string paymentMode, string referenceNumber = null)
+        {
+            return RecordExpenseAsync(category, amount, description, paymentMode, referenceNumber).GetAwaiter().GetResult();
+        }
+
+        /// <summary>
         /// Get daily sales and payment summary for a date range
         /// </summary>
         public async Task<List<DailySummary>> GetDailyFinanceSummaryAsync(DateOnly fromDate, DateOnly toDate)
@@ -468,6 +476,7 @@ namespace Page_Navigation_App.Services
             try
             {
                 return _context.Finances
+                    .Include(f => f.Customer)
                     .OrderByDescending(f => f.TransactionDate)
                     .ToList();
             }
@@ -603,6 +612,7 @@ namespace Page_Navigation_App.Services
             try
             {
                 return _context.Finances
+                    .Include(f => f.Customer)
                     .Where(f => f.TransactionDate >= fromDate && f.TransactionDate <= toDate)
                     .OrderByDescending(f => f.TransactionDate)
                     .ToList();
@@ -622,6 +632,7 @@ namespace Page_Navigation_App.Services
             try
             {
                 return _context.Finances
+                    .Include(f => f.Customer)
                     .Where(f => f.TransactionType == transactionType)
                     .OrderByDescending(f => f.TransactionDate)
                     .ToList();

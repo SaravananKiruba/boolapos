@@ -30,9 +30,20 @@ namespace Page_Navigation_App.ViewModel
             _customerService = customerService;
             _orderService = orderService;
             
+            InitializeCollections();
             LoadTransactions();
             LoadCustomers();
-            InitializeCollections();
+            LoadAllOrdersAsync(); // Load all orders initially to make them available
+            
+            // Initialize with proper defaults
+            SelectedTransaction = new Finance
+            {
+                TransactionDate = DateTime.Now,
+                TransactionType = "Income",
+                PaymentMethod = "Cash",
+                Currency = "INR"
+            };
+            TransactionType = "Income"; // Set the bound property as well
 
             AddOrUpdateCommand = new RelayCommand<object>(_ => AddOrUpdateTransaction(), _ => CanAddOrUpdateTransaction());
             ClearCommand = new RelayCommand<object>(_ => ClearForm(), _ => true);
@@ -58,6 +69,18 @@ namespace Page_Navigation_App.ViewModel
                 if (value?.CustomerID > 0)
                 {
                     LoadCustomerOrders(value.CustomerID.Value);
+                    // Also set the selected customer
+                    SelectedCustomer = Customers.FirstOrDefault(c => c.CustomerID == value.CustomerID.Value);
+                }
+                if (value?.TransactionType == "Income")
+                {
+                    // Set the transaction type to trigger order loading
+                    TransactionType = "Income";
+                    // Load all orders if no customer is selected
+                    if (value.CustomerID == null || value.CustomerID == 0)
+                    {
+                        LoadAllOrdersAsync();
+                    }
                 }
             }
         }
@@ -74,6 +97,14 @@ namespace Page_Navigation_App.ViewModel
                 {
                     SelectedTransaction.CustomerID = value.CustomerID;
                     LoadCustomerOrders(value.CustomerID);
+                }
+                else
+                {
+                    // When no customer is selected, load all orders for income transactions
+                    if (SelectedTransaction?.TransactionType == "Income")
+                    {
+                        LoadAllOrdersAsync();
+                    }
                 }
             }
         }
@@ -108,6 +139,18 @@ namespace Page_Navigation_App.ViewModel
             {
                 _transactionType = value;
                 OnPropertyChanged();
+                
+                // Load all orders when transaction type is Income to allow selection
+                if (value == "Income" && (SelectedCustomer == null || Orders.Count == 0))
+                {
+                    LoadAllOrdersAsync();
+                }
+                
+                // Update the selected transaction if it exists
+                if (SelectedTransaction != null)
+                {
+                    SelectedTransaction.TransactionType = value;
+                }
             }
         }
 
@@ -191,15 +234,23 @@ namespace Page_Navigation_App.ViewModel
 
         private void LoadTransactions()
         {
-            Transactions.Clear();
-            var transactions = _financeService.GetAllFinanceRecords();
-            foreach (var transaction in transactions)
+            try
             {
-                Transactions.Add(transaction);
+                Transactions.Clear();
+                var transactions = _financeService.GetAllFinanceRecords();
+                foreach (var transaction in transactions)
+                {
+                    Transactions.Add(transaction);
+                }
+                
+                // Calculate summary
+                CalculateFinanceSummary();
             }
-            
-            // Calculate summary
-            CalculateFinanceSummary();
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Error loading transactions: {ex.Message}", "Error", 
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
         }
 
         private async void LoadCustomers()
@@ -214,11 +265,37 @@ namespace Page_Navigation_App.ViewModel
 
         private async void LoadCustomerOrders(int customerId)
         {
-            Orders.Clear();
-            var orders = await _orderService.GetCustomerOrders(customerId);
-            foreach (var order in orders)
+            try
             {
-                Orders.Add(order);
+                Orders.Clear();
+                var orders = await _orderService.GetCustomerOrders(customerId);
+                foreach (var order in orders)
+                {
+                    Orders.Add(order);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Error loading customer orders: {ex.Message}", "Error", 
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
+        }
+
+        private async void LoadAllOrdersAsync()
+        {
+            try
+            {
+                Orders.Clear();
+                var orders = await _orderService.GetAllOrders();
+                foreach (var order in orders.OrderByDescending(o => o.OrderDate))
+                {
+                    Orders.Add(order);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Error loading orders: {ex.Message}", "Error", 
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
@@ -237,40 +314,95 @@ namespace Page_Navigation_App.ViewModel
 
         private void AddOrUpdateTransaction()
         {
-            // Set default values if not provided
-            SelectedTransaction.TransactionDate = SelectedTransaction.TransactionDate == default ? 
-                DateTime.Now : SelectedTransaction.TransactionDate;
-                
-            SelectedTransaction.CreatedBy = string.IsNullOrEmpty(SelectedTransaction.CreatedBy) ? 
-                Environment.UserName : SelectedTransaction.CreatedBy;
-
-            // Validate
-            var validationContext = new ValidationContext(SelectedTransaction, null, null);
-            var validationResults = new List<ValidationResult>();
-            bool isValid = Validator.TryValidateObject(SelectedTransaction, validationContext, validationResults, true);
-
-            if (!isValid)
-            {
-                string errorMessage = string.Join("\n", validationResults.Select(v => v.ErrorMessage));
-                System.Windows.MessageBox.Show($"Validation Errors:\n{errorMessage}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-                return;
-            }
-
             try
             {
-                if (!string.IsNullOrEmpty(SelectedTransaction.FinanceID))
+                // Ensure the transaction type is set from the UI binding
+                if (!string.IsNullOrEmpty(TransactionType))
                 {
-                    _financeService.UpdateFinanceRecord(SelectedTransaction);
+                    SelectedTransaction.TransactionType = TransactionType;
+                }
+
+                // Set default values if not provided
+                SelectedTransaction.TransactionDate = SelectedTransaction.TransactionDate == default ? 
+                    DateTime.Now : SelectedTransaction.TransactionDate;
+                    
+                SelectedTransaction.CreatedBy = string.IsNullOrEmpty(SelectedTransaction.CreatedBy) ? 
+                    Environment.UserName : SelectedTransaction.CreatedBy;
+
+                // Set currency to INR if not set
+                if (string.IsNullOrEmpty(SelectedTransaction.Currency))
+                {
+                    SelectedTransaction.Currency = "INR";
+                }
+
+                // For expense transactions, set IsPaymentReceived to false (money going out)
+                if (SelectedTransaction.TransactionType == "Expense" || 
+                    SelectedTransaction.TransactionType == "Withdrawal" || 
+                    SelectedTransaction.TransactionType == "Refund")
+                {
+                    SelectedTransaction.IsPaymentReceived = false;
                 }
                 else
                 {
-                    _financeService.AddFinanceRecord(SelectedTransaction);
+                    SelectedTransaction.IsPaymentReceived = true;
                 }
 
-                LoadTransactions();
-                ClearForm();
-                
-                System.Windows.MessageBox.Show("Transaction saved successfully", "Success", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                // Validate basic requirements
+                if (SelectedTransaction.Amount <= 0)
+                {
+                    System.Windows.MessageBox.Show("Amount must be greater than zero.", "Validation Error", 
+                        System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(SelectedTransaction.TransactionType))
+                {
+                    System.Windows.MessageBox.Show("Please select a transaction type.", "Validation Error", 
+                        System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(SelectedTransaction.PaymentMethod))
+                {
+                    System.Windows.MessageBox.Show("Please select a payment method.", "Validation Error", 
+                        System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    return;
+                }
+
+                // Validate
+                var validationContext = new ValidationContext(SelectedTransaction, null, null);
+                var validationResults = new List<ValidationResult>();
+                bool isValid = Validator.TryValidateObject(SelectedTransaction, validationContext, validationResults, true);
+
+                if (!isValid)
+                {
+                    string errorMessage = string.Join("\n", validationResults.Select(v => v.ErrorMessage));
+                    System.Windows.MessageBox.Show($"Validation Errors:\n{errorMessage}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    return;
+                }
+
+                bool result;
+                if (!string.IsNullOrEmpty(SelectedTransaction.FinanceID))
+                {
+                    result = _financeService.UpdateFinanceRecord(SelectedTransaction);
+                }
+                else
+                {
+                    result = _financeService.AddFinanceRecord(SelectedTransaction);
+                }
+
+                if (result)
+                {
+                    LoadTransactions();
+                    ClearForm();
+                    
+                    string transactionTypeText = SelectedTransaction.TransactionType == "Expense" ? "Expense" : "Transaction";
+                    System.Windows.MessageBox.Show($"{transactionTypeText} saved successfully with amount ₹{SelectedTransaction.Amount:N2}", "Success", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                }
+                else
+                {
+                    System.Windows.MessageBox.Show("Failed to save transaction. Please check the details and try again.", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                }
             }
             catch (Exception ex)
             {
@@ -283,11 +415,13 @@ namespace Page_Navigation_App.ViewModel
             SelectedTransaction = new Finance
             {
                 TransactionDate = DateTime.Now,
-                TransactionType = TransactionTypes.First()
+                TransactionType = "Income", // Default to Income
+                PaymentMethod = "Cash",
+                Currency = "INR"
             };
             SelectedCustomer = null;
             SelectedOrder = null;
-            TransactionType = string.Empty;
+            TransactionType = "Income"; // Update the bound property as well
             StartDate = DateTime.Now.AddMonths(-1);
             EndDate = DateTime.Now;
         }

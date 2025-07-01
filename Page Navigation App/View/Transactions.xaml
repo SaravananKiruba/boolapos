@@ -23,7 +23,7 @@
                         <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="550">
                             <StackPanel>
                                 <ComboBox ItemsSource="{Binding TransactionTypes}"
-                                          SelectedItem="{Binding SelectedTransaction.TransactionType}"
+                                          SelectedItem="{Binding TransactionType}"
                                           Margin="0,5"
                                           mah:TextBoxHelper.Watermark="Transaction Type"
                                           Style="{StaticResource MahApps.Styles.ComboBox}"/>                                <mah:NumericUpDown Value="{Binding SelectedTransaction.Amount}"

@@ -287,59 +287,76 @@ namespace Page_Navigation_App.ViewModel
             };
         }
         
-        private Task GenerateFinancialReport()
+        private async Task GenerateFinancialReport()
         {
-            ReportTitle = $"Financial Report ({StartDate:d} - {EndDate:d})";
-            
-            // Get all financial transactions in date range 
-            var transactions = _financeService.GetTransactionsByDateRange(StartDate, EndDate);
-            // Store the transactions directly without awaiting
-            ReportData = transactions.ToList();
-            
-            // Calculate summary data
-            var income = transactions
-                .Where(t => t.TransactionType == "Income" || t.TransactionType == "Deposit")
-                .Sum(t => t.Amount);
-                
-            var expense = transactions
-                .Where(t => t.TransactionType == "Expense" || t.TransactionType == "Withdrawal" || t.TransactionType == "Refund")
-                .Sum(t => t.Amount);
-                
-            var netProfit = income - expense;
-            
-            var transactionsByType = transactions
-                .GroupBy(t => t.TransactionType)
-                .Select(g => new
-                {
-                    Type = g.Key,
-                    Count = g.Count(),
-                    TotalAmount = g.Sum(t => t.Amount)
-                })
-                .OrderByDescending(x => x.TotalAmount)
-                .ToList();
-
-            var paymentMethods = transactions
-                .Where(t => t.TransactionType == "Income")
-                .GroupBy(t => t.PaymentMethod)
-                .Select(g => new
-                {
-                    Method = g.Key,
-                    Count = g.Count(),
-                    TotalAmount = g.Sum(t => t.Amount)
-                })
-                .OrderByDescending(x => x.TotalAmount)
-                .ToList();
-            
-            ReportSummary = new Dictionary<string, object>
+            try
             {
-                { "Total Income", income },
-                { "Total Expenses", expense },
-                { "Net Profit", netProfit },
-                { "Transactions by Type", transactionsByType },
-                { "Payment Methods", paymentMethods }
-            };
-            
-            return Task.CompletedTask;
+                ReportTitle = $"Financial Report ({StartDate:d} - {EndDate:d})";
+                
+                // Get all financial transactions in date range 
+                var transactions = _financeService.GetTransactionsByDateRange(StartDate, EndDate);
+                ReportData = transactions.ToList();
+                
+                // Calculate summary data
+                var income = transactions
+                    .Where(t => t.TransactionType == "Income" || t.TransactionType == "Deposit")
+                    .Sum(t => t.Amount);
+                    
+                var expense = transactions
+                    .Where(t => t.TransactionType == "Expense" || t.TransactionType == "Withdrawal" || t.TransactionType == "Refund")
+                    .Sum(t => t.Amount);
+                    
+                var netProfit = income - expense;
+                
+                var transactionsByType = transactions
+                    .GroupBy(t => t.TransactionType)
+                    .Select(g => new
+                    {
+                        Type = g.Key,
+                        Count = g.Count(),
+                        TotalAmount = g.Sum(t => t.Amount)
+                    })
+                    .OrderByDescending(x => x.TotalAmount)
+                    .ToList();
+
+                var paymentMethods = transactions
+                    .Where(t => t.TransactionType == "Income")
+                    .GroupBy(t => t.PaymentMethod)
+                    .Select(g => new
+                    {
+                        Method = g.Key ?? "Unknown",
+                        Count = g.Count(),
+                        TotalAmount = g.Sum(t => t.Amount)
+                    })
+                    .OrderByDescending(x => x.TotalAmount)
+                    .ToList();
+                
+                ReportSummary = new Dictionary<string, object>
+                {
+                    { "Total Income", $"₹{income:N2}" },
+                    { "Total Expenses", $"₹{expense:N2}" },
+                    { "Net Profit", $"₹{netProfit:N2}" },
+                    { "Transactions by Type", transactionsByType },
+                    { "Payment Methods", paymentMethods }
+                };
+                
+                await Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Error generating financial report: {ex.Message}", "Error", 
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                
+                // Set empty data to prevent crashes
+                ReportData = new List<object>();
+                ReportSummary = new Dictionary<string, object>
+                {
+                    { "Total Income", "₹0.00" },
+                    { "Total Expenses", "₹0.00" },
+                    { "Net Profit", "₹0.00" },
+                    { "Error", ex.Message }
+                };
+            }
         }
         
         
