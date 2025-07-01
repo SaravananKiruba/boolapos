@@ -32,6 +32,7 @@ namespace Page_Navigation_App.ViewModel
         public ICommand RemoveOrderItemCommand { get; }
         public ICommand GenerateInvoiceCommand { get; }
         public ICommand CreateFinanceEntryCommand { get; }
+        public ICommand CreateExpenseEntryCommand { get; }
 
         // Add a parameterless constructor to allow XAML instantiation
         public OrderVM() { }        public OrderVM(OrderService orderService, CustomerService customerService, 
@@ -74,6 +75,7 @@ namespace Page_Navigation_App.ViewModel
             RemoveOrderItemCommand = new RelayCommand<OrderDetail>(item => RemoveOrderItem(item), _ => true);
             GenerateInvoiceCommand = new RelayCommand<object>(_ => GenerateInvoice(), _ => SelectedOrder?.OrderID > 0);
             CreateFinanceEntryCommand = new RelayCommand<object>(_ => CreateFinanceEntry(), _ => SelectedOrder?.OrderID > 0);
+            CreateExpenseEntryCommand = new RelayCommand<object>(_ => CreateExpenseEntry(), _ => SelectedOrder?.OrderID > 0);
         }
 
         public ObservableCollection<Order> Orders { get; set; } = new ObservableCollection<Order>();
@@ -420,44 +422,124 @@ namespace Page_Navigation_App.ViewModel
         {
             if (SelectedOrder == null || SelectedOrder.OrderID <= 0)
             {
-                System.Windows.MessageBox.Show("Please select an order first");
+                System.Windows.MessageBox.Show("Please select an order first", "Selection Required", 
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                 return;
             }
 
             try
             {
-                // Create finance entry for the order with Rupee symbol (₹)
+                // Check if finance entry already exists for this order
+                var existingFinanceRecords = _financeService.GetAllFinanceRecords()
+                    .Where(f => f.OrderID == SelectedOrder.OrderID && f.TransactionType == "Income")
+                    .ToList();
+
+                if (existingFinanceRecords.Any())
+                {
+                    var result = System.Windows.MessageBox.Show(
+                        $"Finance entry already exists for Order #{SelectedOrder.OrderID}. Do you want to create another one?",
+                        "Duplicate Entry", 
+                        System.Windows.MessageBoxButton.YesNo, 
+                        System.Windows.MessageBoxImage.Question);
+                    
+                    if (result == System.Windows.MessageBoxResult.No)
+                    {
+                        return;
+                    }
+                }
+
+                // Create finance entry for the order with proper fields
                 var finance = new Finance
                 {
-                    TransactionDate = DateTime.Now,
+                    FinanceID = Guid.NewGuid().ToString(),
+                    TransactionDate = SelectedOrder.OrderDate.ToDateTime(TimeOnly.MinValue),
                     Amount = SelectedOrder.GrandTotal,
                     TransactionType = "Income",
-                    PaymentMethod = SelectedOrder.PaymentType,
-                    Description = $"Payment for Order #{SelectedOrder.OrderID} - ₹{SelectedOrder.GrandTotal}",
+                    PaymentMethod = SelectedOrder.PaymentType ?? "Cash",
+                    PaymentMode = SelectedOrder.PaymentType ?? "Cash",
+                    Category = "Sales",
+                    Description = $"Payment for Order #{SelectedOrder.OrderID} - ₹{SelectedOrder.GrandTotal:N2}",
+                    Notes = $"Finance entry for order placed on {SelectedOrder.OrderDate}",
                     CustomerID = SelectedOrder.CustomerID,
                     OrderID = SelectedOrder.OrderID,
                     ReferenceNumber = SelectedOrder.OrderID.ToString(),
                     CreatedBy = Environment.UserName,
                     Currency = "INR",
-                    IsPaymentReceived = true
+                    IsPaymentReceived = true,
+                    Status = "Completed"
                 };
 
                 // Call AddFinanceRecord and handle result properly
-                bool result = _financeService.AddFinanceRecord(finance);
-                if (result)
+                bool success = _financeService.AddFinanceRecord(finance);
+                if (success)
                 {
-                    System.Windows.MessageBox.Show("Finance entry created successfully!");
+                    System.Windows.MessageBox.Show($"Finance entry created successfully!\nAmount: ₹{SelectedOrder.GrandTotal:N2}\nPayment Method: {SelectedOrder.PaymentType}", 
+                        "Success", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                 }
                 else
                 {
-                    System.Windows.MessageBox.Show("Failed to create finance entry");
+                    System.Windows.MessageBox.Show("Failed to create finance entry. Please check the logs for details.", 
+                        "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error creating finance entry: {ex.Message}");
+                System.Windows.MessageBox.Show($"Error creating finance entry: {ex.Message}", "Error", 
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
-        }        private void GenerateInvoice()
+        }        private void CreateExpenseEntry()
+        {
+            if (SelectedOrder == null || SelectedOrder.OrderID <= 0)
+            {
+                System.Windows.MessageBox.Show("Please select an order first", "Selection Required", 
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                // Create expense entry for the order (for purchase orders or operational expenses)
+                var expense = new Finance
+                {
+                    FinanceID = Guid.NewGuid().ToString(),
+                    TransactionDate = SelectedOrder.OrderDate.ToDateTime(TimeOnly.MinValue),
+                    Amount = SelectedOrder.GrandTotal,
+                    TransactionType = "Expense",
+                    PaymentMethod = SelectedOrder.PaymentType ?? "Cash",
+                    PaymentMode = SelectedOrder.PaymentType ?? "Cash",
+                    Category = "Purchase",
+                    Description = $"Expense for Order #{SelectedOrder.OrderID} - ₹{SelectedOrder.GrandTotal:N2}",
+                    Notes = $"Expense entry for purchase order placed on {SelectedOrder.OrderDate}",
+                    CustomerID = SelectedOrder.CustomerID,
+                    OrderID = SelectedOrder.OrderID,
+                    ReferenceNumber = SelectedOrder.OrderID.ToString(),
+                    CreatedBy = Environment.UserName,
+                    Currency = "INR",
+                    IsPaymentReceived = false, // This is an expense (money going out)
+                    Status = "Completed"
+                };
+
+                // Call AddFinanceRecord and handle result properly
+                bool success = _financeService.AddFinanceRecord(expense);
+                if (success)
+                {
+                    System.Windows.MessageBox.Show($"Expense entry created successfully!\nAmount: ₹{SelectedOrder.GrandTotal:N2}\nPayment Method: {SelectedOrder.PaymentType}", 
+                        "Success", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                }
+                else
+                {
+                    System.Windows.MessageBox.Show("Failed to create expense entry. Please check the logs for details.", 
+                        "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Error creating expense entry: {ex.Message}", "Error", 
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
+        }
+
+        private void GenerateInvoice()
         {
             try
             {

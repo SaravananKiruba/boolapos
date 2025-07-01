@@ -41,7 +41,9 @@ namespace Page_Navigation_App.ViewModel
                 TransactionDate = DateTime.Now,
                 TransactionType = "Income",
                 PaymentMethod = "Cash",
-                Currency = "INR"
+                Currency = "INR",
+                Category = "Sales",
+                Status = "Completed"
             };
             TransactionType = "Income"; // Set the bound property as well
 
@@ -335,6 +337,36 @@ namespace Page_Navigation_App.ViewModel
                     SelectedTransaction.Currency = "INR";
                 }
 
+                // Set category based on transaction type if not provided
+                if (string.IsNullOrEmpty(SelectedTransaction.Category))
+                {
+                    SelectedTransaction.Category = SelectedTransaction.TransactionType switch
+                    {
+                        "Income" => "Sales",
+                        "Expense" => "Operational",
+                        "Refund" => "Customer Service",
+                        "Deposit" => "Banking",
+                        "Withdrawal" => "Banking",
+                        "Transfer" => "Banking",
+                        _ => "General"
+                    };
+                }
+
+                // Set customer and order references if selected
+                if (SelectedCustomer != null)
+                {
+                    SelectedTransaction.CustomerID = SelectedCustomer.CustomerID;
+                }
+
+                if (SelectedOrder != null)
+                {
+                    SelectedTransaction.OrderID = SelectedOrder.OrderID;
+                    if (string.IsNullOrEmpty(SelectedTransaction.ReferenceNumber))
+                    {
+                        SelectedTransaction.ReferenceNumber = SelectedOrder.OrderID.ToString();
+                    }
+                }
+
                 // For expense transactions, set IsPaymentReceived to false (money going out)
                 if (SelectedTransaction.TransactionType == "Expense" || 
                     SelectedTransaction.TransactionType == "Withdrawal" || 
@@ -369,6 +401,18 @@ namespace Page_Navigation_App.ViewModel
                     return;
                 }
 
+                // Set description from Notes if Description is empty but Notes is provided
+                if (string.IsNullOrEmpty(SelectedTransaction.Description) && !string.IsNullOrEmpty(SelectedTransaction.Notes))
+                {
+                    SelectedTransaction.Description = SelectedTransaction.Notes;
+                }
+
+                // Ensure we have some description for the transaction
+                if (string.IsNullOrEmpty(SelectedTransaction.Description))
+                {
+                    SelectedTransaction.Description = $"{SelectedTransaction.TransactionType} entry - ₹{SelectedTransaction.Amount:N2}";
+                }
+
                 // Validate
                 var validationContext = new ValidationContext(SelectedTransaction, null, null);
                 var validationResults = new List<ValidationResult>();
@@ -382,12 +426,27 @@ namespace Page_Navigation_App.ViewModel
                 }
 
                 bool result;
-                if (!string.IsNullOrEmpty(SelectedTransaction.FinanceID))
+                // Check if this is an existing record by checking if it exists in the database
+                bool isExistingRecord = false;
+                if (!string.IsNullOrEmpty(SelectedTransaction.FinanceID) && 
+                    SelectedTransaction.FinanceID != Guid.Empty.ToString())
+                {
+                    // Check if the record actually exists in the database
+                    isExistingRecord = _financeService.FinanceRecordExists(SelectedTransaction.FinanceID);
+                }
+
+                if (isExistingRecord)
                 {
                     result = _financeService.UpdateFinanceRecord(SelectedTransaction);
                 }
                 else
                 {
+                    // For new transactions, ensure we have a valid ID
+                    if (string.IsNullOrEmpty(SelectedTransaction.FinanceID) || 
+                        SelectedTransaction.FinanceID == Guid.Empty.ToString())
+                    {
+                        SelectedTransaction.FinanceID = Guid.NewGuid().ToString();
+                    }
                     result = _financeService.AddFinanceRecord(SelectedTransaction);
                 }
 
@@ -401,7 +460,7 @@ namespace Page_Navigation_App.ViewModel
                 }
                 else
                 {
-                    System.Windows.MessageBox.Show("Failed to save transaction. Please check the details and try again.", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    System.Windows.MessageBox.Show("Failed to save transaction. Please check the logs for details.", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
@@ -417,7 +476,9 @@ namespace Page_Navigation_App.ViewModel
                 TransactionDate = DateTime.Now,
                 TransactionType = "Income", // Default to Income
                 PaymentMethod = "Cash",
-                Currency = "INR"
+                Currency = "INR",
+                Category = "Sales",
+                Status = "Completed"
             };
             SelectedCustomer = null;
             SelectedOrder = null;

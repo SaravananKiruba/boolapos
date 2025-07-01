@@ -558,8 +558,117 @@ namespace Page_Navigation_App.Services
         /// </summary>
         public bool AddFinanceRecord(Finance finance)
         {
-            // Call the async version and get the result synchronously
-            return RecordPaymentAsync(finance).GetAwaiter().GetResult();
+            try
+            {
+                // Ensure FinanceID is set
+                if (string.IsNullOrEmpty(finance.FinanceID))
+                {
+                    finance.FinanceID = Guid.NewGuid().ToString();
+                }
+
+                // Set default values if not provided
+                if (finance.TransactionDate == default)
+                {
+                    finance.TransactionDate = DateTime.Now;
+                }
+
+                // Set currency to INR if not set
+                if (string.IsNullOrEmpty(finance.Currency))
+                {
+                    finance.Currency = "INR";
+                }
+
+                // Set category based on transaction type if not provided
+                if (string.IsNullOrEmpty(finance.Category))
+                {
+                    finance.Category = finance.TransactionType switch
+                    {
+                        "Income" => "Sales",
+                        "Expense" => "Operational",
+                        "Refund" => "Customer Service",
+                        "Deposit" => "Banking",
+                        "Withdrawal" => "Banking",
+                        "Transfer" => "Banking",
+                        _ => "General"
+                    };
+                }
+
+                // Set description from Notes if Description is empty
+                if (string.IsNullOrEmpty(finance.Description) && !string.IsNullOrEmpty(finance.Notes))
+                {
+                    finance.Description = finance.Notes;
+                }
+
+                // For expense transactions, ensure IsPaymentReceived is false
+                if (finance.TransactionType == "Expense" || 
+                    finance.TransactionType == "Withdrawal" || 
+                    finance.TransactionType == "Refund")
+                {
+                    finance.IsPaymentReceived = false;
+                }
+                else
+                {
+                    finance.IsPaymentReceived = true;
+                }
+
+                // Validate the finance record
+                if (finance.Amount <= 0)
+                {
+                    _logService.LogError("Invalid finance amount: Amount must be greater than zero");
+                    return false;
+                }
+
+                if (string.IsNullOrEmpty(finance.TransactionType))
+                {
+                    _logService.LogError("Transaction type is required");
+                    return false;
+                }
+
+                if (string.IsNullOrEmpty(finance.PaymentMode))
+                {
+                    _logService.LogError("Payment mode is required");
+                    return false;
+                }
+
+                // Add the finance record to the database
+                _context.Finances.Add(finance);
+                _context.SaveChanges();
+
+                // Update customer balance if CustomerID is provided
+                if (finance.CustomerID.HasValue)
+                {
+                    UpdateCustomerBalanceAsync(finance.CustomerID.Value).GetAwaiter().GetResult();
+                }
+
+                _logService.LogInformation($"Finance record added: {finance.TransactionType} - ₹{finance.Amount} via {finance.PaymentMode}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logService.LogError($"Error adding finance record: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Check if a finance record exists by ID
+        /// </summary>
+        public bool FinanceRecordExists(string financeId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(financeId))
+                {
+                    return false;
+                }
+
+                return _context.Finances.Any(f => f.FinanceID == financeId);
+            }
+            catch (Exception ex)
+            {
+                _logService.LogError($"Error checking if finance record exists: {ex.Message}");
+                return false;
+            }
         }
 
         /// <summary>
@@ -569,7 +678,9 @@ namespace Page_Navigation_App.Services
         {
             try
             {
-                var existingRecord = _context.Finances.Find(finance.FinanceID);
+                _logService.LogInformation($"Attempting to update finance record with ID: {finance.FinanceID}");
+                
+                var existingRecord = _context.Finances.FirstOrDefault(f => f.FinanceID == finance.FinanceID);
                 if (existingRecord == null)
                 {
                     _logService.LogError($"Finance record not found with ID: {finance.FinanceID}");
