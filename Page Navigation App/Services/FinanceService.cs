@@ -716,6 +716,41 @@ namespace Page_Navigation_App.Services
         }
 
         /// <summary>
+        /// Delete finance record
+        /// </summary>
+        public bool DeleteFinanceRecord(string financeId)
+        {
+            try
+            {
+                _logService.LogInformation($"Attempting to delete finance record with ID: {financeId}");
+                
+                var existingRecord = _context.Finances.FirstOrDefault(f => f.FinanceID == financeId);
+                if (existingRecord == null)
+                {
+                    _logService.LogError($"Finance record not found with ID: {financeId}");
+                    return false;
+                }
+
+                _context.Finances.Remove(existingRecord);
+                _context.SaveChanges();
+
+                // Update customer balance if CustomerID is provided
+                if (existingRecord.CustomerID.HasValue)
+                {
+                    UpdateCustomerBalanceAsync(existingRecord.CustomerID.Value).GetAwaiter().GetResult();
+                }
+
+                _logService.LogInformation($"Finance record deleted: {financeId}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logService.LogError($"Error deleting finance record: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Get transactions by date range
         /// </summary>
         public List<Finance> GetTransactionsByDateRange(DateTime fromDate, DateTime toDate)

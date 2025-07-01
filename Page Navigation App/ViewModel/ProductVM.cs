@@ -82,6 +82,9 @@ namespace Page_Navigation_App.ViewModel
             RecalculatePriceCommand = new RelayCommand<object>(RecalculatePrice, CanRecalculatePrice);
             DeleteCommand = new RelayCommand<object>(DeleteProduct, _ => true);
             EditCommand = new RelayCommand<object>(EditProduct, _ => true);
+            
+            // Initialize with a clear form for new product creation
+            ClearForm();
         }
 
         public ObservableCollection<Product> Products { get; set; } = new ObservableCollection<Product>();
@@ -89,7 +92,7 @@ namespace Page_Navigation_App.ViewModel
         public ObservableCollection<string> Purities { get; set; } = new ObservableCollection<string>();
         public ObservableCollection<Supplier> Suppliers { get; set; } = new ObservableCollection<Supplier>();
         
-        private Product _selectedProduct = new Product();
+        private Product _selectedProduct;
         private Product _previousProduct;
         
         public Product SelectedProduct
@@ -216,9 +219,31 @@ namespace Page_Navigation_App.ViewModel
             {
                 SelectedProduct = new Product
                 {
-                    ProductName = SearchName,
+                    ProductName = SearchName ?? "", // Use search name or empty string
                     IsActive = true,
-                    SupplierID = Suppliers.Count > 0 ? Suppliers[0].SupplierID : 0
+                    SupplierID = Suppliers.Count > 0 ? Suppliers[0].SupplierID : 0,
+                    MetalType = "Gold", // Set default metal type
+                    Purity = "22k", // Set default purity
+                    GrossWeight = 0,
+                    NetWeight = 0,
+                    MakingCharges = 0,
+                    WastagePercentage = 3.50m,
+                    StoneValue = 0,
+                    Description = "",
+                    Design = "",
+                    Size = "",
+                    HUID = "",
+                    Collection = "",
+                    BISStandard = "",
+                    HallmarkNumber = "",
+                    TagNumber = "",
+                    StoneDetails = "",
+                    StoneWeight = 0,
+                    IsHallmarked = false,
+                    IsBISCertified = false,
+                    IsCustomOrder = false,
+                    StockQuantity = 0,
+                    ReorderLevel = 5
                 };
             }
         }private async void AddOrUpdateProduct()
@@ -338,7 +363,38 @@ namespace Page_Navigation_App.ViewModel
 
         private void ClearForm()
         {
-            SelectedProduct = new Product { IsActive = true };
+            SelectedProduct = new Product 
+            { 
+                IsActive = true,
+                ProductName = "", // Clear the product name for new product creation
+                MetalType = "Gold", // Set default metal type
+                Purity = "22k", // Set default purity
+                GrossWeight = 0,
+                NetWeight = 0,
+                MakingCharges = 0,
+                WastagePercentage = 3.50m,
+                StoneValue = 0,
+                Description = "",
+                Design = "",
+                Size = "",
+                HUID = "",
+                Collection = "",
+                BISStandard = "",
+                HallmarkNumber = "",
+                TagNumber = "",
+                StoneDetails = "",
+                StoneWeight = 0,
+                IsHallmarked = false,
+                IsBISCertified = false,
+                IsCustomOrder = false,
+                StockQuantity = 0,
+                ReorderLevel = 5
+            };
+            
+            // Also clear the initial stock quantity and location
+            InitialStockQuantity = 0;
+            StockLocation = "Main";
+            
             SearchName = string.Empty;
         }
 

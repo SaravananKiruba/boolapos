@@ -23,6 +23,8 @@ namespace Page_Navigation_App.ViewModel
         public ICommand SearchByTypeCommand { get; }
         public ICommand SearchByDateCommand { get; }
         public ICommand GenerateReportCommand { get; }
+        public ICommand EditCommand { get; }
+        public ICommand DeleteCommand { get; }
 
         public TransactionVM(FinanceService financeService, CustomerService customerService, OrderService orderService)
         {
@@ -52,6 +54,8 @@ namespace Page_Navigation_App.ViewModel
             SearchByTypeCommand = new RelayCommand<object>(_ => SearchTransactionsByType(), _ => true);
             SearchByDateCommand = new RelayCommand<object>(_ => SearchTransactionsByDate(), _ => true);
             GenerateReportCommand = new RelayCommand<object>(_ => GenerateFinanceReport(), _ => true);
+            EditCommand = new RelayCommand<Finance>(transaction => EditTransaction(transaction), _ => true);
+            DeleteCommand = new RelayCommand<Finance>(transaction => DeleteTransaction(transaction), _ => true);
         }
 
         public ObservableCollection<Finance> Transactions { get; set; } = new ObservableCollection<Finance>();
@@ -548,5 +552,100 @@ namespace Page_Navigation_App.ViewModel
         public string FormattedTotalIncome => $"₹{TotalIncome:N2}";
         public string FormattedTotalExpense => $"₹{TotalExpense:N2}";
         public string FormattedNetBalance => $"₹{NetBalance:N2}";
+
+
+        private void EditTransaction(Finance transaction)
+        {
+            if (transaction == null) return;
+
+            // Set the selected transaction for editing
+            SelectedTransaction = new Finance
+            {
+                FinanceID = transaction.FinanceID,
+                TransactionDate = transaction.TransactionDate,
+                TransactionType = transaction.TransactionType,
+                Amount = transaction.Amount,
+                PaymentMethod = transaction.PaymentMethod,
+                PaymentMode = transaction.PaymentMode,
+                Category = transaction.Category,
+                Description = transaction.Description,
+                ReferenceNumber = transaction.ReferenceNumber,
+                CustomerID = transaction.CustomerID,
+                OrderID = transaction.OrderID,
+                IsPaymentReceived = transaction.IsPaymentReceived,
+                Notes = transaction.Notes,
+                Status = transaction.Status,
+                Currency = transaction.Currency,
+                CreatedBy = transaction.CreatedBy
+            };
+
+            // Set the transaction type property to match
+            TransactionType = transaction.TransactionType;
+
+            // Set the selected customer if available
+            if (transaction.CustomerID.HasValue)
+            {
+                SelectedCustomer = Customers.FirstOrDefault(c => c.CustomerID == transaction.CustomerID.Value);
+            }
+
+            // Set the selected order if available
+            if (transaction.OrderID.HasValue)
+            {
+                SelectedOrder = Orders.FirstOrDefault(o => o.OrderID == transaction.OrderID.Value);
+            }
+        }
+
+        private void DeleteTransaction(Finance transaction)
+        {
+            if (transaction == null) return;
+
+            var result = System.Windows.MessageBox.Show(
+                $"Are you sure you want to delete this transaction?\n\nAmount: ₹{transaction.Amount:N2}\nType: {transaction.TransactionType}\nDate: {transaction.TransactionDate:dd-MMM-yyyy}",
+                "Confirm Delete",
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Question);
+
+            if (result == System.Windows.MessageBoxResult.Yes)
+            {
+                try
+                {
+                    bool success = _financeService.DeleteFinanceRecord(transaction.FinanceID);
+                    
+                    if (success)
+                    {
+                        // If this is the currently selected transaction, clear the form
+                        if (SelectedTransaction?.FinanceID == transaction.FinanceID)
+                        {
+                            ClearForm();
+                        }
+                        
+                        // Refresh the transaction list
+                        LoadTransactions();
+                        
+                        System.Windows.MessageBox.Show(
+                            "Transaction deleted successfully.",
+                            "Success",
+                            System.Windows.MessageBoxButton.OK,
+                            System.Windows.MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        System.Windows.MessageBox.Show(
+                            "Failed to delete transaction. Please try again.",
+                            "Error",
+                            System.Windows.MessageBoxButton.OK,
+                            System.Windows.MessageBoxImage.Error);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.MessageBox.Show(
+                        $"Error deleting transaction: {ex.Message}", 
+                        "Error", 
+                        System.Windows.MessageBoxButton.OK, 
+                        System.Windows.MessageBoxImage.Error);
+                }
+            }
+        }
     }
 }
