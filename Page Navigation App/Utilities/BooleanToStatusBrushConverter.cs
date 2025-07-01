@@ -11,9 +11,9 @@ namespace Page_Navigation_App.Utilities
     public class BooleanToStatusBrushConverter : IValueConverter
     {
         // Static brushes for better performance (reuse instead of creating new ones each time)
-        private static readonly SolidColorBrush _activeBrush = new SolidColorBrush(Color.FromRgb(67, 160, 71)); // Green (#43A047)
-        private static readonly SolidColorBrush _inactiveBrush = new SolidColorBrush(Color.FromRgb(235, 59, 90)); // Red (#EB3B5A)
-        private static readonly SolidColorBrush _neutralBrush = new SolidColorBrush(Colors.Gray);
+        private static readonly SolidColorBrush _activeBrush = new SolidColorBrush(Color.FromRgb(62, 108, 63)); // Dark Green (#3e6c3f)
+        private static readonly SolidColorBrush _inactiveBrush = new SolidColorBrush(Color.FromRgb(4, 98, 194)); // Primary Blue (#0462c2)
+        private static readonly SolidColorBrush _neutralBrush = new SolidColorBrush(Color.FromRgb(106, 178, 242)); // Light Blue (#6ab2f2)
 
         static BooleanToStatusBrushConverter()
         {

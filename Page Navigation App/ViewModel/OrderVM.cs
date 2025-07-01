@@ -35,7 +35,23 @@ namespace Page_Navigation_App.ViewModel
         public ICommand CreateExpenseEntryCommand { get; }
 
         // Add a parameterless constructor to allow XAML instantiation
-        public OrderVM() { }        public OrderVM(OrderService orderService, CustomerService customerService, 
+        public OrderVM() 
+        {
+            // Initialize collections to prevent null reference exceptions
+            Orders = new ObservableCollection<Order>();
+            Customers = new ObservableCollection<Customer>();
+            Products = new ObservableCollection<Product>();
+            OrderItems = new ObservableCollection<OrderDetail>();
+            
+            // Initialize SelectedOrder but NOT SelectedOrderItem to prevent empty records
+            SelectedOrder = new Order
+            {
+                OrderDate = DateOnly.FromDateTime(DateTime.Now),
+                Status = "Pending",
+                PaymentMethod = "Cash",
+                DiscountAmount = 0
+            };
+        }        public OrderVM(OrderService orderService, CustomerService customerService, 
                       ProductService productService, FinanceService financeService)
         {
             _orderService = orderService;
@@ -108,7 +124,7 @@ namespace Page_Navigation_App.ViewModel
             }
         }
 
-        private OrderDetail _selectedOrderItem = new OrderDetail();
+        private OrderDetail _selectedOrderItem;
         public OrderDetail SelectedOrderItem
         {
             get => _selectedOrderItem;
@@ -141,13 +157,18 @@ namespace Page_Navigation_App.ViewModel
             {
                 _selectedProduct = value;
                 OnPropertyChanged();
-                if (value != null)
+                if (value != null && value.ProductID > 0)
                 {
-                    if (SelectedOrderItem == null)
-                        SelectedOrderItem = new OrderDetail();
-                    SelectedOrderItem.ProductID = value.ProductID;
-                    SelectedOrderItem.Product = value;
-                    SelectedOrderItem.UnitPrice = value.ProductPrice;
+                    // Only create new OrderDetail when we have a valid product
+                    // This prevents empty records from appearing in the UI
+                    SelectedOrderItem = new OrderDetail
+                    {
+                        ProductID = value.ProductID,
+                        Product = value,
+                        UnitPrice = value.ProductPrice,
+                        Quantity = 1,
+                        TotalAmount = value.ProductPrice
+                    };
                     CalculateOrderItemTotal();
                 }
             }
@@ -269,9 +290,7 @@ namespace Page_Navigation_App.ViewModel
             }
         }        private void CalculateOrderItemTotal()
         {
-            if (SelectedOrderItem == null)
-                SelectedOrderItem = new OrderDetail();
-            if (SelectedOrderItem != null && SelectedProduct != null)
+            if (SelectedProduct != null && SelectedProduct.ProductID > 0 && SelectedOrderItem != null)
             {
                 SelectedOrderItem.Quantity = 1;  // Default quantity
                 SelectedOrderItem.UnitPrice = SelectedProduct.ProductPrice;
@@ -301,7 +320,7 @@ namespace Page_Navigation_App.ViewModel
                 SelectedOrder.TotalItems = OrderItems?.Sum(item => (int)item.Quantity) ?? 0;
                 
                 // 2. Calculate price before tax (after discount)
-                SelectedOrder.PriceBeforeTax = totalAmount + SelectedOrder.DiscountAmount;
+                SelectedOrder.PriceBeforeTax = totalAmount - SelectedOrder.DiscountAmount;
                 if (SelectedOrder.PriceBeforeTax < 0) SelectedOrder.PriceBeforeTax = 0; // Ensure it doesn't go negative
                 
                 // 3. Calculate final price with 3% tax
@@ -314,23 +333,61 @@ namespace Page_Navigation_App.ViewModel
             {
                 System.Diagnostics.Debug.WriteLine($"Error in UpdateOrderTotal: {ex.Message}");
             }
-        }private void AddOrderItem()
+        }        private void AddOrderItem()
         {
             try
             {
                 if (SelectedProduct == null)
-                    return;                var newItem = new OrderDetail
                 {
-                    ProductID = SelectedProduct.ProductID,
-                    Product = SelectedProduct,
-                    Quantity = 1,
-                    UnitPrice = SelectedProduct.ProductPrice,
-                    TotalAmount = SelectedProduct.ProductPrice
-                };
+                    System.Windows.MessageBox.Show("Please select a product first.", "No Product Selected");
+                    return;
+                }
 
-            OrderItems.Add(newItem);
-            UpdateOrderTotal();
-            SelectedProduct = null;
+                // Validate product data
+                if (SelectedProduct.ProductID <= 0)
+                {
+                    System.Windows.MessageBox.Show("Invalid product selected. Please select a valid product.", "Invalid Product");
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(SelectedProduct.ProductName))
+                {
+                    System.Windows.MessageBox.Show("Product name is required. Please select a valid product.", "Invalid Product");
+                    return;
+                }
+
+                if (SelectedProduct.ProductPrice <= 0)
+                {
+                    System.Windows.MessageBox.Show("Product price must be greater than zero.", "Invalid Price");
+                    return;
+                }
+
+                // Check if product is already in the order
+                var existingItem = OrderItems.FirstOrDefault(item => item.ProductID == SelectedProduct.ProductID);
+                if (existingItem != null)
+                {
+                    // If product already exists, increase quantity
+                    existingItem.Quantity += 1;
+                    existingItem.TotalAmount = existingItem.UnitPrice * existingItem.Quantity;
+                }
+                else
+                {
+                    // Create new order item
+                    var newItem = new OrderDetail
+                    {
+                        ProductID = SelectedProduct.ProductID,
+                        Product = SelectedProduct,
+                        Quantity = 1,
+                        UnitPrice = SelectedProduct.ProductPrice,
+                        TotalAmount = SelectedProduct.ProductPrice
+                    };
+                    OrderItems.Add(newItem);
+                }
+
+                UpdateOrderTotal();
+                // Clear selected product and order item after adding to prevent duplicates on UI interaction
+                SelectedProduct = null;
+                SelectedOrderItem = null;
             }
             catch (Exception ex)
             {
@@ -610,14 +667,20 @@ namespace Page_Navigation_App.ViewModel
         }
 
         private void ClearForm()
-        {            SelectedOrder = new Order
+        {
+            SelectedOrder = new Order
             {
                 OrderDate = DateOnly.FromDateTime(DateTime.Now),
-                PaymentType = PaymentTypes.First()
+                PaymentType = PaymentTypes.First(),
+                Status = "Pending",
+                DiscountAmount = 0
             };
             SelectedCustomer = null;
             SelectedProduct = null;
-            OrderItems.Clear();            StartDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(-1));
+            SelectedOrderItem = null;
+            OrderItems.Clear();
+            
+            StartDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(-1));
             EndDate = DateOnly.FromDateTime(DateTime.Now);
             CustomerId = 0;
         }
@@ -631,7 +694,10 @@ namespace Page_Navigation_App.ViewModel
 
         private bool CanAddOrderItem()
         {
-            return SelectedProduct != null;
+            return SelectedProduct != null && 
+                   SelectedProduct.ProductID > 0 &&
+                   !string.IsNullOrEmpty(SelectedProduct.ProductName) &&
+                   SelectedProduct.ProductPrice > 0;
         }
 
         private async void SearchOrdersByDate()

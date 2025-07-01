@@ -143,7 +143,7 @@ namespace Page_Navigation_App.Model
             TotalAmount = OrderDetails.Sum(od => od.TotalAmount);
             
             // 2. Apply discount to get price before tax
-            PriceBeforeTax = TotalAmount + DiscountAmount; // Note: discount can be negative
+            PriceBeforeTax = TotalAmount - DiscountAmount; // Subtract discount from total
             if (PriceBeforeTax < 0) PriceBeforeTax = 0; // Ensure it doesn't go negative
             
             // 3. Calculate final price with 3% tax

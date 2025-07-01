@@ -149,7 +149,7 @@ namespace Page_Navigation_App.Services
                 // Update order totals
                 order.TotalItems = totalItems;
                 order.TotalAmount = totalAmount;
-                order.PriceBeforeTax = totalAmount + order.DiscountAmount; // Apply discount
+                order.PriceBeforeTax = totalAmount - order.DiscountAmount; // Apply discount (subtract from total)
                 if (order.PriceBeforeTax < 0) order.PriceBeforeTax = 0; // Ensure it doesn't go negative
                 order.GrandTotal = Math.Round(order.PriceBeforeTax * 1.03m, 2); // Add 3% tax
                 

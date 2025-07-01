@@ -101,14 +101,14 @@
             
             <!-- Report Title -->
             <Border Grid.Row="0" 
-                    Background="#E3F2FD"
+                    Background="#bbd3e8"
                     CornerRadius="8"
                     Padding="15,10"
                     Margin="0,0,0,20">
                 <TextBlock Text="{Binding ReportTitle}"
                         FontSize="20"
                         FontWeight="Bold"
-                        Foreground="#2196F3"/>
+                        Foreground="#0462c2"/>
             </Border>
             
             <!-- Report Summary with enhanced styling -->
@@ -193,9 +193,9 @@
                             VerticalGridLinesBrush="Transparent">
                         <DataGrid.Resources>
                             <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
-                                        Color="#E3F2FD"/>
+                                        Color="#bbd3e8"/>
                             <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}"
-                                        Color="#E3F2FD"/>
+                                        Color="#bbd3e8"/>
                             <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}"
                                         Color="Black"/>
                             <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}"

@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="Page_Navigation_App.View.Home"
+<UserControl x:Class="Page_Navigation_App.View.Home"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -127,7 +127,7 @@
                                 <iconPacks:PackIconMaterial Kind="Package"
                                                          Width="24"
                                                          Height="24"
-                                                         Foreground="#0DCAF0"/>
+                                                         Foreground="#0c92f4"/>
                                 <TextBlock Text="Product Movement"
                                          Margin="10,0,0,0"
                                          FontSize="18"
@@ -145,7 +145,7 @@
                                     <TextBlock Text="{Binding ProductInCount}"
                                              FontSize="32"
                                              FontWeight="Bold"
-                                             Foreground="#0DCAF0"
+                                             Foreground="#0c92f4"
                                              HorizontalAlignment="Center"/>
                                 </StackPanel>
                                 <StackPanel Margin="20,0,0,0">
@@ -155,7 +155,7 @@
                                     <TextBlock Text="{Binding ProductOutCount}"
                                              FontSize="32"
                                              FontWeight="Bold"
-                                             Foreground="#DC3545"
+                                             Foreground="#3e6c3f"
                                              HorizontalAlignment="Center"/>
                                 </StackPanel>
                             </StackPanel>
@@ -191,7 +191,7 @@
                                 <iconPacks:PackIconMaterial Kind="CartCheck"
                                                          Width="24"
                                                          Height="24"
-                                                         Foreground="#FFC107"/>
+                                                         Foreground="#6ab2f2"/>
                                 <TextBlock Text="Total Orders"
                                          Margin="10,0,0,0"
                                          FontSize="18"
@@ -204,8 +204,8 @@
                                 <TextBlock Text="{Binding TotalOrders}"
                                          FontSize="48"
                                          FontWeight="Bold"
-                                         Foreground="#FFC107"
-                                         HorizontalAlignment="Center"/>                                <TextBlock Text="{Binding TotalRevenue, StringFormat={}Total Revenue: ₹{0:N2}}"
+                                         Foreground="#6ab2f2"
+                                         HorizontalAlignment="Center"/>                                <TextBlock Text="{Binding TotalRevenue, StringFormat={}Total Revenue: ?{0:N2}}"
                                          FontSize="16"
                                          Opacity="0.7"
                                          HorizontalAlignment="Center"/>

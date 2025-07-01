@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="Page_Navigation_App.View.Products"
+<UserControl x:Class="Page_Navigation_App.View.Products"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -182,7 +182,7 @@
                                         </Grid.ColumnDefinitions>
                                           <!-- Making Charges with Label -->
                                         <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                                            <TextBlock Text="Making Charges (₹)" 
+                                            <TextBlock Text="Making Charges (?)" 
                                                     FontSize="12" 
                                                     FontWeight="Medium"
                                                     Foreground="#4A5568"
@@ -197,7 +197,7 @@
                                         
                                         <!-- Stone Value with Label -->
                                         <StackPanel Grid.Column="1" Margin="8,0,0,0">
-                                            <TextBlock Text="Stone Value (₹)" 
+                                            <TextBlock Text="Stone Value (?)" 
                                                     FontSize="12" 
                                                     FontWeight="Medium"
                                                     Foreground="#4A5568"
@@ -223,14 +223,14 @@
                                                Style="{StaticResource MahApps.Styles.TextBox}"/>
                                     </StackPanel>
                                       <!-- Product Price with enhanced visibility -->
-                                    <Border Background="#EBF8FF" 
+                                    <Border Background="#bbd3e8" 
                                            BorderBrush="#BEE3F8" 
                                            BorderThickness="1" 
                                            CornerRadius="8" 
                                            Padding="15,15,15,15" 
                                            Margin="0,0,0,16">
                                         <StackPanel>
-                                            <TextBlock Text="Product Price (₹)" 
+                                            <TextBlock Text="Product Price (?)" 
                                                     FontSize="14" 
                                                     FontWeight="Bold"
                                                     Foreground="#2C5282"
@@ -241,7 +241,7 @@
                                                     <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
                                                 <TextBox Grid.Column="0" 
-                                                       Text="{Binding SelectedProduct.ProductPrice, StringFormat='₹ {0:N2}', UpdateSourceTrigger=PropertyChanged}"
+                                                       Text="{Binding SelectedProduct.ProductPrice, StringFormat='? {0:N2}', UpdateSourceTrigger=PropertyChanged}"
                                                        IsReadOnly="True"
                                                        Background="White"
                                                        Foreground="#2C5282"
@@ -544,13 +544,13 @@
                             VerticalGridLinesBrush="Transparent">
                         <DataGrid.Resources>
                             <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
-                                           Color="#EBF8FF"/>
+                                           Color="#bbd3e8"/>
                             <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}"
-                                           Color="#EBF8FF"/>
+                                           Color="#bbd3e8"/>
                             <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}"
-                                           Color="#2B6CB0"/>
+                                           Color="#0462c2"/>
                             <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}"
-                                           Color="#2B6CB0"/>
+                                           Color="#0462c2"/>
                         </DataGrid.Resources>
                         <DataGrid.ColumnHeaderStyle>
                             <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource MahApps.Styles.DataGridColumnHeader}">
@@ -597,7 +597,7 @@
                             <DataGridTextColumn Header="Stock" 
                                               Binding="{Binding StockItems.Count, StringFormat=N0}"
                                               Width="60"/><DataGridTextColumn Header="Price" 
-                                              Binding="{Binding ProductPrice, StringFormat=₹ {0:N2}}"
+                                              Binding="{Binding ProductPrice, StringFormat=? {0:N2}}"
                                               Width="100"/><DataGridTextColumn Header="Collection" 
                                               Binding="{Binding Collection}"
                                               Width="120"/>                            <DataGridTemplateColumn Width="Auto">
@@ -609,7 +609,7 @@
                                                   Height="36"
                                                   Margin="0,0,8,0"
                                                   ToolTip="Edit Product"
-                                                  Background="#EBF8FF"
+                                                  Background="#bbd3e8"
                                                   BorderBrush="#3182CE"
                                                   Command="{Binding DataContext.EditCommand, 
                                                          RelativeSource={RelativeSource AncestorType=DataGrid}}"

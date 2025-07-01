@@ -46,9 +46,9 @@
                         VerticalGridLinesBrush="Transparent">
                     <DataGrid.Resources>
                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
-                                    Color="#E3F2FD"/>
+                                    Color="#bbd3e8"/>
                         <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}"
-                                    Color="#E3F2FD"/>
+                                    Color="#bbd3e8"/>
                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}"
                                     Color="Black"/>
                         <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}"
@@ -241,9 +241,9 @@
                         VerticalGridLinesBrush="Transparent">
                     <DataGrid.Resources>
                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
-                                    Color="#E3F2FD"/>
+                                    Color="#bbd3e8"/>
                         <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}"
-                                    Color="#E3F2FD"/>
+                                    Color="#bbd3e8"/>
                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}"
                                     Color="Black"/>
                         <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}"
