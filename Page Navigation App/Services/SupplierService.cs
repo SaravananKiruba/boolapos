@@ -12,17 +12,13 @@ namespace Page_Navigation_App.Services
     public class SupplierService
     {
         private readonly AppDbContext _context;
-        private readonly StockService _stockService;
-        private readonly StockLedgerService _ledgerService;
-
+        
         public SupplierService(
-            AppDbContext context, 
-            StockService stockService,
-            StockLedgerService ledgerService)
+            AppDbContext context
+            )
         {
             _context = context;
-            _stockService = stockService;
-            _ledgerService = ledgerService;
+           
         }        
 
         // Create supplier
@@ -124,66 +120,8 @@ namespace Page_Navigation_App.Services
         }
 
         // Purchase operations
-        public async Task<Stock> CreatePurchase(Stock purchase)
-        {
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
-            {
-                // Validate supplier and product
-                var supplier = await _context.Suppliers.FindAsync(purchase.SupplierID);
-                var product = await _context.Products.FindAsync(purchase.ProductID);
-                
-                if (supplier == null || product == null) return null;
-                
-                purchase.PurchaseDate = DateTime.Now;
-                await _context.Stocks.AddAsync(purchase);
-                await _context.SaveChangesAsync();
-                
-                // Update product stock - Fix decimal to string conversion error
-                await _stockService.IncreaseStock(
-                    purchase.ProductID, 
-                    purchase.QuantityPurchased, 
-                    purchase.PurchaseRate, 
-                    "Purchase");
-                
-                await transaction.CommitAsync();
-                return purchase;
-            }
-            catch
-            {
-                await transaction.RollbackAsync();
-                return null;
-            }
-        }
 
-        public async Task<IEnumerable<Stock>> GetSupplierPurchaseHistory(int supplierId)
-        {
-            return await _context.Stocks
-                .Include(s => s.Product)
-                .Include(s => s.Supplier)
-                .Where(s => s.SupplierID == supplierId)
-                .OrderByDescending(s => s.PurchaseDate)
-                .ToListAsync();
-        }
 
-        public async Task<bool> UpdatePurchasePaymentStatus(int purchaseId, string paymentStatus)
-        {
-            try
-            {
-                var purchase = await _context.Stocks.FindAsync(purchaseId);
-                if (purchase == null) return false;
-                
-                purchase.PaymentStatus = paymentStatus;
-                purchase.LastUpdated = DateTime.Now;
-                
-                await _context.SaveChangesAsync();
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
 
         // Get the first supplier from the database
         public async Task<Supplier> GetFirstSupplier()

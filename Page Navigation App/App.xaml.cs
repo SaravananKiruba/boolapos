@@ -49,45 +49,29 @@ namespace Page_Navigation_App
                 options.UseSqlite("Data Source=StockInventory.db"),
                 ServiceLifetime.Scoped);
 
-            // Authentication Service
-            services.AddScoped<AuthenticationService>();
-
             // Core Services - Scoped lifetime
             services.AddScoped<LogService>();
-            services.AddScoped<SecurityService>();
-            services.AddScoped<ConfigurationService>();
             services.AddScoped<ReportService>();
-            services.AddScoped<BackupService>();
             
             // Register newly implemented services
             services.AddScoped<HUIDTrackingService>();
             services.AddScoped<TaggingService>();
-            services.AddScoped<GSTComplianceService>();
-            
-            // Register StockIntegrationService
-            services.AddScoped<StockIntegrationService>();
 
             // Business Services - Scoped lifetime
             services.AddScoped<CustomerService>();
             services.AddScoped<ProductService>();
             services.AddScoped<OrderService>();
             services.AddScoped<FinanceService>();
-            services.AddScoped<StockLedgerService>();
             services.AddScoped<SupplierService>();
             services.AddScoped<RateMasterService>();
-            services.AddScoped<StockService>();
-            services.AddScoped<ExchangeService>();
-            services.AddScoped<UserService>();
             services.AddScoped<PrintService>();
-            services.AddScoped<PurchaseOrderService>();
 
             // ViewModels - Transient lifetime except for NavigationVM
             services.AddSingleton<NavigationVM>();
             services.AddTransient<HomeVM>(provider => new HomeVM(
                 provider.GetRequiredService<ProductService>(),
                 provider.GetRequiredService<OrderService>(),
-                provider.GetRequiredService<CustomerService>(),
-                provider.GetRequiredService<StockLedgerService>()
+                provider.GetRequiredService<CustomerService>()
             ));
             services.AddTransient<CustomerVM>();
             services.AddTransient<ProductVM>();
@@ -95,19 +79,10 @@ namespace Page_Navigation_App
             services.AddTransient<TransactionVM>();  
             services.AddTransient<SupplierVM>();
             services.AddTransient<RateMasterVM>();
-            services.AddTransient<StockVM>();
-            services.AddTransient<UserVM>();
             services.AddTransient<ReportVM>();
-            services.AddTransient<SettingsVM>();
-            services.AddTransient<PurchaseOrderVM>();
-            services.AddTransient<StockIntegrationVM>();
-
-            // Login ViewModel
-            services.AddTransient<LoginViewModel>();
 
             // Register Windows
             services.AddSingleton<MainWindow>();
-            services.AddTransient<LoginWindow>();
         }        protected override async void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
@@ -123,16 +98,7 @@ namespace Page_Navigation_App
                         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                         await dbContext.Database.MigrateAsync().ConfigureAwait(false);
                         
-                        // Seed default admin user if needed
-                        var authService = scope.ServiceProvider.GetRequiredService<AuthenticationService>();
-                        await authService.SeedDefaultUserAsync().ConfigureAwait(false);
-                        
-                        // Seed test users with different roles
-                        await TestDataSeeder.SeedTestUsersAsync(dbContext, authService).ConfigureAwait(false);
-                        
                         // Setup automatic backup schedule
-                        var backupService = scope.ServiceProvider.GetRequiredService<BackupService>();
-                        await backupService.ScheduleAutomaticBackupsAsync().ConfigureAwait(false);
                     }
                 });
             }
@@ -142,16 +108,10 @@ namespace Page_Navigation_App
                     "Startup Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
-            // Get main window but don't show it yet
+            // Show main window directly (no login required)
             var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
-            
-            // Set main window as the application's main window but hide it
             MainWindow = mainWindow;
-            mainWindow.Hide();
-            
-            // Show login window
-            var loginWindow = ServiceProvider.GetRequiredService<LoginWindow>();
-            loginWindow.Show();
+            mainWindow.Show();
         }
     }
 }

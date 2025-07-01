@@ -140,40 +140,6 @@ namespace Page_Navigation_App.Services
         }        /// <summary>
         /// Log security event (login, permissions change, etc.)
         /// </summary>
-        public async Task LogSecurityEventAsync(string action, string userId, string details, bool isSuccessful)
-        {
-            try
-            {
-                var securityLog = new SecurityLog
-                {
-                    Action = action,
-                    UserId = userId,
-                    Details = details,
-                    Timestamp = DateTime.Now,
-                    IsSuccessful = isSuccessful,
-                    IpAddress = GetClientIpAddress()
-                };
-                
-                // Check if we're already in a transaction to avoid nested transaction errors
-                bool inExistingTransaction = _context.Database.CurrentTransaction != null;
-                
-                _context.SecurityLogs.Add(securityLog);
-                
-                // Only call SaveChangesAsync if we're not in an existing transaction
-                if (!inExistingTransaction) {
-                    await _context.SaveChangesAsync();
-                }
-                
-                string logMessage = $"SECURITY: {action} - User: {userId} - Success: {isSuccessful} - {details}";
-                WriteToLogFile("SECURITY", logMessage);
-            }
-            catch (Exception ex)
-            {
-                string logMessage = $"SECURITY: {action} - User: {userId} - Success: {isSuccessful} - {details}";
-                WriteToLogFile("SECURITY", logMessage);
-                WriteToLogFile("ERROR", $"Failed to log security event to database: {ex.Message}", ex);
-            }
-        }        /// <summary>
         /// Log audit information for data changes
         /// </summary>
         public async Task LogAuditAsync(string entityName, int entityId, string action, string userId, string oldValues, string newValues)
@@ -235,22 +201,6 @@ namespace Page_Navigation_App.Services
         /// <summary>
         /// Get security logs for a user
         /// </summary>
-        public async Task<SecurityLog[]> GetUserSecurityLogsAsync(string userId, int count = 100)
-        {
-            try
-            {
-                return await _context.SecurityLogs
-                    .Where(l => l.UserId == userId)
-                    .OrderByDescending(l => l.Timestamp)
-                    .Take(count)
-                    .ToArrayAsync();
-            }
-            catch (Exception ex)
-            {
-                WriteToLogFile("ERROR", $"Failed to get security logs for user {userId}: {ex.Message}", ex);
-                return Array.Empty<SecurityLog>();
-            }
-        }
 
         /// <summary>
         /// Get audit logs for an entity
@@ -353,55 +303,7 @@ namespace Page_Navigation_App.Services
             return "127.0.0.1";
         }
 
-        /// <summary>
-        /// Clean up old logs (logs older than specified days)
-        /// </summary>
-        public async Task CleanupOldLogsAsync(int olderThanDays = 90)
-        {
-            try
-            {
-                var cutoffDate = DateTime.Now.AddDays(-olderThanDays);
-                
-                // Clean up database logs
-                var oldLogs = await _context.LogEntries
-                    .Where(l => l.Timestamp < cutoffDate)
-                    .ToListAsync();
-                
-                _context.LogEntries.RemoveRange(oldLogs);
-                
-                var oldSecurityLogs = await _context.SecurityLogs
-                    .Where(l => l.Timestamp < cutoffDate)
-                    .ToListAsync();
-                
-                _context.SecurityLogs.RemoveRange(oldSecurityLogs);
-                
-                // Don't delete audit logs automatically as they're important for compliance
-                
-                await _context.SaveChangesAsync();
-                  // Clean up log files
-                string logDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
-                if (Directory.Exists(logDirectory))
-                {
-                    foreach (var file in Directory.GetFiles(logDirectory, "BoolaPOS_*.log"))
-                    {
-                        FileInfo fileInfo = new FileInfo(file);
-                        if (fileInfo.CreationTime < cutoffDate)
-                        {
-                            fileInfo.Delete();
-                        }
-                    }
-                }
-                
-                // Write directly to log file instead of using LogInformationAsync to avoid potential recursion
-                WriteToLogFile("INFO", $"Cleaned up logs older than {olderThanDays} days");
-            }
-            catch (Exception ex)
-            {
-                WriteToLogFile("ERROR", $"Failed to clean up old logs: {ex.Message}", ex);
-            }
-        }        /// <summary>
-        /// Log warning message (synchronous version for compatibility)
-        /// </summary>
+        
         public void LogWarning(string message, string userId = null)
         {
             try

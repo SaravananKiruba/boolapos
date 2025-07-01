@@ -187,42 +187,7 @@
                             </Grid>
                         </Button>
 
-                        <Button Style="{StaticResource NavigationButton}"
-                                Command="{Binding StockCommand}">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <iconPacks:PackIconMaterial Kind="PackageVariant"
-                                                       Width="20"
-                                                       Height="20"
-                                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
-                                <TextBlock Grid.Column="1"
-                                       Text="Stock"
-                                       Margin="15,0,0,0"
-                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
-                            </Grid>
-                        </Button>
 
-
-                        <Button Style="{StaticResource NavigationButton}"
-                                Command="{Binding UserCommand}">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <iconPacks:PackIconMaterial Kind="AccountCog"
-                                                       Width="20"
-                                                       Height="20"
-                                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
-                                <TextBlock Grid.Column="1"
-                                       Text="Users"
-                                       Margin="15,0,0,0"
-                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
-                            </Grid>
-                        </Button>
 
                         <Button Style="{StaticResource NavigationButton}"
                                 Command="{Binding ReportCommand}">
@@ -242,23 +207,7 @@
                             </Grid>
                         </Button>
 
-                        <Button Style="{StaticResource NavigationButton}"
-                                Command="{Binding SettingsCommand}">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <iconPacks:PackIconMaterial Kind="Cog"
-                                                       Width="20"
-                                                       Height="20"
-                                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
-                                <TextBlock Grid.Column="1"
-                                       Text="Settings"
-                                       Margin="15,0,0,0"
-                                       Foreground="{StaticResource TextOnSurfaceBrush}"/>
-                            </Grid>
-                        </Button>
+
 
                         <!-- Close Button -->
                         <Button Grid.Row="2"
@@ -311,26 +260,6 @@
                              FontWeight="Medium"
                              Foreground="{StaticResource TextPrimaryBrush}"
                              VerticalAlignment="Center"/>
-
-                    <!-- User Profile -->
-                    <StackPanel Grid.Column="1" 
-                              Orientation="Horizontal" 
-                              VerticalAlignment="Center">
-                        <TextBlock Text="{Binding CurrentUser}"
-                                 Foreground="{StaticResource TextPrimaryBrush}"
-                                 VerticalAlignment="Center"
-                                 Margin="0 0 10 0"/>
-                        <Button Style="{StaticResource MahApps.Styles.Button.Circle}"
-                                Width="40"
-                                Height="40"
-                                Background="{StaticResource SurfaceBrush}"
-                                BorderThickness="0">
-                            <iconPacks:PackIconMaterial Kind="AccountCircle"
-                                                     Width="24"
-                                                     Height="24"
-                                                     Foreground="{StaticResource PrimaryBrush}"/>
-                        </Button>
-                    </StackPanel>
                 </Grid>
 
                 <!-- Main Content -->

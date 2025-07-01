@@ -20,11 +20,8 @@ namespace Page_Navigation_App.Utilities
                 OrderVM => "Orders",
                 TransactionVM => "Transactions",
                 SupplierVM => "Suppliers",
-                RateMasterVM => "Rate Master",
-                StockVM => "Stock",
-                UserVM => "Users",
+                RateMasterVM => "Rate Master",               
                 ReportVM => "Reports",
-                SettingsVM => "Settings",
                 _ => value.GetType().Name.Replace("VM", "")
             };
         }

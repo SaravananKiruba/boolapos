@@ -149,7 +149,6 @@ namespace Page_Navigation_App.Model
 
         // Navigation properties
         public virtual Supplier Supplier { get; set; }
-        public virtual ICollection<Stock> Stocks { get; set; }
         public virtual ICollection<OrderDetail> OrderDetails { get; set; }
 
         // Properties referenced in HUIDTrackingService and RateManagementService

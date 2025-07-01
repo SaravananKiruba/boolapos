@@ -18,7 +18,6 @@ namespace Page_Navigation_App.ViewModel
         private readonly RateMasterService _rateService;
         
         // Add StockService
-        private readonly StockService _stockService;
         
         public ICommand AddOrUpdateCommand { get; private set; }        
         public ICommand ClearCommand { get; private set; }
@@ -65,13 +64,12 @@ namespace Page_Navigation_App.ViewModel
           public ProductVM(
             ProductService productService, 
             SupplierService supplierService,
-            RateMasterService rateService,
-            StockService stockService)  // Added StockService parameter
+            RateMasterService rateService
+           )  // Added StockService parameter
         {
             _productService = productService;
             _supplierService = supplierService;            
             _rateService = rateService;
-            _stockService = stockService;  // Initialize StockService
               
             LoadProducts();
             Task.Run(async () => await LoadSuppliers()).Wait();
@@ -273,44 +271,14 @@ namespace Page_Navigation_App.ViewModel
                 {
                     result = await _productService.UpdateProduct(SelectedProduct);
                     
-                    // If update successful and initial stock quantity is specified, add to stock
-                    if (result && InitialStockQuantity > 0)
-                    {
-                        await _stockService.AddStock(new Stock
-                        {
-                            ProductID = SelectedProduct.ProductID,
-                            SupplierID = SelectedProduct.SupplierID,
-                            QuantityPurchased = InitialStockQuantity,
-                            PurchaseRate = SelectedProduct.ProductPrice * 0.7m,
-                            TotalAmount = SelectedProduct.ProductPrice * 0.7m * InitialStockQuantity,
-                            Location = StockLocation,
-                            PaymentStatus = "Paid",
-                            PurchaseDate = DateTime.Now
-                        });
-                    }
+                    
                 }
                 else
                 {                    // If initial stock quantity is specified, use the new method
-                    if (InitialStockQuantity > 0)
-                    {
-                        // Create a stock object for the initial quantity
-                        var initialStock = new Stock
-                        {
-                            QuantityPurchased = InitialStockQuantity,
-                            PurchaseRate = SelectedProduct.ProductPrice * 0.7m,
-                            TotalAmount = InitialStockQuantity * (SelectedProduct.ProductPrice * 0.7m),
-                            Location = StockLocation,
-                            PaymentStatus = "Paid",
-                            SupplierID = SelectedProduct.SupplierID > 0 ? SelectedProduct.SupplierID : 1
-                        };
-                          var addResult = await _productService.AddProductWithInitialStock(SelectedProduct, initialStock);
-                        result = addResult.product != null;
-                    }
-                    else
-                    {
+                    
                         var addedProduct = await _productService.AddProduct(SelectedProduct);
                         result = addedProduct != null;
-                    }
+
                 }
 
                 if (result)
@@ -588,74 +556,14 @@ namespace Page_Navigation_App.ViewModel
                     result = await _productService.UpdateProduct(SelectedProduct);
                     
                     // If update successful and initial stock quantity is specified, add to stock
-                    if (result && InitialStockQuantity > 0)
-                    {
-                        await _stockService.AddStock(new Stock
-                        {
-                            ProductID = SelectedProduct.ProductID,
-                            SupplierID = SelectedProduct.SupplierID,
-                            QuantityPurchased = InitialStockQuantity,
-                            PurchaseRate = SelectedProduct.ProductPrice * 0.7m,
-                            TotalAmount = SelectedProduct.ProductPrice * 0.7m * InitialStockQuantity,
-                            Location = StockLocation,
-                            PaymentStatus = "Paid",
-                            PurchaseDate = DateTime.Now
-                        });
-                    }
+                    
                 }
-                else
-                {                    if (InitialStockQuantity > 0)
-                    {
-                        // Create a stock object for the initial quantity
-                        var initialStock = new Stock
-                        {
-                            QuantityPurchased = InitialStockQuantity,
-                            PurchaseRate = SelectedProduct.ProductPrice * 0.7m, // Default purchase rate as 70% of selling price
-                            TotalAmount = InitialStockQuantity * (SelectedProduct.ProductPrice * 0.7m),
-                            Location = StockLocation,
-                            PaymentStatus = "Pending"
-                        };
-                        
-                        // Get supplier ID from SelectedProduct or use default
-                        initialStock.SupplierID = SelectedProduct.SupplierID > 0 
-                            ? SelectedProduct.SupplierID 
-                            : (Suppliers.Count > 0 ? Suppliers[0].SupplierID : 1);
-                          var addResult = await _productService.AddProductWithInitialStock(SelectedProduct, initialStock);
-                        
-                        if (addResult.product != null)
-                        {
-                            System.Windows.MessageBox.Show($"Product '{SelectedProduct.ProductName}' added with {addResult.stockItems?.Count ?? 0} stock items.", 
-                                "Success", 
-                                System.Windows.MessageBoxButton.OK, 
-                                System.Windows.MessageBoxImage.Information);
-                            
-                            // Clear the form and reload products
-                            ClearForm();
-                            await LoadProductsAsync();
-                            
-                            // Reset initial stock quantity
-                            InitialStockQuantity = 0;
-                            
-                            // Set the result to true since we succeeded
-                            result = true;
-                        }
-                        else
-                        {
-                            System.Windows.MessageBox.Show("Failed to add product with initial stock.", 
-                                "Error", 
-                                System.Windows.MessageBoxButton.OK, 
-                                System.Windows.MessageBoxImage.Error);
-                            
-                            // Set the result to false
-                            result = false;
-                        }
-                    }
+                
                     else
                     {
                         var addedProduct = await _productService.AddProduct(SelectedProduct);
                         result = addedProduct != null;
                     }
-                }
 
                 if (result)
                 {

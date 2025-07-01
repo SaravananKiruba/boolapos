@@ -10,18 +10,15 @@ namespace Page_Navigation_App.Services
 {    public class OrderService
     {
         private readonly AppDbContext _context;
-        private readonly StockService _stockService;
         private readonly RateMasterService _rateService;
         private readonly LogService _logService;
 
         public OrderService(
             AppDbContext context,
-            StockService stockService,
             RateMasterService rateService,
             LogService logService)
         {
             _context = context;
-            _stockService = stockService;
             _rateService = rateService;
             _logService = logService;
         }
@@ -146,18 +143,7 @@ namespace Page_Navigation_App.Services
                     await _context.OrderDetails.AddAsync(detail);
                       // Update stock - Use the enhanced StockService with proper transaction tracking
                     // Use our new method that also updates the individual stock items
-                    await _stockService.DecreaseStockForOrder(
-                        detail.ProductID,
-                        (int)detail.Quantity,
-                        order.OrderID);
-                    
-                    // Fallback to traditional stock reduction if individual item tracking fails
-                    await _stockService.ReduceStock(
-                        detail.ProductID, 
-                        detail.Quantity, 
-                        detail.UnitPrice, 
-                        order.OrderID.ToString(), 
-                        "Sale");
+                   
                 }
 
                 // Update order totals
@@ -233,7 +219,7 @@ namespace Page_Navigation_App.Services
         }
 
         // Create new order with stock updates and financial entry
-        public async Task<(Order order, List<StockItem> usedStockItems, Finance financeEntry)> CreateOrderWithStockAndFinance(
+        public async Task<(Order order,Finance financeEntry)> CreateOrderWithStockAndFinance(
             Order order, 
             List<OrderDetail> orderDetails)
         {
@@ -250,54 +236,19 @@ namespace Page_Navigation_App.Services
                 // Add order
                 await _context.Orders.AddAsync(order);
                 await _context.SaveChangesAsync();
-                
+
                 // Process each order detail
-                var allUsedStockItems = new List<StockItem>();
                 foreach (var detail in orderDetails)
                 {
                     detail.OrderID = order.OrderID;
-                    
+
                     // Calculate totals
                     detail.TotalAmount = detail.UnitPrice * detail.Quantity;
-                    
+
                     await _context.OrderDetails.AddAsync(detail);
-                    
+
                     // Update stock - find and mark stock items as sold
-                    var stockItems = await _context.StockItems
-                        .Where(si => si.ProductID == detail.ProductID && si.Status == "Available")
-                        .OrderBy(si => si.AddedDate)
-                        .Take((int)Math.Ceiling(detail.Quantity))
-                        .ToListAsync();
-                    
-                    if (stockItems.Count < (int)Math.Ceiling(detail.Quantity))
-                    {
-                        await _logService.LogWarningAsync($"Not enough stock items for product {detail.ProductID}. Needed: {detail.Quantity}, Available: {stockItems.Count}");
-                    }
-                    
-                    foreach (var stockItem in stockItems)
-                    {
-                        stockItem.Status = "Sold";
-                        stockItem.SoldDate = DateTime.Now;
-                        stockItem.OrderID = order.OrderID;
-                        
-                        allUsedStockItems.Add(stockItem);
-                    }
-                      // Add stock ledger entry for the sale
-                    var stockLedger = new StockLedger
-                    {
-                        ProductID = detail.ProductID,
-                        TransactionDate = DateTime.Now,
-                        TransactionType = "Sale",
-                        Quantity = detail.Quantity * -1, // Negative for outgoing stock
-                        ReferenceID = order.OrderID.ToString(),
-                        ReferenceNumber = order.InvoiceNumber,
-                        UnitPrice = detail.UnitPrice,
-                        TotalAmount = detail.TotalAmount,
-                        Notes = "Sold via order",
-                        OrderID = order.OrderID
-                    };
-                    
-                    await _context.StockLedgers.AddAsync(stockLedger);
+
                 }
                 
                 // Calculate order totals
@@ -326,23 +277,18 @@ namespace Page_Navigation_App.Services
                 
                 await _logService.LogInformationAsync($"Created order #{order.OrderID} with {orderDetails.Count} items and updated stock");
                 
-                return (order, allUsedStockItems, finance);
+                return (order, finance);
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
                 await _logService.LogErrorAsync($"Error creating order with stock updates: {ex.Message}");
-                return (null, null, null);
+                return (null,  null);
             }
         }
         
-        /// <summary>
-        /// Creates a new order with complete integration to stock management and finance
-        /// </summary>
-        /// <param name="order">The order to create</param>
-        /// <param name="orderDetails">The order details</param>
-        /// <returns>Tuple containing order creation result, used stock items, and finance record</returns>
-        public async Task<(Order order, List<StockItem> usedStockItems, Finance financeEntry)> 
+
+        public async Task<(Order order, Finance financeEntry)> 
             CreateOrderWithIntegration(Order order, List<OrderDetail> orderDetails)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -359,7 +305,6 @@ namespace Page_Navigation_App.Services
                 await _context.Orders.AddAsync(order);
                 await _context.SaveChangesAsync();
                 
-                var usedStockItems = new List<StockItem>();
                 decimal totalAmount = 0;
                 
                 // Process each order detail
@@ -374,45 +319,10 @@ namespace Page_Navigation_App.Services
                     await _context.OrderDetails.AddAsync(detail);
                     
                     // Find available stock items for this product
-                    var stockItems = await _context.StockItems
-                        .Where(si => si.ProductID == detail.ProductID && si.Status == "Available")
-                        .OrderBy(si => si.AddedDate)
-                        .Take((int)Math.Ceiling(detail.Quantity))
-                        .ToListAsync();
+                   
                     
-                    if (stockItems.Count < (int)Math.Ceiling(detail.Quantity))
-                    {
-                        await _logService.LogWarningAsync($"Insufficient stock for product {detail.ProductID}. Required: {detail.Quantity}, Available: {stockItems.Count}");
-                        await transaction.RollbackAsync();
-                        return (null, null, null);
-                    }
-                    
-                    // Mark stock items as sold
-                    foreach (var item in stockItems)
-                    {
-                        item.Status = "Sold";
-                        item.SoldDate = DateTime.Now;
-                        item.OrderID = order.OrderID;
-                        
-                        usedStockItems.Add(item);
-                    }
-                    
-                    // Create stock ledger entry for the sale
-                    var stockLedger = new StockLedger
-                    {
-                        ProductID = detail.ProductID,
-                        TransactionDate = DateTime.Now,
-                        TransactionType = "Sale",
-                        Quantity = detail.Quantity * -1, // Negative quantity for outgoing stock
-                        UnitPrice = detail.UnitPrice,
-                        TotalAmount = detail.TotalAmount,
-                        ReferenceID = order.OrderID.ToString(),
-                        ReferenceNumber = order.InvoiceNumber,
-                        Notes = "Sold via order",
-                        OrderID = order.OrderID
-                    };
-                    
-                    await _context.StockLedgers.AddAsync(stockLedger);
+                 
+                     
                 }
                 
                 // Update order totals
@@ -437,15 +347,15 @@ namespace Page_Navigation_App.Services
                 await _context.SaveChangesAsync();
                 
                 await transaction.CommitAsync();
-                await _logService.LogInformationAsync($"Created order {order.OrderID} with {orderDetails.Count} products, {usedStockItems.Count} stock items and recorded income of {order.TotalAmount}");
+                await _logService.LogInformationAsync($"Created order {order.OrderID} with {orderDetails.Count} products, stock items and recorded income of {order.TotalAmount}");
                 
-                return (order, usedStockItems, finance);
+                return (order,  finance);
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
                 await _logService.LogErrorAsync($"Error creating order with integration: {ex.Message}");
-                return (null, null, null);
+                return (null,  null);
             }
         }
         
@@ -506,44 +416,11 @@ namespace Page_Navigation_App.Services
                     
                     await _context.OrderDetails.AddAsync(detail);
                     
-                    // Update stock quantities - find available stock items
-                    var stockItems = await _context.StockItems
-                        .Where(si => si.ProductID == detail.ProductID && si.Status == "Available")
-                        .OrderBy(si => si.AddedDate)
-                        .Take((int)Math.Ceiling(detail.Quantity))
-                        .ToListAsync();
+                   
                     
-                    if (stockItems.Count < (int)Math.Ceiling(detail.Quantity))
-                    {
-                        await _logService.LogWarningAsync($"Insufficient stock for product {detail.ProductID}. Required: {detail.Quantity}, Available: {stockItems.Count}");
-                        await transaction.RollbackAsync();
-                        return null;
-                    }
                     
-                    // Mark stock items as sold
-                    foreach (var item in stockItems)
-                    {
-                        item.Status = "Sold";
-                        item.SoldDate = DateTime.Now;
-                        item.OrderID = order.OrderID;
-                    }
+                   
                     
-                    // Add stock ledger entry for the sale
-                    var stockLedger = new StockLedger
-                    {
-                        ProductID = detail.ProductID,
-                        TransactionDate = DateTime.Now,
-                        TransactionType = "Sale",
-                        Quantity = detail.Quantity * -1, // Negative for outgoing stock
-                        ReferenceID = order.OrderID.ToString(),
-                        ReferenceNumber = order.InvoiceNumber,
-                        UnitPrice = detail.UnitPrice,
-                        TotalAmount = detail.TotalAmount,
-                        Notes = "Sold via order",
-                        OrderID = order.OrderID
-                    };
-                    
-                    await _context.StockLedgers.AddAsync(stockLedger);
                 }
                 
                 // Update order totals

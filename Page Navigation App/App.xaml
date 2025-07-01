@@ -141,17 +141,9 @@
             <DataTemplate DataType="{x:Type vm:RateMasterVM}">
                 <view:RateMaster/>
             </DataTemplate>
-           <DataTemplate DataType="{x:Type vm:StockVM}">
-                <view:Stock/>
-            </DataTemplate>
-            <DataTemplate DataType="{x:Type vm:UserVM}">
-                <view:Users/>
-            </DataTemplate>
+          
             <DataTemplate DataType="{x:Type vm:ReportVM}">
                 <view:Reports/>
-            </DataTemplate>
-            <DataTemplate DataType="{x:Type vm:SettingsVM}">
-                <view:Settings/>
             </DataTemplate>
         </ResourceDictionary>
     </Application.Resources>

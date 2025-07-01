@@ -16,16 +16,14 @@ namespace Page_Navigation_App.ViewModel
         private readonly ProductService _productService;
         private readonly OrderService _orderService;
         private readonly CustomerService _customerService;
-        private readonly StockLedgerService _stockLedgerService;
         private DateTime _startDate;
         private DateTime _endDate;
 
-        public HomeVM(ProductService productService, OrderService orderService, CustomerService customerService, StockLedgerService stockLedgerService)
+        public HomeVM(ProductService productService, OrderService orderService, CustomerService customerService)
         {
             _productService = productService;
             _orderService = orderService;
             _customerService = customerService;
-            _stockLedgerService = stockLedgerService;
 
             // Initialize date range to current month
             StartDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
@@ -80,23 +78,17 @@ namespace Page_Navigation_App.ViewModel
                 var products = await _productService.GetAllProducts();
                 var customers = await _customerService.GetAllCustomers();
 
-                // Get orders and stock movements within date range
+                // Get orders within date range
                 var orders = await _orderService.GetOrdersByDateRange(StartDate, EndDate);
-                var stockLedgers = await _stockLedgerService.GetStockLedgerEntriesByDateRange(StartDate, EndDate);
 
                 TotalProducts = products.Count();
                 TotalOrders = orders.Count();
                 TotalCustomers = customers.Count();
                 TotalRevenue = orders.Sum(o => o.TotalAmount);
 
-                // Calculate product movement counts
-                ProductInCount = stockLedgers
-                    .Where(sl => sl.Quantity > 0)
-                    .Sum(sl => (int)sl.Quantity);
-
-                ProductOutCount = stockLedgers
-                    .Where(sl => sl.Quantity < 0)
-                    .Sum(sl => (int)Math.Abs(sl.Quantity));
+                // Set product movement counts to 0 since we removed stock management
+                ProductInCount = 0;
+                ProductOutCount = 0;
 
                 OnPropertyChanged(nameof(TotalProducts));
                 OnPropertyChanged(nameof(TotalOrders));

@@ -1,15 +1,12 @@
 ﻿using System.Windows.Input;
 using Page_Navigation_App.Utilities;
 using Page_Navigation_App.Model;
-using Page_Navigation_App.Services;
 
 namespace Page_Navigation_App.ViewModel
 {
     public class NavigationVM : ViewModelBase
     {
-        private readonly UserService _userService;
         private object _currentView;
-        private string _currentUser;
         
         public object CurrentView
         {
@@ -21,16 +18,6 @@ namespace Page_Navigation_App.ViewModel
             }
         }
 
-        public string CurrentUser
-        {
-            get => _currentUser;
-            set
-            {
-                _currentUser = value;
-                OnPropertyChanged();
-            }
-        }
-
         // Commands
         public ICommand HomeCommand { get; set; }
         public ICommand CustomersCommand { get; set; }
@@ -38,11 +25,8 @@ namespace Page_Navigation_App.ViewModel
         public ICommand OrdersCommand { get; set; }
         public ICommand TransactionsCommand { get; set; }
         public ICommand SuppliersCommand { get; set; }        public ICommand RateMasterCommand { get; set; }
-        public ICommand StockCommand { get; set; }
         public ICommand PurchaseOrderCommand { get; set; }
-        public ICommand UserCommand { get; set; }
         public ICommand ReportCommand { get; set; }
-        public ICommand SettingsCommand { get; set; }
 
         public NavigationVM(
             HomeVM homeVM,
@@ -50,27 +34,19 @@ namespace Page_Navigation_App.ViewModel
             ProductVM productVM,
             OrderVM orderVM,
             TransactionVM transactionVM,
-            SupplierVM supplierVM,            RateMasterVM rateMasterVM,
-            StockVM stockVM,
-            PurchaseOrderVM purchaseOrderVM,
-            UserVM userVM,
-            ReportVM reportVM,
-            SettingsVM settingsVM,
-            UserService userService)
+            SupplierVM supplierVM, 
+            RateMasterVM rateMasterVM,
+            ReportVM reportVM)
         {
-            _userService = userService;
-
             // Initialize commands
             HomeCommand = new RelayCommand<object>(_ => NavigateTo(homeVM));
             CustomersCommand = new RelayCommand<object>(_ => NavigateTo(customerVM));
             ProductsCommand = new RelayCommand<object>(_ => NavigateTo(productVM));
             OrdersCommand = new RelayCommand<object>(_ => NavigateTo(orderVM));
-            TransactionsCommand = new RelayCommand<object>(_ => NavigateTo(transactionVM));            SuppliersCommand = new RelayCommand<object>(_ => NavigateTo(supplierVM));            RateMasterCommand = new RelayCommand<object>(_ => NavigateTo(rateMasterVM));
-            StockCommand = new RelayCommand<object>(_ => NavigateTo(stockVM));
-            PurchaseOrderCommand = new RelayCommand<object>(_ => NavigateTo(purchaseOrderVM));
-            UserCommand = new RelayCommand<object>(_ => NavigateTo(userVM), _ => CanAccessUserManagement());
+            TransactionsCommand = new RelayCommand<object>(_ => NavigateTo(transactionVM)); 
+            SuppliersCommand = new RelayCommand<object>(_ => NavigateTo(supplierVM));      
+            RateMasterCommand = new RelayCommand<object>(_ => NavigateTo(rateMasterVM));
             ReportCommand = new RelayCommand<object>(_ => NavigateTo(reportVM));
-            SettingsCommand = new RelayCommand<object>(_ => NavigateTo(settingsVM));
 
             // Set default view
             CurrentView = homeVM;
@@ -79,12 +55,6 @@ namespace Page_Navigation_App.ViewModel
         private void NavigateTo(object view)
         {
             CurrentView = view;
-        }
-
-        private bool CanAccessUserManagement()
-        {
-            // TODO: Implement role-based access control
-            return true;
         }
     }
 }

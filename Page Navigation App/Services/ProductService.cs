@@ -11,12 +11,10 @@ namespace Page_Navigation_App.Services
     public class ProductService
     {
         private readonly AppDbContext _context;
-        private readonly StockService _stockService; // Assuming you have a StockService for managing stocks
 
-        public ProductService(AppDbContext context, StockService stockService)
+        public ProductService(AppDbContext context)
         {
             _context = context;
-            _stockService = stockService;
         }        // Create
         public async Task<Product> AddProduct(Product product)
         {
@@ -68,7 +66,6 @@ namespace Page_Navigation_App.Services
         {
             return await _context.Products
                 .Include(p => p.Supplier)
-                .Include(p => p.Stocks)
                 .FirstOrDefaultAsync(p => p.ProductID == id);
         }
 
@@ -76,7 +73,6 @@ namespace Page_Navigation_App.Services
         {
             return await _context.Products
                 .Include(p => p.Supplier)
-                .Include(p => p.Stocks)
                 .FirstOrDefaultAsync(p => p.Barcode == barcode);
         }
 
@@ -84,7 +80,6 @@ namespace Page_Navigation_App.Services
         {
             var query = _context.Products               
                 .Include(p => p.Supplier)
-                .Include(p => p.Stocks)
                 .AsQueryable();
 
             if (!includeInactive)
@@ -99,7 +94,6 @@ namespace Page_Navigation_App.Services
             string purity = null)
         {
             var query = _context.Products
-                .Include(p => p.Stocks)
                 .Where(p => p.IsActive)
                 .AsQueryable();
 
@@ -192,23 +186,11 @@ namespace Page_Navigation_App.Services
 
         // Additional helper methods
 
-        public async Task<Dictionary<string, decimal>> GetProductValueByMetal()
-        {
-            var products = await _context.Products
-                .Include(p => p.Stocks)
-                .Where(p => p.IsActive && p.Stocks.Any(s => s.Quantity > 0))
-                .ToListAsync();            return products
-                .GroupBy(p => p.MetalType)
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.Sum(p => p.Stocks.Sum(s => s.Quantity * p.ProductPrice))
-                );
-        }        public async Task<IEnumerable<Product>> GetProductsByPriceRange(
+      public async Task<IEnumerable<Product>> GetProductsByPriceRange(
             decimal minPrice,
             decimal maxPrice)
         {
             return await _context.Products
-                .Include(p => p.Stocks)
                 .Where(p => p.ProductPrice >= minPrice && p.ProductPrice <= maxPrice && p.IsActive)
                 .ToListAsync();
         }
@@ -335,89 +317,8 @@ namespace Page_Navigation_App.Services
             return product.GetPriceBreakdown(ratePerGram);
         }
 
-        /// <summary>
-        /// Add a new product with initial stock if requested
-        /// </summary>
-        /// <param name="product">The product to add</param>
-        /// <param name="initialStock">Initial stock information (optional)</param>
-        /// <returns>The newly created product</returns>
-        public async Task<(Product product, Stock stock, List<StockItem> stockItems)> 
-            AddProductWithInitialStock(Product product, Stock initialStock = null)
-        {
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            
-            try
-            {
-                // Add the product first
-                var newProduct = await AddProduct(product);
-                if (newProduct == null)
-                {
-                    await transaction.RollbackAsync();
-                    return (null, null, null);
-                }
-                
-                // If initial stock is provided, add it
-                Stock newStock = null;
-                List<StockItem> stockItems = null;
-                
-                if (initialStock != null && initialStock.QuantityPurchased > 0)
-                {
-                    // Update the product ID
-                    initialStock.ProductID = newProduct.ProductID;
-                    
-                    // Add the stock
-                    newStock = await _stockService.AddStock(initialStock);
-                    
-                    if (newStock != null)
-                    {
-                        // Add stock items
-                        int itemCount = (int)Math.Ceiling(initialStock.QuantityPurchased);
-                        stockItems = new List<StockItem>();
-                        
-                        for (int i = 0; i < itemCount; i++)
-                        {
-                            var stockItem = new StockItem
-                            {
-                                ProductID = newProduct.ProductID,
-                                StockID = newStock.StockID,
-                                AddedDate = DateTime.Now,
-                                Status = "Available",
-                                StockItemCode = StockItem.GenerateStockItemCode(newProduct.ProductID, i)
-                            };
-                            
-                            await _context.StockItems.AddAsync(stockItem);
-                            stockItems.Add(stockItem);
-                        }
-                        
-                        await _context.SaveChangesAsync();
-                        
-                        // Add stock ledger entry
-                        var ledgerEntry = new StockLedger
-                        {
-                            ProductID = newProduct.ProductID,
-                            TransactionDate = DateTime.Now,
-                            TransactionType = "Initial Stock",
-                            Quantity = initialStock.QuantityPurchased,
-                            UnitPrice = initialStock.PurchaseRate,
-                            TotalAmount = initialStock.TotalAmount,
-                            ReferenceID = newStock.StockID.ToString(),
-                            Notes = "Added during product creation"
-                        };
-                        
-                        await _context.StockLedgers.AddAsync(ledgerEntry);
-                        await _context.SaveChangesAsync();
-                    }
-                }
-                
-                await transaction.CommitAsync();
-                return (newProduct, newStock, stockItems);
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                Console.WriteLine($"Error adding product with initial stock: {ex.Message}");
-                return (null, null, null);
-            }
-        }
+
+   
+       
     }
 }
