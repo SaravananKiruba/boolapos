@@ -141,7 +141,12 @@
             <DataTemplate DataType="{x:Type vm:RateMasterVM}">
                 <view:RateMaster/>
             </DataTemplate>
-          
+            <DataTemplate DataType="{x:Type vm:PurchaseOrderVM}">
+                <view:PurchaseOrders/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:StockVM}">
+                <view:Stock/>
+            </DataTemplate>
             <DataTemplate DataType="{x:Type vm:ReportVM}">
                 <view:Reports/>
             </DataTemplate>

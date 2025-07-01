@@ -91,13 +91,13 @@ namespace Page_Navigation_App.ViewModel
                 // Validate the supplier object before saving
                 if (string.IsNullOrEmpty(SelectedSupplier.SupplierName))
                 {
-                    System.Windows.MessageBox.Show("Supplier name cannot be empty.", "Validation Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    ShowMessageBox("Supplier name cannot be empty.", "Validation Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                     return;
                 }
 
                 if (string.IsNullOrEmpty(SelectedSupplier.ContactNumber))
                 {
-                    System.Windows.MessageBox.Show("Contact number cannot be empty.", "Validation Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    ShowMessageBox("Contact number cannot be empty.", "Validation Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                     return;
                 }
 
@@ -109,11 +109,11 @@ namespace Page_Navigation_App.ViewModel
                     success = await _supplierService.UpdateSupplier(SelectedSupplier);
                     if (success)
                     {
-                        System.Windows.MessageBox.Show($"Supplier '{SelectedSupplier.SupplierName}' updated successfully.", "Success", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                        ShowMessageBox($"Supplier '{SelectedSupplier.SupplierName}' updated successfully.", "Success", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                     }
                     else
                     {
-                        System.Windows.MessageBox.Show($"Failed to update supplier '{SelectedSupplier.SupplierName}'.", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                        ShowMessageBox($"Failed to update supplier '{SelectedSupplier.SupplierName}'.", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                         return;
                     }
                 }
@@ -123,11 +123,11 @@ namespace Page_Navigation_App.ViewModel
                     var result = await _supplierService.AddSupplier(SelectedSupplier);
                     if (result != null)
                     {
-                        System.Windows.MessageBox.Show($"Supplier '{SelectedSupplier.SupplierName}' added successfully.", "Success", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                        ShowMessageBox($"Supplier '{SelectedSupplier.SupplierName}' added successfully.", "Success", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                     }
                     else
                     {
-                        System.Windows.MessageBox.Show($"Failed to add supplier '{SelectedSupplier.SupplierName}'.", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                        ShowMessageBox($"Failed to add supplier '{SelectedSupplier.SupplierName}'.", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                         return;
                     }
                 }
@@ -138,7 +138,7 @@ namespace Page_Navigation_App.ViewModel
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"An error occurred: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                ShowMessageBox($"An error occurred: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
@@ -161,6 +161,18 @@ namespace Page_Navigation_App.ViewModel
             foreach (var supplier in suppliers)
             {
                 Suppliers.Add(supplier);
+            }
+        }
+
+        // Helper method to safely show message boxes from async methods
+        private void ShowMessageBox(string message, string title = "Error", System.Windows.MessageBoxButton button = System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage icon = System.Windows.MessageBoxImage.Error)
+        {
+            if (System.Windows.Application.Current != null)
+            {
+                System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    System.Windows.MessageBox.Show(message, title, button, icon);
+                }));
             }
         }
     }

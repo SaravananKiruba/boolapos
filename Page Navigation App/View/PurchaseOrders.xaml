@@ -1,0 +1,284 @@
+<UserControl x:Class="Page_Navigation_App.View.PurchaseOrders"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:Page_Navigation_App.View"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1200">
+
+    <UserControl.Resources>
+        <Style x:Key="HeaderTextStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#333"/>
+            <Setter Property="Margin" Value="5"/>
+        </Style>
+        
+        <Style x:Key="LabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#555"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="5,2"/>
+        </Style>
+        
+        <Style x:Key="InputStyle" TargetType="Control">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="Margin" Value="5,2"/>
+            <Setter Property="BorderBrush" Value="#DDD"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        
+        <Style x:Key="ButtonStyle" TargetType="Button">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Background" Value="#4CAF50"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#F8F9FA" Padding="20,15">
+            <TextBlock Text="Purchase Order Management" Style="{StaticResource HeaderTextStyle}" FontSize="20"/>
+        </Border>
+
+        <!-- Main Content -->
+        <TabControl Grid.Row="1" Margin="10">
+            
+            <!-- Purchase Orders Tab -->
+            <TabItem Header="Purchase Orders">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1.5*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Purchase Order Form -->
+                    <Border Grid.Column="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" Margin="5" Padding="15">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel>
+                                <TextBlock Text="Purchase Order Details" Style="{StaticResource HeaderTextStyle}"/>
+                                
+                                <!-- Supplier Selection -->
+                                <TextBlock Text="Supplier:" Style="{StaticResource LabelStyle}"/>
+                                <ComboBox ItemsSource="{Binding Suppliers}" 
+                                         SelectedItem="{Binding SelectedSupplier}"
+                                         DisplayMemberPath="SupplierName"
+                                         Style="{StaticResource InputStyle}"/>
+
+                                <!-- Order Date -->
+                                <TextBlock Text="Order Date:" Style="{StaticResource LabelStyle}"/>
+                                <DatePicker SelectedDate="{Binding SelectedPurchaseOrder.OrderDate, Converter={x:Static local:DateOnlyConverter.Instance}}"
+                                           Style="{StaticResource InputStyle}"/>
+
+                                <!-- Expected Delivery Date -->
+                                <TextBlock Text="Expected Delivery:" Style="{StaticResource LabelStyle}"/>
+                                <DatePicker SelectedDate="{Binding SelectedPurchaseOrder.ExpectedDeliveryDate, Converter={x:Static local:DateOnlyConverter.Instance}}"
+                                           Style="{StaticResource InputStyle}"/>
+
+                                <!-- Payment Method -->
+                                <TextBlock Text="Payment Method:" Style="{StaticResource LabelStyle}"/>
+                                <ComboBox ItemsSource="{Binding PaymentMethods}"
+                                         SelectedItem="{Binding SelectedPurchaseOrder.PaymentMethod}"
+                                         Style="{StaticResource InputStyle}"/>
+
+                                <!-- Status -->
+                                <TextBlock Text="Status:" Style="{StaticResource LabelStyle}"/>
+                                <TextBox Text="{Binding SelectedPurchaseOrder.Status}" Style="{StaticResource InputStyle}"/>
+
+                                <!-- Notes -->
+                                <TextBlock Text="Notes:" Style="{StaticResource LabelStyle}"/>
+                                <TextBox Text="{Binding SelectedPurchaseOrder.Notes}" 
+                                        TextWrapping="Wrap" 
+                                        AcceptsReturn="True" 
+                                        Height="60"
+                                        Style="{StaticResource InputStyle}"/>
+
+                                <!-- Product Selection for Items -->
+                                <Separator Margin="0,10"/>
+                                <TextBlock Text="Add Product" Style="{StaticResource HeaderTextStyle}" FontSize="14"/>
+                                
+                                <TextBlock Text="Product:" Style="{StaticResource LabelStyle}"/>
+                                <ComboBox ItemsSource="{Binding Products}"
+                                         SelectedItem="{Binding SelectedProduct}"
+                                         DisplayMemberPath="ProductName"
+                                         Style="{StaticResource InputStyle}"/>
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1*"/>
+                                        <ColumnDefinition Width="1*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Quantity:" Style="{StaticResource LabelStyle}"/>
+                                        <TextBox Text="{Binding SelectedPurchaseOrderItem.Quantity}" Style="{StaticResource InputStyle}"/>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="Unit Cost:" Style="{StaticResource LabelStyle}"/>
+                                        <TextBox Text="{Binding SelectedPurchaseOrderItem.UnitCost, StringFormat=C}" Style="{StaticResource InputStyle}"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <Button Content="Add Item" Command="{Binding AddItemCommand}" Style="{StaticResource ButtonStyle}"/>
+
+                                <!-- Action Buttons -->
+                                <Separator Margin="0,10"/>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <Button Content="Save Purchase Order" Command="{Binding AddOrUpdateCommand}" Style="{StaticResource ButtonStyle}"/>
+                                    <Button Content="Clear" Command="{Binding ClearCommand}" Style="{StaticResource ButtonStyle}" Background="#757575"/>
+                                </StackPanel>
+
+                                <!-- Order Summary -->
+                                <Border Background="#F5F5F5" Padding="10" Margin="0,10,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Order Summary" Style="{StaticResource HeaderTextStyle}" FontSize="14"/>
+                                        <TextBlock Text="{Binding SelectedPurchaseOrder.TotalItems, StringFormat='Total Items: {0}'}" Style="{StaticResource LabelStyle}"/>
+                                        <TextBlock Text="{Binding SelectedPurchaseOrder.TotalAmount, StringFormat='Subtotal: ₹{0:N2}'}" Style="{StaticResource LabelStyle}"/>
+                                        <TextBlock Text="{Binding SelectedPurchaseOrder.TaxAmount, StringFormat='Tax (18%): ₹{0:N2}'}" Style="{StaticResource LabelStyle}"/>
+                                        <TextBlock Text="{Binding SelectedPurchaseOrder.GrandTotal, StringFormat='Grand Total: ₹{0:N2}'}" 
+                                                  Style="{StaticResource HeaderTextStyle}" FontSize="16" Foreground="#4CAF50"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Border>
+
+                    <!-- Purchase Order Items and Orders List -->
+                    <Grid Grid.Column="1" Margin="5">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="1*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Purchase Order Items -->
+                        <Border Grid.Row="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" Padding="10" Margin="0,0,0,5">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Text="Purchase Order Items" Style="{StaticResource HeaderTextStyle}"/>
+                                
+                                <DataGrid Grid.Row="1" ItemsSource="{Binding PurchaseOrderItems}" 
+                                         SelectedItem="{Binding SelectedPurchaseOrderItem}"
+                                         AutoGenerateColumns="False" 
+                                         CanUserAddRows="False"
+                                         GridLinesVisibility="Horizontal"
+                                         HeadersVisibility="Column">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Product" Binding="{Binding Product.ProductName}" Width="*"/>
+                                        <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" Width="60"/>
+                                        <DataGridTextColumn Header="Unit Cost" Binding="{Binding UnitCost, StringFormat=C}" Width="80"/>
+                                        <DataGridTextColumn Header="Total" Binding="{Binding TotalAmount, StringFormat=C}" Width="80"/>
+                                        <DataGridTemplateColumn Header="Action" Width="60">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Button Content="Remove" 
+                                                           Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                           CommandParameter="{Binding}"
+                                                           Background="#F44336" 
+                                                           Foreground="White"
+                                                           FontSize="10"
+                                                           Padding="5,2"/>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Grid>
+                        </Border>
+
+                        <!-- Purchase Orders List -->
+                        <Border Grid.Row="1" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" Padding="10" Margin="0,5,0,0">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Text="Purchase Orders" Style="{StaticResource HeaderTextStyle}"/>
+                                
+                                <!-- Search -->
+                                <Grid Grid.Row="1" Margin="0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" Text="{Binding SearchTerm}" 
+                                            mah:TextBoxHelper.Watermark="Search by PO number, supplier..." 
+                                            Style="{StaticResource InputStyle}"/>
+                                    <Button Grid.Column="1" Content="Search" Command="{Binding SearchCommand}" Style="{StaticResource ButtonStyle}"/>
+                                </Grid>
+                                
+                                <DataGrid Grid.Row="2" ItemsSource="{Binding PurchaseOrders}" 
+                                         SelectedItem="{Binding SelectedPurchaseOrder}"
+                                         AutoGenerateColumns="False" 
+                                         CanUserAddRows="False"
+                                         GridLinesVisibility="Horizontal"
+                                         HeadersVisibility="Column">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="PO Number" Binding="{Binding PurchaseOrderNumber}" Width="100"/>
+                                        <DataGridTextColumn Header="Supplier" Binding="{Binding Supplier.SupplierName}" Width="120"/>
+                                        <DataGridTextColumn Header="Date" Binding="{Binding OrderDate}" Width="80"/>
+                                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="80"/>
+                                        <DataGridTextColumn Header="Total" Binding="{Binding GrandTotal, StringFormat=C}" Width="80"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <!-- Purchase Order Actions -->
+                                <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
+                                    <Button Content="Receive Order" Command="{Binding ReceivePurchaseOrderCommand}" Style="{StaticResource ButtonStyle}" Background="#2196F3"/>
+                                    <Button Content="Record Payment" Command="{Binding RecordPaymentCommand}" Style="{StaticResource ButtonStyle}" Background="#FF9800"/>
+                                    <Button Content="Cancel Order" Command="{Binding CancelPurchaseOrderCommand}" Style="{StaticResource ButtonStyle}" Background="#F44336"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </TabItem>
+
+            <!-- Payment Recording Tab -->
+            <TabItem Header="Payment Recording">
+                <Border Background="White" Padding="20">
+                    <StackPanel MaxWidth="400" HorizontalAlignment="Center">
+                        <TextBlock Text="Record Payment" Style="{StaticResource HeaderTextStyle}" HorizontalAlignment="Center"/>
+                        
+                        <TextBlock Text="Payment Amount:" Style="{StaticResource LabelStyle}"/>
+                        <TextBox Text="{Binding PaymentAmount, StringFormat=C}" Style="{StaticResource InputStyle}"/>
+                        
+                        <TextBlock Text="Payment Notes:" Style="{StaticResource LabelStyle}"/>
+                        <TextBox Text="{Binding PaymentNotes}" 
+                                TextWrapping="Wrap" 
+                                AcceptsReturn="True" 
+                                Height="80"
+                                Style="{StaticResource InputStyle}"/>
+                        
+                        <Button Content="Record Payment" 
+                               Command="{Binding RecordPaymentCommand}" 
+                               Style="{StaticResource ButtonStyle}"
+                               HorizontalAlignment="Center"
+                               Margin="0,20,0,0"/>
+                    </StackPanel>
+                </Border>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>

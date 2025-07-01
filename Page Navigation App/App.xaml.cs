@@ -65,6 +65,10 @@ namespace Page_Navigation_App
             services.AddScoped<SupplierService>();
             services.AddScoped<RateMasterService>();
             services.AddScoped<PrintService>();
+            
+            // New workflow services
+            services.AddScoped<StockService>();
+            services.AddScoped<PurchaseOrderService>();
 
             // ViewModels - Transient lifetime except for NavigationVM
             services.AddSingleton<NavigationVM>();
@@ -80,6 +84,10 @@ namespace Page_Navigation_App
             services.AddTransient<SupplierVM>();
             services.AddTransient<RateMasterVM>();
             services.AddTransient<ReportVM>();
+            
+            // New workflow ViewModels
+            services.AddTransient<PurchaseOrderVM>();
+            services.AddTransient<StockVM>();
 
             // Register Windows
             services.AddSingleton<MainWindow>();

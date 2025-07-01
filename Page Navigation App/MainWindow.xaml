@@ -187,6 +187,42 @@
                             </Grid>
                         </Button>
 
+                        <Button Style="{StaticResource NavigationButton}"
+                                Command="{Binding PurchaseOrderCommand}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <iconPacks:PackIconMaterial Kind="Cart"
+                                                       Width="20"
+                                                       Height="20"
+                                                       Foreground="{StaticResource NavigationTextBrush}"/>
+                                <TextBlock Grid.Column="1"
+                                       Text="Purchase Orders"
+                                       Margin="15,0,0,0"
+                                       Foreground="{StaticResource NavigationTextBrush}"/>
+                            </Grid>
+                        </Button>
+
+                        <Button Style="{StaticResource NavigationButton}"
+                                Command="{Binding StockCommand}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <iconPacks:PackIconMaterial Kind="PackageVariant"
+                                                       Width="20"
+                                                       Height="20"
+                                                       Foreground="{StaticResource NavigationTextBrush}"/>
+                                <TextBlock Grid.Column="1"
+                                       Text="Stock Management"
+                                       Margin="15,0,0,0"
+                                       Foreground="{StaticResource NavigationTextBrush}"/>
+                            </Grid>
+                        </Button>
+
 
 
                         <Button Style="{StaticResource NavigationButton}"

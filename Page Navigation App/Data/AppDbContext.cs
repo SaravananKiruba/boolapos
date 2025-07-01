@@ -23,6 +23,12 @@ namespace Page_Navigation_App.Data
         public DbSet<EMI> EMIs { get; set; }
         public DbSet<ReportData> ReportData { get; set; }
         
+        // New entities for workflow implementation
+        public DbSet<Stock> Stocks { get; set; }
+        public DbSet<StockItem> StockItems { get; set; }
+        public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
+        public DbSet<PurchaseOrderItem> PurchaseOrderItems { get; set; }
+        
         // Properties referenced in services
         public DbSet<RateMaster> RateMasters { get; set; }
         public DbSet<HUIDLog> HUIDLogs { get; set; }
@@ -57,6 +63,77 @@ namespace Page_Navigation_App.Data
 
             modelBuilder.Entity<Customer>()
                 .HasIndex(c => c.PhoneNumber);
+
+            // Configure Stock relationships
+            modelBuilder.Entity<Stock>()
+                .HasOne(s => s.Product)
+                .WithMany()
+                .HasForeignKey(s => s.ProductID)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Stock>()
+                .HasOne(s => s.Supplier)
+                .WithMany()
+                .HasForeignKey(s => s.SupplierID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure StockItem relationships
+            modelBuilder.Entity<StockItem>()
+                .HasOne(si => si.Product)
+                .WithMany()
+                .HasForeignKey(si => si.ProductID)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<StockItem>()
+                .HasOne(si => si.Order)
+                .WithMany()
+                .HasForeignKey(si => si.OrderID)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<StockItem>()
+                .HasOne(si => si.Customer)
+                .WithMany()
+                .HasForeignKey(si => si.CustomerID)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Configure PurchaseOrder relationships
+            modelBuilder.Entity<PurchaseOrder>()
+                .HasOne(po => po.Supplier)
+                .WithMany()
+                .HasForeignKey(po => po.SupplierID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure PurchaseOrderItem relationships
+            modelBuilder.Entity<PurchaseOrderItem>()
+                .HasOne(poi => poi.PurchaseOrder)
+                .WithMany(po => po.PurchaseOrderItems)
+                .HasForeignKey(poi => poi.PurchaseOrderID)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PurchaseOrderItem>()
+                .HasOne(poi => poi.Product)
+                .WithMany()
+                .HasForeignKey(poi => poi.ProductID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Add indexes for performance
+            modelBuilder.Entity<StockItem>()
+                .HasIndex(si => si.UniqueTagID)
+                .IsUnique();
+
+            modelBuilder.Entity<StockItem>()
+                .HasIndex(si => si.Barcode)
+                .IsUnique();
+
+            modelBuilder.Entity<StockItem>()
+                .HasIndex(si => si.Status);
+
+            modelBuilder.Entity<PurchaseOrder>()
+                .HasIndex(po => po.PurchaseOrderNumber)
+                .IsUnique();
+
+            modelBuilder.Entity<Stock>()
+                .HasIndex(s => new { s.ProductID, s.Status });
         }
     }
 }

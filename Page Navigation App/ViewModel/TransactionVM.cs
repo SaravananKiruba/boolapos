@@ -254,8 +254,7 @@ namespace Page_Navigation_App.ViewModel
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error loading transactions: {ex.Message}", "Error", 
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                ShowMessageBox($"Error loading transactions: {ex.Message}");
             }
         }
 
@@ -282,8 +281,7 @@ namespace Page_Navigation_App.ViewModel
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error loading customer orders: {ex.Message}", "Error", 
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                ShowMessageBox($"Error loading customer orders: {ex.Message}");
             }
         }
 
@@ -300,8 +298,7 @@ namespace Page_Navigation_App.ViewModel
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error loading orders: {ex.Message}", "Error", 
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                ShowMessageBox($"Error loading orders: {ex.Message}");
             }
         }
 
@@ -645,6 +642,18 @@ namespace Page_Navigation_App.ViewModel
                         System.Windows.MessageBoxButton.OK, 
                         System.Windows.MessageBoxImage.Error);
                 }
+            }
+        }
+
+        // Helper method to safely show message boxes from async methods
+        private void ShowMessageBox(string message, string title = "Error", System.Windows.MessageBoxButton button = System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage icon = System.Windows.MessageBoxImage.Error)
+        {
+            if (System.Windows.Application.Current != null)
+            {
+                System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    System.Windows.MessageBox.Show(message, title, button, icon);
+                }));
             }
         }
     }

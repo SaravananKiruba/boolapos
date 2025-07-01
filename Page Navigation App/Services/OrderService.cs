@@ -12,15 +12,18 @@ namespace Page_Navigation_App.Services
         private readonly AppDbContext _context;
         private readonly RateMasterService _rateService;
         private readonly LogService _logService;
+        private readonly StockService _stockService;
 
         public OrderService(
             AppDbContext context,
             RateMasterService rateService,
-            LogService logService)
+            LogService logService,
+            StockService stockService)
         {
             _context = context;
             _rateService = rateService;
             _logService = logService;
+            _stockService = stockService;
         }
 
         // Add new method for adding order
@@ -141,8 +144,29 @@ namespace Page_Navigation_App.Services
                     totalAmount += detail.TotalAmount;                    totalItems += (int)detail.Quantity;
                     
                     await _context.OrderDetails.AddAsync(detail);
-                      // Update stock - Use the enhanced StockService with proper transaction tracking
-                    // Use our new method that also updates the individual stock items
+                    
+                    // Update stock using the new StockService
+                    var stockUpdateSuccess = await _stockService.UpdateStockQuantity(
+                        detail.ProductID, 
+                        detail.Quantity, 
+                        $"Sale - Order #{order.InvoiceNumber}");
+                    
+                    if (!stockUpdateSuccess)
+                    {
+                        throw new InvalidOperationException($"Insufficient stock for product ID {detail.ProductID}");
+                    }
+                    
+                    // Find and mark individual stock items as sold
+                    var availableStockItems = await _stockService.GetAvailableStockItems(detail.ProductID);
+                    decimal remainingQuantity = detail.Quantity;
+                    
+                    foreach (var stockItem in availableStockItems.Take((int)Math.Ceiling(remainingQuantity)))
+                    {
+                        if (remainingQuantity <= 0) break;
+                        
+                        await _stockService.SellStockItem(stockItem.UniqueTagID, order.OrderID, order.CustomerID);
+                        remainingQuantity -= 1; // Each stock item is typically quantity 1 for jewelry
+                    }
                    
                 }
 

@@ -254,14 +254,14 @@ namespace Page_Navigation_App.ViewModel
                 if (string.IsNullOrEmpty(SelectedProduct.MetalType) ||
                     string.IsNullOrEmpty(SelectedProduct.Purity))
                 {
-                    System.Windows.MessageBox.Show("Please fill in all required fields", "Validation Error");
+                    ShowMessageBox("Please fill in all required fields", "Validation Error");
                     return;
                 }
                 
                 // Ensure supplier is selected
                 if (SelectedProduct.SupplierID <= 0 && Suppliers.Count > 0)
                 {
-                    System.Windows.MessageBox.Show("Please select a supplier", "Validation Error");
+                    ShowMessageBox("Please select a supplier", "Validation Error");
                     return;
                 }
                 
@@ -641,6 +641,18 @@ namespace Page_Navigation_App.ViewModel
                 {
                     System.Windows.MessageBox.Show($"Inner exception: {ex.InnerException.Message}", "Error Details");
                 }
+            }
+        }
+
+        // Helper method to safely show message boxes from async methods
+        private void ShowMessageBox(string message, string title = "Error", System.Windows.MessageBoxButton button = System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage icon = System.Windows.MessageBoxImage.Error)
+        {
+            if (System.Windows.Application.Current != null)
+            {
+                System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    System.Windows.MessageBox.Show(message, title, button, icon);
+                }));
             }
         }
     }

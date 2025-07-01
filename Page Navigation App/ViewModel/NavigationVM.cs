@@ -24,8 +24,10 @@ namespace Page_Navigation_App.ViewModel
         public ICommand ProductsCommand { get; set; }
         public ICommand OrdersCommand { get; set; }
         public ICommand TransactionsCommand { get; set; }
-        public ICommand SuppliersCommand { get; set; }        public ICommand RateMasterCommand { get; set; }
+        public ICommand SuppliersCommand { get; set; }        
+        public ICommand RateMasterCommand { get; set; }
         public ICommand PurchaseOrderCommand { get; set; }
+        public ICommand StockCommand { get; set; }
         public ICommand ReportCommand { get; set; }
 
         public NavigationVM(
@@ -36,6 +38,8 @@ namespace Page_Navigation_App.ViewModel
             TransactionVM transactionVM,
             SupplierVM supplierVM, 
             RateMasterVM rateMasterVM,
+            PurchaseOrderVM purchaseOrderVM,
+            StockVM stockVM,
             ReportVM reportVM)
         {
             // Initialize commands
@@ -46,6 +50,8 @@ namespace Page_Navigation_App.ViewModel
             TransactionsCommand = new RelayCommand<object>(_ => NavigateTo(transactionVM)); 
             SuppliersCommand = new RelayCommand<object>(_ => NavigateTo(supplierVM));      
             RateMasterCommand = new RelayCommand<object>(_ => NavigateTo(rateMasterVM));
+            PurchaseOrderCommand = new RelayCommand<object>(_ => NavigateTo(purchaseOrderVM));
+            StockCommand = new RelayCommand<object>(_ => NavigateTo(stockVM));
             ReportCommand = new RelayCommand<object>(_ => NavigateTo(reportVM));
 
             // Set default view
