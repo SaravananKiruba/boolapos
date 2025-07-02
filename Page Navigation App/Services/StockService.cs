@@ -147,11 +147,14 @@ namespace Page_Navigation_App.Services
 
                 for (int i = 0; i < quantity; i++)
                 {
+                    var uniqueTagID = await GenerateUniqueTagID(product.MetalType, product.Purity);
+                    var barcode = await GenerateUniqueBarcode(product.ProductID);
+                    
                     var stockItem = new StockItem
                     {
                         ProductID = productId,
-                        UniqueTagID = GenerateUniqueTagID(product.MetalType, product.Purity),
-                        Barcode = GenerateUniqueBarcode(product.ProductID),
+                        UniqueTagID = uniqueTagID,
+                        Barcode = barcode,
                         PurchaseCost = unitCost,
                         SellingPrice = product.ProductPrice,
                         PurchaseOrderID = purchaseOrderId,
@@ -200,23 +203,38 @@ namespace Page_Navigation_App.Services
         }
 
         // Generate unique tag ID for jewelry items
-        private string GenerateUniqueTagID(string metalType, string purity)
+        private async Task<string> GenerateUniqueTagID(string metalType, string purity)
         {
-            var metalCode = metalType.Substring(0, Math.Min(2, metalType.Length)).ToUpper();
-            var purityCode = purity.Replace("k", "").Replace("K", "");
-            var timestamp = DateTime.Now.ToString("yyMMddHHmmss");
-            var random = new Random().Next(100, 999);
+            string metalCode = metalType?.Substring(0, Math.Min(2, metalType.Length)).ToUpper() ?? "GLD";
+            string purityCode = purity?.Replace("k", "").Replace("K", "") ?? "22";
             
-            return $"{metalCode}{purityCode}-{timestamp}-{random}";
+            string tagId;
+            do {
+                // Use a combination of timestamp, Guid and random number to ensure uniqueness
+                string timestamp = DateTime.Now.ToString("yyMMddHHmmss");
+                string guid = Guid.NewGuid().ToString("N");
+                string uniquePart = guid.Substring(0, 10);
+                
+                tagId = $"{metalCode}{purityCode}-{timestamp}-{uniquePart}";
+            } while (await _context.StockItems.AnyAsync(si => si.UniqueTagID == tagId));
+            
+            return tagId;
         }
 
         // Generate unique barcode for individual items
-        private string GenerateUniqueBarcode(int productId)
+        private async Task<string> GenerateUniqueBarcode(int productId)
         {
-            var timestamp = DateTime.Now.ToString("yyMMddHHmmss");
-            var random = new Random().Next(1000, 9999);
+            string barcode;
+            do {
+                // Use a similar approach for barcode but with a different format
+                string timestamp = DateTime.Now.ToString("yyMMddHHmm");
+                string guid = Guid.NewGuid().ToString("N");
+                string uniquePart = guid.Substring(0, 8);
+                
+                barcode = $"ITM{productId:D4}-{timestamp}-{uniquePart}";
+            } while (await _context.StockItems.AnyAsync(si => si.Barcode == barcode));
             
-            return $"ITM{productId:D4}{timestamp}{random}";
+            return barcode;
         }
 
         // Sell stock item (mark as sold)

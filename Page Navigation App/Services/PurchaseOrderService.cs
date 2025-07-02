@@ -392,11 +392,35 @@ namespace Page_Navigation_App.Services
                 var stockItems = new List<StockItem>();
                 for (int i = 0; i < quantity; i++)
                 {
+                    // Generate unique tag ID and barcode with stronger uniqueness guarantees
+                    string uniqueTagID;
+                    string barcode;
+                    
+                    do {
+                        // Use a combination of timestamp, Guid and random number to ensure uniqueness
+                        string metalCode = product.MetalType?.Substring(0, Math.Min(2, (product.MetalType ?? "GLD").Length)).ToUpper() ?? "GLD";
+                        string purityCode = (product.Purity ?? "22K").Replace("k", "").Replace("K", "");
+                        string timestamp = DateTime.Now.ToString("yyMMddHHmmss");
+                        string guid = Guid.NewGuid().ToString("N");
+                        string uniquePart = guid.Substring(0, 10);
+                        
+                        uniqueTagID = $"{metalCode}{purityCode}-{timestamp}-{uniquePart}";
+                    } while (await _context.StockItems.AnyAsync(si => si.UniqueTagID == uniqueTagID));
+                    
+                    do {
+                        // Use a similar approach for barcode but with a different format
+                        string timestamp = DateTime.Now.ToString("yyMMddHHmm");
+                        string guid = Guid.NewGuid().ToString("N");
+                        string uniquePart = guid.Substring(0, 8);
+                        
+                        barcode = $"ITM{productId:D4}-{timestamp}-{uniquePart}";
+                    } while (await _context.StockItems.AnyAsync(si => si.Barcode == barcode));
+                    
                     var stockItem = new StockItem
                     {
                         ProductID = productId,
-                        UniqueTagID = GenerateUniqueTagID(product.MetalType ?? "GLD", product.Purity ?? "22K"),
-                        Barcode = GenerateUniqueBarcode(productId),
+                        UniqueTagID = uniqueTagID,
+                        Barcode = barcode,
                         PurchaseCost = unitCost,
                         SellingPrice = product.ProductPrice,
                         PurchaseOrderID = purchaseOrderId,
@@ -451,23 +475,7 @@ namespace Page_Navigation_App.Services
             }
         }
 
-        // Helper methods for generating unique IDs
-        private string GenerateUniqueTagID(string metalType, string purity)
-        {
-            var metalCode = metalType?.Substring(0, Math.Min(2, metalType.Length)).ToUpper() ?? "GD";
-            var purityCode = purity?.Replace("k", "").Replace("K", "") ?? "22";
-            var timestamp = DateTime.Now.ToString("yyMMddHHmmss");
-            var random = new Random().Next(100, 999);
-            
-            return $"{metalCode}{purityCode}-{timestamp}-{random}";
-        }
-
-        private string GenerateUniqueBarcode(int productId)
-        {
-            var timestamp = DateTime.Now.ToString("yyMMddHHmmss");
-            var random = new Random().Next(1000, 9999);
-            return $"BP{productId:D6}{timestamp}{random}";
-        }
+        // Note: Unique ID generation is now handled within AddStockItemsDirectly method
 
         // Update purchase order
         public async Task<bool> UpdatePurchaseOrder(PurchaseOrder purchaseOrder)
