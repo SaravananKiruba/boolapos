@@ -54,7 +54,6 @@ namespace Page_Navigation_App
             services.AddScoped<ReportService>();
             
             // Register newly implemented services
-            services.AddScoped<HUIDTrackingService>();
             services.AddScoped<TaggingService>();
 
             // Business Services - Scoped lifetime

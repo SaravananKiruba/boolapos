@@ -60,9 +60,13 @@ namespace Page_Navigation_App.Services
         // Get stock summary by product
         public async Task<Dictionary<int, decimal>> GetStockSummary()
         {
-            return await _context.Stocks
+            var stocks = await _context.Stocks
+                .Where(s => s.Status == "Available")
+                .ToListAsync();
+                
+            return stocks
                 .GroupBy(s => s.ProductID)
-                .ToDictionaryAsync(g => g.Key, g => g.Sum(s => s.Quantity));
+                .ToDictionary(g => g.Key, g => g.Sum(s => s.Quantity));
         }
 
         // Update stock quantity (used for sales)

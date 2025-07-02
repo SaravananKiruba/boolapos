@@ -414,12 +414,13 @@ namespace Page_Navigation_App.ViewModel
 
                 if (result == System.Windows.MessageBoxResult.Yes)
                 {
-                    var success = await _purchaseOrderService.ReceivePurchaseOrder(SelectedPurchaseOrder.PurchaseOrderID);
+                    var purchaseOrderId = SelectedPurchaseOrder.PurchaseOrderID;
+                    var success = await _purchaseOrderService.ReceivePurchaseOrder(purchaseOrderId);
                     if (success)
                     {
                         System.Windows.MessageBox.Show("Purchase order received successfully! Items added to stock.", "Success");
                         LoadPurchaseOrders();
-                        LoadPurchaseOrderItems(SelectedPurchaseOrder.PurchaseOrderID);
+                        LoadPurchaseOrderItems(purchaseOrderId);
                     }
                     else
                     {
@@ -449,8 +450,9 @@ namespace Page_Navigation_App.ViewModel
                     return;
                 }
 
+                var purchaseOrderId = SelectedPurchaseOrder.PurchaseOrderID;
                 var success = await _purchaseOrderService.RecordPayment(
-                    SelectedPurchaseOrder.PurchaseOrderID,
+                    purchaseOrderId,
                     PaymentAmount,
                     SelectedPurchaseOrder.PaymentMethod,
                     PaymentNotes);
@@ -459,7 +461,7 @@ namespace Page_Navigation_App.ViewModel
                 {
                     System.Windows.MessageBox.Show($"Payment of ₹{PaymentAmount:N2} recorded successfully!", "Success");
                     LoadPurchaseOrders();
-                    LoadPurchaseOrderItems(SelectedPurchaseOrder.PurchaseOrderID);
+                    LoadPurchaseOrderItems(purchaseOrderId);
                     PaymentAmount = 0;
                     PaymentNotes = string.Empty;
                 }
@@ -495,12 +497,13 @@ namespace Page_Navigation_App.ViewModel
 
                 if (result == System.Windows.MessageBoxResult.Yes)
                 {
-                    var success = await _purchaseOrderService.CancelPurchaseOrder(SelectedPurchaseOrder.PurchaseOrderID, reason);
+                    var purchaseOrderId = SelectedPurchaseOrder.PurchaseOrderID;
+                    var success = await _purchaseOrderService.CancelPurchaseOrder(purchaseOrderId, reason);
                     if (success)
                     {
                         System.Windows.MessageBox.Show("Purchase order cancelled successfully!", "Success");
                         LoadPurchaseOrders();
-                        LoadPurchaseOrderItems(SelectedPurchaseOrder.PurchaseOrderID);
+                        LoadPurchaseOrderItems(purchaseOrderId);
                     }
                     else
                     {

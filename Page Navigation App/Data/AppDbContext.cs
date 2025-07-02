@@ -20,7 +20,6 @@ namespace Page_Navigation_App.Data
         public DbSet<RateMaster> RateMaster { get; set; }
         public DbSet<BusinessInfo> BusinessInfo { get; set; }
         public DbSet<EmailSettings> EmailSettings { get; set; }
-        public DbSet<EMI> EMIs { get; set; }
         public DbSet<ReportData> ReportData { get; set; }
         
         // New entities for workflow implementation
@@ -31,25 +30,12 @@ namespace Page_Navigation_App.Data
         
         // Properties referenced in services
         public DbSet<RateMaster> RateMasters { get; set; }
-        public DbSet<HUIDLog> HUIDLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure EMI-Order relationship
-            modelBuilder.Entity<EMI>()
-                .HasOne(e => e.Order)
-                .WithMany()
-                .HasForeignKey(e => e.OrderID)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // Configure EMI-Customer relationship
-            modelBuilder.Entity<EMI>()
-                .HasOne(e => e.Customer)
-                .WithMany()
-                .HasForeignKey(e => e.CustomerID)
-                .OnDelete(DeleteBehavior.NoAction);
+           
                 
             // Add indexes for faster querying
             modelBuilder.Entity<Product>()
