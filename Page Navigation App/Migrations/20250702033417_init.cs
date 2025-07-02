@@ -205,67 +205,6 @@ namespace Page_Navigation_App.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Roles",
-                columns: table => new
-                {
-                    RoleID = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    RoleName = table.Column<string>(type: "TEXT", nullable: true),
-                    Description = table.Column<string>(type: "TEXT", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Roles", x => x.RoleID);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "SecurityLogs",
-                columns: table => new
-                {
-                    ID = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Timestamp = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    UserID = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    Action = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    Description = table.Column<string>(type: "TEXT", maxLength: 500, nullable: false),
-                    IsSuccessful = table.Column<bool>(type: "INTEGER", nullable: false),
-                    IPAddress = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    UserAgent = table.Column<string>(type: "TEXT", maxLength: 500, nullable: false),
-                    Module = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
-                    Severity = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
-                    AdditionalData = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_SecurityLogs", x => x.ID);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Settings",
-                columns: table => new
-                {
-                    ID = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Key = table.Column<string>(type: "TEXT", nullable: true),
-                    Value = table.Column<string>(type: "TEXT", nullable: true),
-                    Description = table.Column<string>(type: "TEXT", nullable: true),
-                    UpdatedDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    LowStockAlerts = table.Column<bool>(type: "INTEGER", nullable: false),
-                    PaymentReminders = table.Column<bool>(type: "INTEGER", nullable: false),
-                    LowStockThreshold = table.Column<int>(type: "INTEGER", nullable: false),
-                    BackupPath = table.Column<string>(type: "TEXT", nullable: true),
-                    AutoBackup = table.Column<bool>(type: "INTEGER", nullable: false),
-                    BackupFrequencyDays = table.Column<int>(type: "INTEGER", nullable: false),
-                    DarkMode = table.Column<bool>(type: "INTEGER", nullable: false),
-                    Language = table.Column<string>(type: "TEXT", nullable: true),
-                    Currency = table.Column<string>(type: "TEXT", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Settings", x => x.ID);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Suppliers",
                 columns: table => new
                 {
@@ -284,27 +223,6 @@ namespace Page_Navigation_App.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Suppliers", x => x.SupplierID);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Users",
-                columns: table => new
-                {
-                    UserID = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Username = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    PasswordHash = table.Column<byte[]>(type: "BLOB", nullable: false),
-                    PasswordSalt = table.Column<byte[]>(type: "BLOB", nullable: false),
-                    FullName = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    Email = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
-                    Phone = table.Column<string>(type: "TEXT", maxLength: 15, nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    LastLoginDate = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Users", x => x.UserID);
                 });
 
             migrationBuilder.CreateTable(
@@ -398,18 +316,23 @@ namespace Page_Navigation_App.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     PurchaseOrderNumber = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
                     SupplierID = table.Column<int>(type: "INTEGER", nullable: false),
-                    PurchaseDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Status = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
+                    OrderDate = table.Column<DateOnly>(type: "TEXT", nullable: false),
+                    ExpectedDeliveryDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
+                    ActualDeliveryDate = table.Column<DateOnly>(type: "TEXT", nullable: true),
+                    Status = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    PaymentMethod = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    PaymentStatus = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
                     TotalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     PaidAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    BalanceAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    PaymentStatus = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    PaymentMethod = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
-                    DeliveryAddress = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
-                    ExpectedDeliveryDate = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    ActualDeliveryDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    DiscountAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    GrandTotal = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TotalItems = table.Column<int>(type: "INTEGER", nullable: false),
                     Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
-                    HasExpenseEntry = table.Column<bool>(type: "INTEGER", nullable: false)
+                    ReferenceNumber = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    CreatedBy = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    LastModified = table.Column<DateTime>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -419,77 +342,7 @@ namespace Page_Navigation_App.Migrations
                         column: x => x.SupplierID,
                         principalTable: "Suppliers",
                         principalColumn: "SupplierID",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "UserRoles",
-                columns: table => new
-                {
-                    UserRoleID = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    UserID = table.Column<int>(type: "INTEGER", nullable: false),
-                    RoleID = table.Column<int>(type: "INTEGER", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserRoles", x => x.UserRoleID);
-                    table.ForeignKey(
-                        name: "FK_UserRoles_Roles_RoleID",
-                        column: x => x.RoleID,
-                        principalTable: "Roles",
-                        principalColumn: "RoleID",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_UserRoles_Users_UserID",
-                        column: x => x.UserID,
-                        principalTable: "Users",
-                        principalColumn: "UserID",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "EMIs",
-                columns: table => new
-                {
-                    EMIID = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    OrderID = table.Column<int>(type: "INTEGER", nullable: false),
-                    CustomerID = table.Column<int>(type: "INTEGER", nullable: false),
-                    EMINumber = table.Column<int>(type: "INTEGER", nullable: false),
-                    Amount = table.Column<decimal>(type: "TEXT", nullable: false),
-                    DueDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    PaymentDate = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    TotalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    InstallmentAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    InterestRate = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
-                    TotalInstallments = table.Column<int>(type: "INTEGER", nullable: false),
-                    RemainingInstallments = table.Column<int>(type: "INTEGER", nullable: false),
-                    StartDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    PaymentDay = table.Column<int>(type: "INTEGER", nullable: false),
-                    PaidAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    RemainingAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false),
-                    LastPaymentDate = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    NextPaymentDate = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    Status = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
-                    Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_EMIs", x => x.EMIID);
-                    table.ForeignKey(
-                        name: "FK_EMIs_Customers_CustomerID",
-                        column: x => x.CustomerID,
-                        principalTable: "Customers",
-                        principalColumn: "CustomerID");
-                    table.ForeignKey(
-                        name: "FK_EMIs_Orders_OrderID",
-                        column: x => x.OrderID,
-                        principalTable: "Orders",
-                        principalColumn: "OrderID",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -546,29 +399,6 @@ namespace Page_Navigation_App.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "HUIDLogs",
-                columns: table => new
-                {
-                    LogID = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    HUID = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
-                    ProductID = table.Column<int>(type: "INTEGER", nullable: false),
-                    ActivityType = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    Description = table.Column<string>(type: "TEXT", maxLength: 500, nullable: false),
-                    ActivityDate = table.Column<DateOnly>(type: "TEXT", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_HUIDLogs", x => x.LogID);
-                    table.ForeignKey(
-                        name: "FK_HUIDLogs_Products_ProductID",
-                        column: x => x.ProductID,
-                        principalTable: "Products",
-                        principalColumn: "ProductID",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "OrderDetails",
                 columns: table => new
                 {
@@ -599,62 +429,6 @@ namespace Page_Navigation_App.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "StockLedgers",
-                columns: table => new
-                {
-                    StockLedgerID = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    ProductID = table.Column<int>(type: "INTEGER", nullable: false),
-                    SupplierID = table.Column<int>(type: "INTEGER", nullable: false),
-                    UnitCost = table.Column<decimal>(type: "TEXT", nullable: false),
-                    OrderID = table.Column<int>(type: "INTEGER", nullable: false),
-                    TransactionDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Quantity = table.Column<decimal>(type: "decimal(10,3)", nullable: false),
-                    UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    TotalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    TransactionType = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    ReferenceID = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
-                    ReferenceNumber = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
-                    Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_StockLedgers", x => x.StockLedgerID);
-                    table.ForeignKey(
-                        name: "FK_StockLedgers_Products_ProductID",
-                        column: x => x.ProductID,
-                        principalTable: "Products",
-                        principalColumn: "ProductID",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Expenses",
-                columns: table => new
-                {
-                    ExpenseID = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Description = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    ExpenseDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Category = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    PaymentMethod = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
-                    PurchaseOrderID = table.Column<int>(type: "INTEGER", nullable: true),
-                    Recipient = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
-                    ReferenceNumber = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
-                    Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Expenses", x => x.ExpenseID);
-                    table.ForeignKey(
-                        name: "FK_Expenses_PurchaseOrders_PurchaseOrderID",
-                        column: x => x.PurchaseOrderID,
-                        principalTable: "PurchaseOrders",
-                        principalColumn: "PurchaseOrderID");
-                });
-
-            migrationBuilder.CreateTable(
                 name: "PurchaseOrderItems",
                 columns: table => new
                 {
@@ -663,9 +437,15 @@ namespace Page_Navigation_App.Migrations
                     PurchaseOrderID = table.Column<int>(type: "INTEGER", nullable: false),
                     ProductID = table.Column<int>(type: "INTEGER", nullable: false),
                     Quantity = table.Column<decimal>(type: "decimal(10,3)", nullable: false),
-                    UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    TotalPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true)
+                    UnitCost = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TotalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    DiscountPercentage = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
+                    DiscountAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    Status = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    ReceivedQuantity = table.Column<decimal>(type: "decimal(10,3)", nullable: false),
+                    ReceivedDate = table.Column<DateTime>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -675,7 +455,7 @@ namespace Page_Navigation_App.Migrations
                         column: x => x.ProductID,
                         principalTable: "Products",
                         principalColumn: "ProductID",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_PurchaseOrderItems_PurchaseOrders_PurchaseOrderID",
                         column: x => x.PurchaseOrderID,
@@ -692,17 +472,12 @@ namespace Page_Navigation_App.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     ProductID = table.Column<int>(type: "INTEGER", nullable: false),
                     SupplierID = table.Column<int>(type: "INTEGER", nullable: false),
-                    PurchaseDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    QuantityPurchased = table.Column<decimal>(type: "decimal(10,3)", nullable: false),
-                    PurchaseRate = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    TotalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    InvoiceNumber = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
-                    PaymentStatus = table.Column<string>(type: "TEXT", maxLength: 20, nullable: true),
-                    Location = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    Quantity = table.Column<decimal>(type: "decimal(10,3)", nullable: false),
+                    UnitCost = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Location = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
                     LastUpdated = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    LastSold = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    AddedDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    IsDeadStock = table.Column<bool>(type: "INTEGER", nullable: false),
+                    Status = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    Batch = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
                     Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
                     PurchaseOrderID = table.Column<int>(type: "INTEGER", nullable: true)
                 },
@@ -725,7 +500,7 @@ namespace Page_Navigation_App.Migrations
                         column: x => x.SupplierID,
                         principalTable: "Suppliers",
                         principalColumn: "SupplierID",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -734,23 +509,39 @@ namespace Page_Navigation_App.Migrations
                 {
                     StockItemID = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    StockItemCode = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
                     ProductID = table.Column<int>(type: "INTEGER", nullable: false),
-                    StockID = table.Column<int>(type: "INTEGER", nullable: false),
-                    AddedDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Status = table.Column<string>(type: "TEXT", maxLength: 20, nullable: true),
-                    SoldDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    UniqueTagID = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    Barcode = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    PurchaseCost = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    SellingPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Status = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    Location = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
+                    PurchaseOrderID = table.Column<int>(type: "INTEGER", nullable: true),
+                    PurchaseDate = table.Column<DateTime>(type: "TEXT", nullable: true),
                     OrderID = table.Column<int>(type: "INTEGER", nullable: true),
-                    Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true)
+                    SaleDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    CustomerID = table.Column<int>(type: "INTEGER", nullable: true),
+                    HUID = table.Column<string>(type: "TEXT", maxLength: 20, nullable: true),
+                    HallmarkDetails = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
+                    StockID = table.Column<int>(type: "INTEGER", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_StockItems", x => x.StockItemID);
                     table.ForeignKey(
+                        name: "FK_StockItems_Customers_CustomerID",
+                        column: x => x.CustomerID,
+                        principalTable: "Customers",
+                        principalColumn: "CustomerID",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
                         name: "FK_StockItems_Orders_OrderID",
                         column: x => x.OrderID,
                         principalTable: "Orders",
-                        principalColumn: "OrderID");
+                        principalColumn: "OrderID",
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_StockItems_Products_ProductID",
                         column: x => x.ProductID,
@@ -758,32 +549,21 @@ namespace Page_Navigation_App.Migrations
                         principalColumn: "ProductID",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
+                        name: "FK_StockItems_PurchaseOrders_PurchaseOrderID",
+                        column: x => x.PurchaseOrderID,
+                        principalTable: "PurchaseOrders",
+                        principalColumn: "PurchaseOrderID");
+                    table.ForeignKey(
                         name: "FK_StockItems_Stocks_StockID",
                         column: x => x.StockID,
                         principalTable: "Stocks",
-                        principalColumn: "StockID",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "StockID");
                 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Customers_PhoneNumber",
                 table: "Customers",
                 column: "PhoneNumber");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_EMIs_CustomerID",
-                table: "EMIs",
-                column: "CustomerID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_EMIs_OrderID",
-                table: "EMIs",
-                column: "OrderID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Expenses_PurchaseOrderID",
-                table: "Expenses",
-                column: "PurchaseOrderID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Finances_CustomerID",
@@ -794,11 +574,6 @@ namespace Page_Navigation_App.Migrations
                 name: "IX_Finances_OrderReference",
                 table: "Finances",
                 column: "OrderReference");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_HUIDLogs_ProductID",
-                table: "HUIDLogs",
-                column: "ProductID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrderDetails_OrderID",
@@ -846,9 +621,26 @@ namespace Page_Navigation_App.Migrations
                 column: "PurchaseOrderID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PurchaseOrders_PurchaseOrderNumber",
+                table: "PurchaseOrders",
+                column: "PurchaseOrderNumber",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PurchaseOrders_SupplierID",
                 table: "PurchaseOrders",
                 column: "SupplierID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StockItems_Barcode",
+                table: "StockItems",
+                column: "Barcode",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StockItems_CustomerID",
+                table: "StockItems",
+                column: "CustomerID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_StockItems_OrderID",
@@ -861,19 +653,30 @@ namespace Page_Navigation_App.Migrations
                 column: "ProductID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_StockItems_PurchaseOrderID",
+                table: "StockItems",
+                column: "PurchaseOrderID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StockItems_Status",
+                table: "StockItems",
+                column: "Status");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_StockItems_StockID",
                 table: "StockItems",
                 column: "StockID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_StockLedgers_ProductID",
-                table: "StockLedgers",
-                column: "ProductID");
+                name: "IX_StockItems_UniqueTagID",
+                table: "StockItems",
+                column: "UniqueTagID",
+                unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Stocks_ProductID",
+                name: "IX_Stocks_ProductID_Status",
                 table: "Stocks",
-                column: "ProductID");
+                columns: new[] { "ProductID", "Status" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Stocks_PurchaseOrderID",
@@ -884,16 +687,6 @@ namespace Page_Navigation_App.Migrations
                 name: "IX_Stocks_SupplierID",
                 table: "Stocks",
                 column: "SupplierID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserRoles_RoleID",
-                table: "UserRoles",
-                column: "RoleID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserRoles_UserID",
-                table: "UserRoles",
-                column: "UserID");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -908,16 +701,7 @@ namespace Page_Navigation_App.Migrations
                 name: "EmailSettings");
 
             migrationBuilder.DropTable(
-                name: "EMIs");
-
-            migrationBuilder.DropTable(
-                name: "Expenses");
-
-            migrationBuilder.DropTable(
                 name: "Finances");
-
-            migrationBuilder.DropTable(
-                name: "HUIDLogs");
 
             migrationBuilder.DropTable(
                 name: "LogEntries");
@@ -935,31 +719,13 @@ namespace Page_Navigation_App.Migrations
                 name: "ReportData");
 
             migrationBuilder.DropTable(
-                name: "SecurityLogs");
-
-            migrationBuilder.DropTable(
-                name: "Settings");
-
-            migrationBuilder.DropTable(
                 name: "StockItems");
-
-            migrationBuilder.DropTable(
-                name: "StockLedgers");
-
-            migrationBuilder.DropTable(
-                name: "UserRoles");
 
             migrationBuilder.DropTable(
                 name: "Orders");
 
             migrationBuilder.DropTable(
                 name: "Stocks");
-
-            migrationBuilder.DropTable(
-                name: "Roles");
-
-            migrationBuilder.DropTable(
-                name: "Users");
 
             migrationBuilder.DropTable(
                 name: "Customers");

@@ -11,8 +11,8 @@ using Page_Navigation_App.Data;
 namespace Page_Navigation_App.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250701150307_new38")]
-    partial class new38
+    [Migration("20250702033417_init")]
+    partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -270,86 +270,6 @@ namespace Page_Navigation_App.Migrations
                     b.ToTable("EmailSettings");
                 });
 
-            modelBuilder.Entity("Page_Navigation_App.Model.EMI", b =>
-                {
-                    b.Property<int>("EMIID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("CustomerID")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("DueDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("EMINumber")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal>("InstallmentAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("InterestRate")
-                        .HasColumnType("decimal(5,2)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime?>("LastPaymentDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("NextPaymentDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("OrderID")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal>("PaidAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime?>("PaymentDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("PaymentDay")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal>("RemainingAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("RemainingInstallments")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Status")
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal>("TotalAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("TotalInstallments")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("EMIID");
-
-                    b.HasIndex("CustomerID");
-
-                    b.HasIndex("OrderID");
-
-                    b.ToTable("EMIs");
-                });
-
             modelBuilder.Entity("Page_Navigation_App.Model.Finance", b =>
                 {
                     b.Property<string>("FinanceID")
@@ -474,40 +394,6 @@ namespace Page_Navigation_App.Migrations
                     b.HasIndex("OrderReference");
 
                     b.ToTable("Finances");
-                });
-
-            modelBuilder.Entity("Page_Navigation_App.Model.HUIDLog", b =>
-                {
-                    b.Property<int>("LogID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateOnly>("ActivityDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ActivityType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("HUID")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("ProductID")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("LogID");
-
-                    b.HasIndex("ProductID");
-
-                    b.ToTable("HUIDLogs");
                 });
 
             modelBuilder.Entity("Page_Navigation_App.Model.LogEntry", b =>
@@ -1275,25 +1161,6 @@ namespace Page_Navigation_App.Migrations
                     b.ToTable("Suppliers");
                 });
 
-            modelBuilder.Entity("Page_Navigation_App.Model.EMI", b =>
-                {
-                    b.HasOne("Page_Navigation_App.Model.Customer", "Customer")
-                        .WithMany()
-                        .HasForeignKey("CustomerID")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("Page_Navigation_App.Model.Order", "Order")
-                        .WithMany()
-                        .HasForeignKey("OrderID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Customer");
-
-                    b.Navigation("Order");
-                });
-
             modelBuilder.Entity("Page_Navigation_App.Model.Finance", b =>
                 {
                     b.HasOne("Page_Navigation_App.Model.Customer", "Customer")
@@ -1307,17 +1174,6 @@ namespace Page_Navigation_App.Migrations
                     b.Navigation("Customer");
 
                     b.Navigation("Order");
-                });
-
-            modelBuilder.Entity("Page_Navigation_App.Model.HUIDLog", b =>
-                {
-                    b.HasOne("Page_Navigation_App.Model.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("Page_Navigation_App.Model.Order", b =>
