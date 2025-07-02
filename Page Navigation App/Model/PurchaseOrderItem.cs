@@ -31,13 +31,26 @@ namespace Page_Navigation_App.Model
         [Required]
         [Column(TypeName = "decimal(18,2)")]
         [Range(0.01, 999999999.99)]
-        public decimal TotalAmount { get; set; } // UnitCost * Quantity
+        public decimal TotalAmount { get; set; } // UnitCost * Quantity (Simplified calculation)
 
         [Column(TypeName = "decimal(5,2)")]
         public decimal DiscountPercentage { get; set; } = 0;
 
         [Column(TypeName = "decimal(18,2)")]
         public decimal DiscountAmount { get; set; } = 0;
+
+        // Item Receipt Tracking
+        [Column(TypeName = "decimal(10,3)")]
+        public decimal ReceivedQuantity { get; set; } = 0;
+
+        public DateTime? ReceivedDate { get; set; }
+
+        [StringLength(100)]
+        public string ReceivedBy { get; set; }
+
+        // Stock Integration - Track if items added to stock
+        public bool IsAddedToStock { get; set; } = false;
+        public DateTime? StockAddedDate { get; set; }
 
         [StringLength(500)]
         public string Notes { get; set; }
@@ -47,12 +60,6 @@ namespace Page_Navigation_App.Model
         [Required]
         [StringLength(50)]
         public string Status { get; set; } = "Pending"; // Pending, Delivered, Cancelled
-
-        // For tracking received quantities (useful for partial deliveries)
-        [Column(TypeName = "decimal(10,3)")]
-        public decimal ReceivedQuantity { get; set; } = 0;
-
-        public DateTime? ReceivedDate { get; set; }
 
         // Navigation Properties
         public virtual PurchaseOrder PurchaseOrder { get; set; }

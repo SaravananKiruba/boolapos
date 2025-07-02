@@ -144,30 +144,6 @@ namespace Page_Navigation_App.Services
                     totalAmount += detail.TotalAmount;                    totalItems += (int)detail.Quantity;
                     
                     await _context.OrderDetails.AddAsync(detail);
-                    
-                    // Update stock using the new StockService
-                    var stockUpdateSuccess = await _stockService.UpdateStockQuantity(
-                        detail.ProductID, 
-                        detail.Quantity, 
-                        $"Sale - Order #{order.InvoiceNumber}");
-                    
-                    if (!stockUpdateSuccess)
-                    {
-                        throw new InvalidOperationException($"Insufficient stock for product ID {detail.ProductID}");
-                    }
-                    
-                    // Find and mark individual stock items as sold
-                    var availableStockItems = await _stockService.GetAvailableStockItems(detail.ProductID);
-                    decimal remainingQuantity = detail.Quantity;
-                    
-                    foreach (var stockItem in availableStockItems.Take((int)Math.Ceiling(remainingQuantity)))
-                    {
-                        if (remainingQuantity <= 0) break;
-                        
-                        await _stockService.SellStockItem(stockItem.UniqueTagID, order.OrderID, order.CustomerID);
-                        remainingQuantity -= 1; // Each stock item is typically quantity 1 for jewelry
-                    }
-                   
                 }
 
                 // Update order totals
@@ -178,6 +154,13 @@ namespace Page_Navigation_App.Services
                 order.GrandTotal = Math.Round(order.PriceBeforeTax * 1.03m, 2); // Add 3% tax
                 
                 await _context.SaveChangesAsync();
+
+                // Use enhanced stock deduction system
+                var stockDeductionSuccess = await _stockService.DeductStockForOrder(order.OrderID, details);
+                if (!stockDeductionSuccess)
+                {
+                    throw new InvalidOperationException("Failed to deduct stock for order. Transaction rolled back.");
+                }
                 
                 // Create finance entry for the sale
                 var financeEntry = new Finance
@@ -504,6 +487,66 @@ namespace Page_Navigation_App.Services
                 .Where(o => o.OrderDate >= start && o.OrderDate <= end)
                 .OrderByDescending(o => o.OrderDate)
                 .ToListAsync();
+        }
+        
+        // Enhanced method to check stock availability before creating order
+        public async Task<(bool CanCreateOrder, Dictionary<int, string> StockIssues)> CheckStockAvailabilityForOrder(List<OrderDetail> orderDetails)
+        {
+            try
+            {
+                var availability = await _stockService.CheckStockAvailability(orderDetails);
+                var stockIssues = new Dictionary<int, string>();
+                bool canCreateOrder = true;
+
+                foreach (var detail in orderDetails)
+                {
+                    if (!availability.ContainsKey(detail.ProductID))
+                    {
+                        stockIssues[detail.ProductID] = "Product not found in stock";
+                        canCreateOrder = false;
+                    }
+                    else if (availability[detail.ProductID] < (int)detail.Quantity)
+                    {
+                        stockIssues[detail.ProductID] = $"Insufficient stock. Required: {detail.Quantity}, Available: {availability[detail.ProductID]}";
+                        canCreateOrder = false;
+                    }
+                }
+
+                return (canCreateOrder, stockIssues);
+            }
+            catch (Exception ex)
+            {
+                await _logService.LogErrorAsync($"Error checking stock availability: {ex.Message}", exception: ex);
+                return (false, new Dictionary<int, string> { { 0, "Error checking stock availability" } });
+            }
+        }
+
+        // Enhanced CreateOrder with stock validation
+        public async Task<(Order Order, bool Success, string ErrorMessage)> CreateOrderWithStockValidation(Order order, List<OrderDetail> details)
+        {
+            try
+            {
+                // First check stock availability
+                var (canCreateOrder, stockIssues) = await CheckStockAvailabilityForOrder(details);
+                
+                if (!canCreateOrder)
+                {
+                    var errorMessage = string.Join("; ", stockIssues.Values);
+                    await _logService.LogWarningAsync($"Cannot create order due to stock issues: {errorMessage}");
+                    return (null, false, errorMessage);
+                }
+
+                // Proceed with order creation
+                var createdOrder = await CreateOrder(order, details);
+                
+                await _logService.LogInformationAsync($"Order created successfully with stock validation. Order ID: {createdOrder.OrderID}, Invoice: {createdOrder.InvoiceNumber}");
+                return (createdOrder, true, "Order created successfully");
+            }
+            catch (Exception ex)
+            {
+                await _logService.LogErrorAsync($"Error creating order with stock validation: {ex.Message}", exception: ex);
+                return (null, false, ex.Message);
+            }
         }
     }
 }

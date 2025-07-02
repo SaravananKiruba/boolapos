@@ -325,8 +325,12 @@ namespace Page_Navigation_App.Migrations
                     TotalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     PaidAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     DiscountAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     GrandTotal = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ItemReceiptStatus = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    IsItemsReceived = table.Column<bool>(type: "INTEGER", nullable: false),
+                    ItemsReceivedDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    HasFinanceRecord = table.Column<bool>(type: "INTEGER", nullable: false),
+                    FinanceRecordID = table.Column<string>(type: "TEXT", nullable: true),
                     TotalItems = table.Column<int>(type: "INTEGER", nullable: false),
                     Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
                     ReferenceNumber = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
@@ -441,11 +445,14 @@ namespace Page_Navigation_App.Migrations
                     TotalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     DiscountPercentage = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
                     DiscountAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ReceivedQuantity = table.Column<decimal>(type: "decimal(10,3)", nullable: false),
+                    ReceivedDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    ReceivedBy = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    IsAddedToStock = table.Column<bool>(type: "INTEGER", nullable: false),
+                    StockAddedDate = table.Column<DateTime>(type: "TEXT", nullable: true),
                     Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Status = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    ReceivedQuantity = table.Column<decimal>(type: "decimal(10,3)", nullable: false),
-                    ReceivedDate = table.Column<DateTime>(type: "TEXT", nullable: true)
+                    Status = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -478,8 +485,12 @@ namespace Page_Navigation_App.Migrations
                     LastUpdated = table.Column<DateTime>(type: "TEXT", nullable: false),
                     Status = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
                     Batch = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true),
+                    AvailableCount = table.Column<int>(type: "INTEGER", nullable: false),
+                    ReservedCount = table.Column<int>(type: "INTEGER", nullable: false),
+                    SoldCount = table.Column<int>(type: "INTEGER", nullable: false),
                     Notes = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
-                    PurchaseOrderID = table.Column<int>(type: "INTEGER", nullable: true)
+                    PurchaseOrderID = table.Column<int>(type: "INTEGER", nullable: true),
+                    PurchaseOrderReceivedDate = table.Column<DateTime>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -518,6 +529,7 @@ namespace Page_Navigation_App.Migrations
                     CreatedDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     Location = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
                     PurchaseOrderID = table.Column<int>(type: "INTEGER", nullable: true),
+                    PurchaseOrderItemID = table.Column<int>(type: "INTEGER", nullable: true),
                     PurchaseDate = table.Column<DateTime>(type: "TEXT", nullable: true),
                     OrderID = table.Column<int>(type: "INTEGER", nullable: true),
                     SaleDate = table.Column<DateTime>(type: "TEXT", nullable: true),
@@ -548,6 +560,12 @@ namespace Page_Navigation_App.Migrations
                         principalTable: "Products",
                         principalColumn: "ProductID",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_StockItems_PurchaseOrderItems_PurchaseOrderItemID",
+                        column: x => x.PurchaseOrderItemID,
+                        principalTable: "PurchaseOrderItems",
+                        principalColumn: "PurchaseOrderItemID",
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_StockItems_PurchaseOrders_PurchaseOrderID",
                         column: x => x.PurchaseOrderID,
@@ -658,6 +676,11 @@ namespace Page_Navigation_App.Migrations
                 column: "PurchaseOrderID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_StockItems_PurchaseOrderItemID",
+                table: "StockItems",
+                column: "PurchaseOrderItemID");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_StockItems_Status",
                 table: "StockItems",
                 column: "Status");
@@ -710,9 +733,6 @@ namespace Page_Navigation_App.Migrations
                 name: "OrderDetails");
 
             migrationBuilder.DropTable(
-                name: "PurchaseOrderItems");
-
-            migrationBuilder.DropTable(
                 name: "RateMaster");
 
             migrationBuilder.DropTable(
@@ -723,6 +743,9 @@ namespace Page_Navigation_App.Migrations
 
             migrationBuilder.DropTable(
                 name: "Orders");
+
+            migrationBuilder.DropTable(
+                name: "PurchaseOrderItems");
 
             migrationBuilder.DropTable(
                 name: "Stocks");

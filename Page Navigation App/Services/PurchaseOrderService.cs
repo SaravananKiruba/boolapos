@@ -58,37 +58,18 @@ namespace Page_Navigation_App.Services
                     await _context.PurchaseOrderItems.AddAsync(item);
                 }
 
-                // Update purchase order totals
+                // Update purchase order totals - SIMPLIFIED (No GST)
                 purchaseOrder.TotalItems = totalItems;
                 purchaseOrder.TotalAmount = totalAmount;
-                purchaseOrder.TaxAmount = Math.Round(totalAmount * 0.18m, 2); // 18% GST
-                purchaseOrder.GrandTotal = purchaseOrder.TotalAmount + purchaseOrder.TaxAmount - purchaseOrder.DiscountAmount;
+                // NO GST for Purchase Orders as per requirement
+                purchaseOrder.GrandTotal = purchaseOrder.TotalAmount - purchaseOrder.DiscountAmount;
 
                 await _context.SaveChangesAsync();
 
-                // Create finance entry for the expense
-                var financeEntry = new Finance
-                {
-                    TransactionDate = DateTime.Now,
-                    Amount = purchaseOrder.GrandTotal,
-                    TransactionType = "Expense",
-                    PaymentMethod = purchaseOrder.PaymentMethod,
-                    PaymentMode = purchaseOrder.PaymentMethod,
-                    Category = "Purchase",
-                    Description = $"Purchase Order #{purchaseOrder.PurchaseOrderNumber} - ₹{purchaseOrder.GrandTotal:N2}",
-                    Notes = $"Purchase from {purchaseOrder.Supplier?.SupplierName ?? "Supplier"}",
-                    ReferenceNumber = purchaseOrder.PurchaseOrderNumber,
-                    CreatedBy = purchaseOrder.CreatedBy,
-                    Currency = "INR",
-                    Status = "Pending"
-                };
-
-                await _context.Finances.AddAsync(financeEntry);
-                await _context.SaveChangesAsync();
+                // Log the creation
+                await _logService.LogInformationAsync($"Created Purchase Order #{purchaseOrder.PurchaseOrderNumber} with {items.Count} items - Total: ₹{purchaseOrder.GrandTotal:N2}");
 
                 await transaction.CommitAsync();
-                await _logService.LogInformationAsync($"Created Purchase Order #{purchaseOrder.PurchaseOrderNumber} with {items.Count} items");
-
                 return purchaseOrder;
             }
             catch (Exception ex)
@@ -336,6 +317,204 @@ namespace Page_Navigation_App.Services
                 { "AverageOrderValue", purchases.Any() ? purchases.Average(po => po.GrandTotal) : 0 },
                 { "TotalItems", purchases.Sum(po => po.TotalItems) }
             };
+        }
+
+        // Enhanced method for Item Received - Add to Stock
+        public async Task<bool> MarkItemsReceived(int purchaseOrderId, List<int> receivedItemIds = null, string receivedBy = "System")
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            
+            try
+            {
+                var purchaseOrder = await GetPurchaseOrderById(purchaseOrderId);
+                if (purchaseOrder == null) return false;
+
+                var itemsToReceive = receivedItemIds?.Count > 0 
+                    ? purchaseOrder.PurchaseOrderItems.Where(poi => receivedItemIds.Contains(poi.PurchaseOrderItemID)).ToList()
+                    : purchaseOrder.PurchaseOrderItems.ToList();
+
+                foreach (var item in itemsToReceive)
+                {
+                    if (item.IsFullyReceived) continue; // Skip already received items
+
+                    // Mark item as received
+                    item.ReceivedQuantity = item.Quantity;
+                    item.ReceivedDate = DateTime.Now;
+                    item.ReceivedBy = receivedBy;
+                    item.Status = "Delivered";
+                    item.IsAddedToStock = true;
+                    item.StockAddedDate = DateTime.Now;
+
+                    // Add individual items to stock with unique Tag IDs and Barcodes
+                    await AddItemsToStock(item);
+                }
+
+                // Update purchase order status
+                purchaseOrder.IsItemsReceived = purchaseOrder.AreAllItemsReceived;
+                purchaseOrder.ItemsReceivedDate = purchaseOrder.IsItemsReceived ? DateTime.Now : null;
+                purchaseOrder.ItemReceiptStatus = purchaseOrder.IsItemsReceived ? "Completed" : 
+                    (purchaseOrder.TotalReceivedQuantity > 0 ? "Partial" : "Pending");
+                
+                purchaseOrder.Status = purchaseOrder.IsItemsReceived ? "Delivered" : "Partially Delivered";
+                purchaseOrder.ActualDeliveryDate = purchaseOrder.IsItemsReceived ? DateOnly.FromDateTime(DateTime.Now) : null;
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                await _logService.LogInformationAsync($"Items received for Purchase Order #{purchaseOrder.PurchaseOrderNumber}. Status: {purchaseOrder.ItemReceiptStatus}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                await _logService.LogErrorAsync($"Error marking items as received: {ex.Message}", exception: ex);
+                return false;
+            }
+        }
+
+        // Enhanced method for Amount Paid - Create Finance Record
+        public async Task<bool> RecordPurchaseOrderPayment(int purchaseOrderId, decimal paidAmount, string paymentMethod = "Cash", string notes = "")
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            
+            try
+            {
+                var purchaseOrder = await GetPurchaseOrderById(purchaseOrderId);
+                if (purchaseOrder == null) return false;
+
+                // Update purchase order payment details
+                purchaseOrder.PaidAmount += paidAmount;
+                purchaseOrder.PaymentMethod = paymentMethod;
+                
+                // Update payment status
+                if (purchaseOrder.IsFullyPaid)
+                {
+                    purchaseOrder.PaymentStatus = "Paid";
+                }
+                else if (purchaseOrder.PaidAmount > 0)
+                {
+                    purchaseOrder.PaymentStatus = "Partial";
+                }
+
+                // Create Finance Record for the expense
+                var financeEntry = new Finance
+                {
+                    TransactionDate = DateTime.Now,
+                    Amount = paidAmount,
+                    TransactionType = "Expense",
+                    PaymentMethod = paymentMethod,
+                    PaymentMode = paymentMethod,
+                    Category = "Purchase",
+                    Description = $"Payment for Purchase Order #{purchaseOrder.PurchaseOrderNumber}",
+                    Notes = $"Purchase from {purchaseOrder.Supplier?.SupplierName ?? "Supplier"}. {notes}",
+                    ReferenceNumber = purchaseOrder.PurchaseOrderNumber,
+                    CreatedBy = purchaseOrder.CreatedBy,
+                    Currency = "INR",
+                    Status = "Completed"
+                };
+
+                await _context.Finances.AddAsync(financeEntry);
+                
+                // Link finance record to purchase order
+                purchaseOrder.HasFinanceRecord = true;
+                purchaseOrder.FinanceRecordID = financeEntry.FinanceID;
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                await _logService.LogInformationAsync($"Payment of ₹{paidAmount:N2} recorded for Purchase Order #{purchaseOrder.PurchaseOrderNumber}. Payment Status: {purchaseOrder.PaymentStatus}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                await _logService.LogErrorAsync($"Error recording payment: {ex.Message}", exception: ex);
+                return false;
+            }
+        }
+
+        // Helper method to add items to stock with individual tracking
+        private async Task AddItemsToStock(PurchaseOrderItem item)
+        {
+            // Create or update stock record
+            var existingStock = await _context.Stocks
+                .FirstOrDefaultAsync(s => s.ProductID == item.ProductID && 
+                                         s.SupplierID == item.PurchaseOrder.SupplierID &&
+                                         s.PurchaseOrderID == item.PurchaseOrderID);
+
+            if (existingStock == null)
+            {
+                existingStock = new Stock
+                {
+                    ProductID = item.ProductID,
+                    SupplierID = item.PurchaseOrder.SupplierID,
+                    PurchaseOrderID = item.PurchaseOrderID,
+                    Quantity = 0,
+                    UnitCost = item.UnitCost,
+                    Location = "Main Store",
+                    Status = "Available",
+                    AvailableCount = 0,
+                    PurchaseOrderReceivedDate = DateTime.Now
+                };
+                await _context.Stocks.AddAsync(existingStock);
+                await _context.SaveChangesAsync(); // Save to get Stock ID
+            }
+
+            // Add individual stock items with unique Tag IDs and Barcodes
+            for (int i = 0; i < (int)item.Quantity; i++)
+            {
+                var stockItem = new StockItem
+                {
+                    ProductID = item.ProductID,
+                    UniqueTagID = await GenerateUniqueTagID(item.ProductID),
+                    Barcode = await GenerateBarcode(item.ProductID),
+                    PurchaseCost = item.UnitCost,
+                    SellingPrice = item.Product?.ProductPrice ?? 0, // Use product's selling price
+                    Status = "Available",
+                    Location = "Main Store",
+                    PurchaseOrderID = item.PurchaseOrderID,
+                    PurchaseOrderItemID = item.PurchaseOrderItemID,
+                    PurchaseDate = DateTime.Now
+                };
+
+                await _context.StockItems.AddAsync(stockItem);
+            }
+
+            // Update stock totals
+            existingStock.Quantity += item.Quantity;
+            existingStock.AvailableCount += (int)item.Quantity;
+            existingStock.LastUpdated = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+        }
+
+        // Helper method to generate unique Tag ID
+        private async Task<string> GenerateUniqueTagID(int productId)
+        {
+            var product = await _context.Products.FindAsync(productId);
+            var productCode = product?.TagNumber?.Substring(0, Math.Min(3, product.TagNumber.Length)) ?? "PRD";
+            
+            string tagId;
+            do
+            {
+                tagId = $"{productCode}{DateTime.Now:yyyyMMdd}{Random.Shared.Next(1000, 9999)}";
+            }
+            while (await _context.StockItems.AnyAsync(si => si.UniqueTagID == tagId));
+
+            return tagId;
+        }
+
+        // Helper method to generate barcode
+        private async Task<string> GenerateBarcode(int productId)
+        {
+            string barcode;
+            do
+            {
+                barcode = $"BC{productId:D4}{DateTime.Now:yyyyMMdd}{Random.Shared.Next(100, 999)}";
+            }
+            while (await _context.StockItems.AnyAsync(si => si.Barcode == barcode));
+
+            return barcode;
         }
     }
 }

@@ -267,8 +267,8 @@ namespace Page_Navigation_App.ViewModel
             {
                 SelectedPurchaseOrder.TotalAmount = PurchaseOrderItems.Sum(item => item.TotalAmount);
                 SelectedPurchaseOrder.TotalItems = PurchaseOrderItems.Count;
-                SelectedPurchaseOrder.TaxAmount = Math.Round(SelectedPurchaseOrder.TotalAmount * 0.18m, 2); // 18% GST
-                SelectedPurchaseOrder.GrandTotal = SelectedPurchaseOrder.TotalAmount + SelectedPurchaseOrder.TaxAmount - SelectedPurchaseOrder.DiscountAmount;
+                // No GST for Purchase Orders as per enhancement requirement
+                SelectedPurchaseOrder.GrandTotal = SelectedPurchaseOrder.TotalAmount - SelectedPurchaseOrder.DiscountAmount;
                 OnPropertyChanged(nameof(SelectedPurchaseOrder));
             }
         }

@@ -47,11 +47,24 @@ namespace Page_Navigation_App.Model
         [Column(TypeName = "decimal(18,2)")]
         public decimal DiscountAmount { get; set; } = 0;
 
-        [Column(TypeName = "decimal(18,2)")]
-        public decimal TaxAmount { get; set; } = 0;
-
+        // Simplified: No GST for Purchase Orders as per requirement
+        // TotalAmount = Sum of (Quantity * UnitPrice) for all items
+        // GrandTotal = TotalAmount - DiscountAmount
         [Column(TypeName = "decimal(18,2)")]
         public decimal GrandTotal { get; set; }
+
+        // Item Receipt Status
+        [Required]
+        [StringLength(50)]
+        public string ItemReceiptStatus { get; set; } = "Pending"; // Pending, Partial, Completed
+
+        // Payment Status Enhancement
+        public bool IsItemsReceived { get; set; } = false;
+        public DateTime? ItemsReceivedDate { get; set; }
+
+        // Finance Integration for Payment Tracking
+        public bool HasFinanceRecord { get; set; } = false;
+        public string FinanceRecordID { get; set; }
 
         public int TotalItems { get; set; }
 
@@ -81,5 +94,17 @@ namespace Page_Navigation_App.Model
         // Check if fully paid
         [NotMapped]
         public bool IsFullyPaid => PaidAmount >= GrandTotal;
+
+        // Check if all items are received
+        [NotMapped]
+        public bool AreAllItemsReceived => PurchaseOrderItems?.All(x => x.IsFullyReceived) ?? false;
+
+        // Calculate total received quantity
+        [NotMapped]
+        public decimal TotalReceivedQuantity => PurchaseOrderItems?.Sum(x => x.ReceivedQuantity) ?? 0;
+
+        // Calculate pending quantity
+        [NotMapped]
+        public decimal PendingQuantity => PurchaseOrderItems?.Sum(x => x.RemainingQuantity) ?? 0;
     }
 }

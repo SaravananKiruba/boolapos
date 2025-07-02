@@ -43,12 +43,20 @@ namespace Page_Navigation_App.Model
         [StringLength(100)]
         public string Batch { get; set; } // Batch or lot number
 
+        // Enhanced tracking for individual items
+        public int AvailableCount { get; set; } = 0; // Count of available individual items
+        public int ReservedCount { get; set; } = 0;  // Count of reserved individual items
+        public int SoldCount { get; set; } = 0;      // Count of sold individual items
+
         [StringLength(500)]
         public string Notes { get; set; }
 
         // For PurchaseOrder reference
         [ForeignKey("PurchaseOrder")]
         public int? PurchaseOrderID { get; set; }
+
+        // Track when items were added from Purchase Order
+        public DateTime? PurchaseOrderReceivedDate { get; set; }
 
         // Navigation Properties
         public virtual Product Product { get; set; }
@@ -59,5 +67,13 @@ namespace Page_Navigation_App.Model
         // Calculate total value
         [NotMapped]
         public decimal TotalValue => Quantity * UnitCost;
+
+        // Calculate total available items
+        [NotMapped]
+        public int TotalAvailableItems => AvailableCount;
+
+        // Calculate total items in stock
+        [NotMapped]
+        public int TotalItemsInStock => AvailableCount + ReservedCount;
     }
 }

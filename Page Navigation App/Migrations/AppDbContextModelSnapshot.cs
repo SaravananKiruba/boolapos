@@ -695,8 +695,25 @@ namespace Page_Navigation_App.Migrations
                     b.Property<DateOnly?>("ExpectedDeliveryDate")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("FinanceRecordID")
+                        .HasColumnType("TEXT");
+
                     b.Property<decimal>("GrandTotal")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("HasFinanceRecord")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsItemsReceived")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ItemReceiptStatus")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("ItemsReceivedDate")
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("LastModified")
                         .HasColumnType("TEXT");
@@ -737,9 +754,6 @@ namespace Page_Navigation_App.Migrations
                     b.Property<int>("SupplierID")
                         .HasColumnType("INTEGER");
 
-                    b.Property<decimal>("TaxAmount")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
 
@@ -771,6 +785,9 @@ namespace Page_Navigation_App.Migrations
                     b.Property<decimal>("DiscountPercentage")
                         .HasColumnType("decimal(5,2)");
 
+                    b.Property<bool>("IsAddedToStock")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Notes")
                         .HasMaxLength(500)
                         .HasColumnType("TEXT");
@@ -784,6 +801,10 @@ namespace Page_Navigation_App.Migrations
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(10,3)");
 
+                    b.Property<string>("ReceivedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime?>("ReceivedDate")
                         .HasColumnType("TEXT");
 
@@ -793,6 +814,9 @@ namespace Page_Navigation_App.Migrations
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("StockAddedDate")
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("TotalAmount")
@@ -975,6 +999,9 @@ namespace Page_Navigation_App.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("AvailableCount")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Batch")
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
@@ -997,8 +1024,17 @@ namespace Page_Navigation_App.Migrations
                     b.Property<int?>("PurchaseOrderID")
                         .HasColumnType("INTEGER");
 
+                    b.Property<DateTime?>("PurchaseOrderReceivedDate")
+                        .HasColumnType("TEXT");
+
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(10,3)");
+
+                    b.Property<int>("ReservedCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SoldCount")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -1070,6 +1106,9 @@ namespace Page_Navigation_App.Migrations
                     b.Property<int?>("PurchaseOrderID")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("PurchaseOrderItemID")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime?>("SaleDate")
                         .HasColumnType("TEXT");
 
@@ -1101,6 +1140,8 @@ namespace Page_Navigation_App.Migrations
                     b.HasIndex("ProductID");
 
                     b.HasIndex("PurchaseOrderID");
+
+                    b.HasIndex("PurchaseOrderItemID");
 
                     b.HasIndex("Status");
 
@@ -1292,6 +1333,11 @@ namespace Page_Navigation_App.Migrations
                         .WithMany()
                         .HasForeignKey("PurchaseOrderID");
 
+                    b.HasOne("Page_Navigation_App.Model.PurchaseOrderItem", "PurchaseOrderItem")
+                        .WithMany()
+                        .HasForeignKey("PurchaseOrderItemID")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Page_Navigation_App.Model.Stock", null)
                         .WithMany("StockItems")
                         .HasForeignKey("StockID");
@@ -1303,6 +1349,8 @@ namespace Page_Navigation_App.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("PurchaseOrder");
+
+                    b.Navigation("PurchaseOrderItem");
                 });
 
             modelBuilder.Entity("Page_Navigation_App.Model.Customer", b =>

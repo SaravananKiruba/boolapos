@@ -46,6 +46,9 @@ namespace Page_Navigation_App.Model
         [ForeignKey("PurchaseOrder")]
         public int? PurchaseOrderID { get; set; }
 
+        [ForeignKey("PurchaseOrderItem")]
+        public int? PurchaseOrderItemID { get; set; } // Link to specific purchase order item
+
         public DateTime? PurchaseDate { get; set; }
 
         // Sale details
@@ -70,6 +73,7 @@ namespace Page_Navigation_App.Model
         // Navigation Properties
         public virtual Product Product { get; set; }
         public virtual PurchaseOrder PurchaseOrder { get; set; }
+        public virtual PurchaseOrderItem PurchaseOrderItem { get; set; }
         public virtual Order Order { get; set; }
         public virtual Customer Customer { get; set; }
 
