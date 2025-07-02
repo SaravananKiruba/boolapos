@@ -139,7 +139,7 @@ namespace Page_Navigation_App.ViewModel
                     {
                         ProductID = value.ProductID,
                         Product = value,
-                        UnitCost = value.ProductPrice * 0.8m, // Assume 20% margin
+                        UnitCost = value.ProductPrice, // Use actual product price as purchase cost
                         Quantity = 1
                     };
                     CalculatePurchaseOrderItemTotal();
@@ -406,8 +406,25 @@ namespace Page_Navigation_App.ViewModel
                     return;
                 }
 
+                // Check if already delivered
+                if (SelectedPurchaseOrder.Status == "Delivered")
+                {
+                    System.Windows.MessageBox.Show("This purchase order has already been fully delivered.", "Already Delivered");
+                    return;
+                }
+
+                // Check if cancelled
+                if (SelectedPurchaseOrder.Status == "Cancelled")
+                {
+                    System.Windows.MessageBox.Show("Cannot receive a cancelled purchase order.", "Order Cancelled");
+                    return;
+                }
+
                 var result = System.Windows.MessageBox.Show(
-                    $"Mark Purchase Order #{SelectedPurchaseOrder.PurchaseOrderNumber} as received and add items to stock?",
+                    $"Mark Purchase Order #{SelectedPurchaseOrder.PurchaseOrderNumber} as received and add items to stock?\n\n" +
+                    $"Status: {SelectedPurchaseOrder.Status}\n" +
+                    $"Total Items: {SelectedPurchaseOrder.TotalItems}\n" +
+                    $"Total Amount: ₹{SelectedPurchaseOrder.GrandTotal:N2}",
                     "Confirm Receipt",
                     System.Windows.MessageBoxButton.YesNo,
                     System.Windows.MessageBoxImage.Question);
@@ -415,22 +432,66 @@ namespace Page_Navigation_App.ViewModel
                 if (result == System.Windows.MessageBoxResult.Yes)
                 {
                     var purchaseOrderId = SelectedPurchaseOrder.PurchaseOrderID;
+                    
+                    // Show progress or loading indicator here if needed
                     var success = await _purchaseOrderService.ReceivePurchaseOrder(purchaseOrderId);
+                    
                     if (success)
                     {
-                        System.Windows.MessageBox.Show("Purchase order received successfully! Items added to stock.", "Success");
+                        System.Windows.MessageBox.Show(
+                            "Purchase order received successfully!\n\n" +
+                            "• Items have been added to stock\n" +
+                            "• Individual barcodes and tags generated\n" +
+                            "• Stock levels updated",
+                            "Success", 
+                            System.Windows.MessageBoxButton.OK, 
+                            System.Windows.MessageBoxImage.Information);
+                        
+                        // Refresh the data
                         LoadPurchaseOrders();
                         LoadPurchaseOrderItems(purchaseOrderId);
                     }
                     else
                     {
-                        System.Windows.MessageBox.Show("Failed to receive purchase order.", "Error");
+                        System.Windows.MessageBox.Show(
+                            "Failed to receive purchase order.\n\n" +
+                            "This could be due to:\n" +
+                            "• Database connection issues\n" +
+                            "• Invalid product or supplier data\n" +
+                            "• Required fields missing\n\n" +
+                            "Please check the application logs for detailed error information.",
+                            "Operation Failed", 
+                            System.Windows.MessageBoxButton.OK, 
+                            System.Windows.MessageBoxImage.Warning);
                     }
                 }
             }
+            catch (InvalidOperationException ex)
+            {
+                // Handle business logic errors
+                System.Windows.MessageBox.Show(
+                    $"Cannot complete the operation:\n\n{ex.Message}",
+                    "Operation Not Allowed", 
+                    System.Windows.MessageBoxButton.OK, 
+                    System.Windows.MessageBoxImage.Warning);
+            }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error receiving purchase order: {ex.Message}", "Error");
+                // Handle unexpected errors
+                var errorMessage = ex.InnerException?.Message ?? ex.Message;
+                var detailedMessage = $"An unexpected error occurred while receiving the purchase order:\n\n{errorMessage}";
+                
+                if (ex.Message.Contains("entity changes"))
+                {
+                    detailedMessage += "\n\nThis appears to be a database validation error. " +
+                                     "Please ensure all required fields are properly filled and try again.";
+                }
+                
+                System.Windows.MessageBox.Show(
+                    detailedMessage,
+                    "Unexpected Error", 
+                    System.Windows.MessageBoxButton.OK, 
+                    System.Windows.MessageBoxImage.Error);
             }
         }
 

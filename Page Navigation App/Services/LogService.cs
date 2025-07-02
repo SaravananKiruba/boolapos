@@ -53,13 +53,19 @@ namespace Page_Navigation_App.Services
                 // Check if we're already in a transaction to avoid nested transaction errors
                 bool inExistingTransaction = _context.Database.CurrentTransaction != null;
                 
-                // Save to database
-                _context.LogEntries.Add(logEntry);
-                
-                // Only call SaveChangesAsync if we're not in an existing transaction
-                // This avoids the "connection is already in a transaction" error
-                if (!inExistingTransaction) {
-                    await _context.SaveChangesAsync();
+                if (!inExistingTransaction)
+                {
+                    // Only save to database if we're not in an existing transaction
+                    try
+                    {
+                        _context.LogEntries.Add(logEntry);
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (Exception dbEx)
+                    {
+                        // If database logging fails, at least write to file
+                        WriteToLogFile("ERROR", $"Database logging failed: {dbEx.Message}");
+                    }
                 }
                 
                 // Always log to file for redundancy
@@ -67,9 +73,8 @@ namespace Page_Navigation_App.Services
             }
             catch (Exception ex)
             {
-                // If database logging fails, at least try to write to file
-                WriteToLogFile("ERROR", message, exception);
-                WriteToLogFile("FATAL", $"Failed to log to database: {ex.Message}", ex);
+                // If all else fails, at least try to write to file
+                WriteToLogFile("FATAL", $"Complete logging failure: {ex.Message}", ex);
             }
         }        /// <summary>
         /// Log warning message
@@ -117,17 +122,25 @@ namespace Page_Navigation_App.Services
                     Message = message,
                     Timestamp = DateTime.Now,
                     UserId = userId,
-                    Source = "BoolaPOS" // Adding the required Source property
+                    Source = "BoolaPOS"
                 };
                 
                 // Check if we're already in a transaction to avoid nested transaction errors
                 bool inExistingTransaction = _context.Database.CurrentTransaction != null;
                 
-                _context.LogEntries.Add(logEntry);
-                
-                // Only call SaveChangesAsync if we're not in an existing transaction
-                if (!inExistingTransaction) {
-                    await _context.SaveChangesAsync();
+                if (!inExistingTransaction)
+                {
+                    // Only save to database if we're not in an existing transaction
+                    try
+                    {
+                        _context.LogEntries.Add(logEntry);
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (Exception dbEx)
+                    {
+                        // If database logging fails, at least write to file
+                        WriteToLogFile("ERROR", $"Database logging failed: {dbEx.Message}");
+                    }
                 }
                 
                 WriteToLogFile("INFO", message);
@@ -135,7 +148,7 @@ namespace Page_Navigation_App.Services
             catch (Exception ex)
             {
                 WriteToLogFile("INFO", message);
-                WriteToLogFile("ERROR", $"Failed to log info to database: {ex.Message}", ex);
+                WriteToLogFile("ERROR", $"Failed to log info: {ex.Message}", ex);
             }
         }        /// <summary>
         /// Log security event (login, permissions change, etc.)

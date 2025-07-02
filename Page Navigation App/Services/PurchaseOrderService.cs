@@ -34,11 +34,34 @@ namespace Page_Navigation_App.Services
             
             try
             {
+                // Validate input
+                if (purchaseOrder == null)
+                    throw new ArgumentNullException(nameof(purchaseOrder));
+                
+                if (items == null || !items.Any())
+                    throw new ArgumentException("Purchase order must have at least one item.", nameof(items));
+
+                // Ensure supplier exists
+                var supplier = await _context.Suppliers.FindAsync(purchaseOrder.SupplierID);
+                if (supplier == null)
+                    throw new InvalidOperationException($"Supplier with ID {purchaseOrder.SupplierID} not found.");
+
                 // Generate purchase order number if not provided
                 if (string.IsNullOrEmpty(purchaseOrder.PurchaseOrderNumber))
                 {
                     purchaseOrder.PurchaseOrderNumber = await GeneratePurchaseOrderNumber();
                 }
+
+                // Validate products exist
+                var productIds = items.Select(i => i.ProductID).Distinct().ToList();
+                var existingProducts = await _context.Products
+                    .Where(p => productIds.Contains(p.ProductID))
+                    .Select(p => p.ProductID)
+                    .ToListAsync();
+                
+                var missingProducts = productIds.Except(existingProducts).ToList();
+                if (missingProducts.Any())
+                    throw new InvalidOperationException($"Products with IDs [{string.Join(", ", missingProducts)}] not found.");
 
                 // Add purchase order
                 await _context.PurchaseOrders.AddAsync(purchaseOrder);
@@ -51,7 +74,7 @@ namespace Page_Navigation_App.Services
                 foreach (var item in items)
                 {
                     item.PurchaseOrderID = purchaseOrder.PurchaseOrderID;
-                    item.TotalAmount = item.UnitCost * item.Quantity;
+                    item.TotalAmount = Math.Round(item.UnitCost * item.Quantity, 2);
                     totalAmount += item.TotalAmount;
                     totalItems += (int)item.Quantity;
 
@@ -60,22 +83,40 @@ namespace Page_Navigation_App.Services
 
                 // Update purchase order totals - SIMPLIFIED (No GST)
                 purchaseOrder.TotalItems = totalItems;
-                purchaseOrder.TotalAmount = totalAmount;
+                purchaseOrder.TotalAmount = Math.Round(totalAmount, 2);
                 // NO GST for Purchase Orders as per requirement
-                purchaseOrder.GrandTotal = purchaseOrder.TotalAmount - purchaseOrder.DiscountAmount;
+                purchaseOrder.GrandTotal = Math.Round(purchaseOrder.TotalAmount - purchaseOrder.DiscountAmount, 2);
 
                 await _context.SaveChangesAsync();
 
-                // Log the creation
-                await _logService.LogInformationAsync($"Created Purchase Order #{purchaseOrder.PurchaseOrderNumber} with {items.Count} items - Total: ₹{purchaseOrder.GrandTotal:N2}");
-
                 await transaction.CommitAsync();
+
+                // Log after successful commit
+                try
+                {
+                    await _logService.LogInformationAsync($"Created Purchase Order #{purchaseOrder.PurchaseOrderNumber} with {items.Count} items - Total: ₹{purchaseOrder.GrandTotal:N2}");
+                }
+                catch (Exception logEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Failed to log: {logEx.Message}");
+                }
+
                 return purchaseOrder;
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                await _logService.LogErrorAsync($"Error creating purchase order: {ex.Message}", exception: ex);
+                
+                // Log error after rollback
+                try
+                {
+                    await _logService.LogErrorAsync($"Error creating purchase order: {ex.Message}", exception: ex);
+                }
+                catch (Exception logEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Failed to log error: {logEx.Message}");
+                }
+                
                 throw;
             }
         }
@@ -113,59 +154,311 @@ namespace Page_Navigation_App.Services
                 .ToListAsync();
         }
 
-        // Receive purchase order (mark as delivered and add to stock)
+        // Receive purchase order (mark as delivered and add to stock) - Enhanced with better error handling
         public async Task<bool> ReceivePurchaseOrder(int purchaseOrderId, List<PurchaseOrderItem> receivedItems = null)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
             
             try
             {
-                var purchaseOrder = await GetPurchaseOrderById(purchaseOrderId);
-                if (purchaseOrder == null) return false;
-
-                // If specific items are provided, use them; otherwise, receive all items
-                var itemsToReceive = receivedItems ?? purchaseOrder.PurchaseOrderItems.ToList();
-
-                foreach (var item in itemsToReceive)
+                // Load purchase order with all related data
+                var purchaseOrder = await _context.PurchaseOrders
+                    .Include(po => po.Supplier)
+                    .Include(po => po.PurchaseOrderItems)
+                        .ThenInclude(poi => poi.Product)
+                    .FirstOrDefaultAsync(po => po.PurchaseOrderID == purchaseOrderId);
+                
+                if (purchaseOrder == null) 
                 {
-                    // Update received quantity
-                    var originalItem = purchaseOrder.PurchaseOrderItems.FirstOrDefault(poi => poi.PurchaseOrderItemID == item.PurchaseOrderItemID);
-                    if (originalItem != null)
+                    await transaction.RollbackAsync();
+                    throw new InvalidOperationException($"Purchase order with ID {purchaseOrderId} not found.");
+                }
+
+                // Validate purchase order can be received
+                if (purchaseOrder.Status == "Cancelled")
+                {
+                    await transaction.RollbackAsync();
+                    throw new InvalidOperationException("Cannot receive a cancelled purchase order.");
+                }
+
+                if (purchaseOrder.Status == "Delivered")
+                {
+                    await transaction.RollbackAsync();
+                    throw new InvalidOperationException("Purchase order has already been fully delivered.");
+                }
+
+                // Determine which items to receive
+                var itemsToProcess = new List<(PurchaseOrderItem originalItem, decimal quantityToReceive)>();
+                
+                if (receivedItems != null && receivedItems.Any())
+                {
+                    // Process specific items provided
+                    foreach (var receivedItem in receivedItems)
                     {
-                        originalItem.ReceivedQuantity += item.Quantity;
-                        originalItem.ReceivedDate = DateTime.Now;
+                        var originalItem = purchaseOrder.PurchaseOrderItems
+                            .FirstOrDefault(poi => poi.PurchaseOrderItemID == receivedItem.PurchaseOrderItemID);
                         
+                        if (originalItem != null && originalItem.ReceivedQuantity < originalItem.Quantity)
+                        {
+                            var maxReceivable = originalItem.Quantity - originalItem.ReceivedQuantity;
+                            var quantityToReceive = Math.Min(receivedItem.Quantity, maxReceivable);
+                            
+                            if (quantityToReceive > 0)
+                            {
+                                itemsToProcess.Add((originalItem, quantityToReceive));
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // Process all pending items
+                    foreach (var item in purchaseOrder.PurchaseOrderItems)
+                    {
+                        var remainingQuantity = item.Quantity - item.ReceivedQuantity;
+                        if (remainingQuantity > 0)
+                        {
+                            itemsToProcess.Add((item, remainingQuantity));
+                        }
+                    }
+                }
+
+                if (!itemsToProcess.Any())
+                {
+                    await transaction.RollbackAsync();
+                    throw new InvalidOperationException("No items available to receive.");
+                }
+
+                // Process each item
+                foreach (var (originalItem, quantityToReceive) in itemsToProcess)
+                {
+                    try
+                    {
+                        // Validate product exists
+                        if (originalItem.Product == null)
+                        {
+                            var product = await _context.Products.FindAsync(originalItem.ProductID);
+                            if (product == null)
+                            {
+                                throw new InvalidOperationException($"Product with ID {originalItem.ProductID} not found.");
+                            }
+                            originalItem.Product = product;
+                        }
+
+                        // Update purchase order item
+                        originalItem.ReceivedQuantity += quantityToReceive;
+                        originalItem.ReceivedDate = DateTime.Now;
+                        originalItem.ReceivedBy = Environment.UserName ?? "System";
+                        originalItem.IsAddedToStock = true;
+                        originalItem.StockAddedDate = DateTime.Now;
+                        
+                        // Update status based on received quantity
                         if (originalItem.ReceivedQuantity >= originalItem.Quantity)
                         {
                             originalItem.Status = "Delivered";
                         }
-                    }
+                        else
+                        {
+                            originalItem.Status = "Partially Delivered";
+                        }
 
-                    // Add to stock with individual item tracking
-                    await _stockService.AddStockItems(
-                        item.ProductID, 
-                        (int)item.Quantity, 
-                        item.UnitCost, 
-                        purchaseOrderId);
+                        // Validate item data before saving
+                        if (originalItem.ProductID <= 0)
+                            throw new InvalidOperationException($"Invalid ProductID: {originalItem.ProductID}");
+                        
+                        if (originalItem.PurchaseOrderID <= 0)
+                            throw new InvalidOperationException($"Invalid PurchaseOrderID: {originalItem.PurchaseOrderID}");
+                        
+                        if (originalItem.UnitCost <= 0)
+                            throw new InvalidOperationException($"Invalid UnitCost: {originalItem.UnitCost}");
+
+                        // Add to stock
+                        await AddStockItemsDirectly(
+                            originalItem.ProductID, 
+                            (int)quantityToReceive, 
+                            originalItem.UnitCost, 
+                            purchaseOrderId, 
+                            purchaseOrder.SupplierID);
+                    }
+                    catch (Exception itemEx)
+                    {
+                        throw new InvalidOperationException($"Error processing item {originalItem.ProductID}: {itemEx.Message}", itemEx);
+                    }
                 }
 
                 // Update purchase order status
-                bool allItemsReceived = purchaseOrder.PurchaseOrderItems.All(poi => poi.IsFullyReceived);
-                purchaseOrder.Status = allItemsReceived ? "Delivered" : "Partially Delivered";
-                purchaseOrder.ActualDeliveryDate = DateOnly.FromDateTime(DateTime.Now);
+                var allItemsReceived = purchaseOrder.PurchaseOrderItems.All(poi => 
+                    poi.ReceivedQuantity >= poi.Quantity);
+                
+                var anyItemsReceived = purchaseOrder.PurchaseOrderItems.Any(poi => 
+                    poi.ReceivedQuantity > 0);
 
-                await _context.SaveChangesAsync();
+                purchaseOrder.Status = allItemsReceived ? "Delivered" : 
+                                     anyItemsReceived ? "Partially Delivered" : "Pending";
+                
+                purchaseOrder.ItemReceiptStatus = allItemsReceived ? "Completed" : 
+                                                anyItemsReceived ? "Partial" : "Pending";
+                
+                purchaseOrder.IsItemsReceived = allItemsReceived;
+                purchaseOrder.ActualDeliveryDate = allItemsReceived ? DateOnly.FromDateTime(DateTime.Now) : null;
+                purchaseOrder.ItemsReceivedDate = allItemsReceived ? DateTime.Now : null;
+                purchaseOrder.LastModified = DateTime.Now;
+
+                // Validate data before saving
+                ValidatePurchaseOrderData(purchaseOrder);
+
+                // Save all changes in one transaction
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateException dbEx)
+                {
+                    var innerMessage = dbEx.InnerException?.Message ?? "No inner exception details";
+                    throw new InvalidOperationException($"Database update failed: {dbEx.Message}. Inner: {innerMessage}", dbEx);
+                }
+                catch (Exception saveEx)
+                {
+                    throw new InvalidOperationException($"Failed to save changes: {saveEx.Message}", saveEx);
+                }
+                
                 await transaction.CommitAsync();
 
-                await _logService.LogInformationAsync($"Received Purchase Order #{purchaseOrder.PurchaseOrderNumber}. Status: {purchaseOrder.Status}");
+                // Log success after transaction commits
+                try
+                {
+                    await _logService.LogInformationAsync($"Successfully received Purchase Order #{purchaseOrder.PurchaseOrderNumber}. Status: {purchaseOrder.Status}, Items Processed: {itemsToProcess.Count}");
+                }
+                catch (Exception logEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Failed to log success: {logEx.Message}");
+                }
+                
                 return true;
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                await _logService.LogErrorAsync($"Error receiving purchase order: {ex.Message}", exception: ex);
-                return false;
+                
+                // Create detailed error message
+                var errorDetails = $"Error receiving purchase order {purchaseOrderId}: {ex.Message}";
+                if (ex.InnerException != null)
+                {
+                    errorDetails += $" Inner Exception: {ex.InnerException.Message}";
+                }
+                
+                // Log error after rollback
+                try
+                {
+                    await _logService.LogErrorAsync(errorDetails, exception: ex);
+                }
+                catch (Exception logEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Failed to log error: {logEx.Message}");
+                }
+                
+                // Re-throw with more specific information
+                throw new InvalidOperationException(errorDetails, ex);
             }
+        }
+
+        // Helper method to add stock items directly within the same transaction
+        private async Task AddStockItemsDirectly(int productId, int quantity, decimal unitCost, int purchaseOrderId, int? supplierId)
+        {
+            try
+            {
+                var product = await _context.Products.FindAsync(productId);
+                if (product == null) 
+                    throw new InvalidOperationException($"Product with ID {productId} not found.");
+
+                if (quantity <= 0)
+                    throw new ArgumentException("Quantity must be greater than zero.", nameof(quantity));
+
+                if (unitCost <= 0)
+                    throw new ArgumentException("Unit cost must be greater than zero.", nameof(unitCost));
+
+                // Determine the supplier ID to use
+                var stockSupplierId = supplierId ?? product.SupplierID;
+
+                // Create StockItem entries for individual tracking
+                var stockItems = new List<StockItem>();
+                for (int i = 0; i < quantity; i++)
+                {
+                    var stockItem = new StockItem
+                    {
+                        ProductID = productId,
+                        UniqueTagID = GenerateUniqueTagID(product.MetalType ?? "GLD", product.Purity ?? "22K"),
+                        Barcode = GenerateUniqueBarcode(productId),
+                        PurchaseCost = unitCost,
+                        SellingPrice = product.ProductPrice,
+                        PurchaseOrderID = purchaseOrderId,
+                        PurchaseDate = DateTime.Now,
+                        HUID = product.HUID ?? string.Empty,
+                        Status = "Available",
+                        CreatedDate = DateTime.Now,
+                        Location = "Main Store"
+                    };
+                    stockItems.Add(stockItem);
+                }
+
+                if (stockItems.Any())
+                {
+                    await _context.StockItems.AddRangeAsync(stockItems);
+                }
+
+                // Also update/create main stock entry
+                var existingStock = await _context.Stocks
+                    .FirstOrDefaultAsync(s => s.ProductID == productId && s.PurchaseOrderID == purchaseOrderId);
+
+                if (existingStock != null)
+                {
+                    existingStock.Quantity += quantity;
+                    existingStock.AvailableCount += quantity;
+                    existingStock.LastUpdated = DateTime.Now;
+                }
+                else
+                {
+                    var newStock = new Stock
+                    {
+                        ProductID = productId,
+                        SupplierID = stockSupplierId,
+                        Quantity = quantity,
+                        AvailableCount = quantity,
+                        ReservedCount = 0,
+                        SoldCount = 0,
+                        UnitCost = unitCost,
+                        PurchaseOrderID = purchaseOrderId,
+                        Status = "Available",
+                        Location = "Main Store",
+                        LastUpdated = DateTime.Now,
+                        PurchaseOrderReceivedDate = DateTime.Now,
+                        Batch = $"PO{purchaseOrderId}_{DateTime.Now:yyyyMMdd}"
+                    };
+                    await _context.Stocks.AddAsync(newStock);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Failed to add stock items for Product ID {productId}: {ex.Message}", ex);
+            }
+        }
+
+        // Helper methods for generating unique IDs
+        private string GenerateUniqueTagID(string metalType, string purity)
+        {
+            var metalCode = metalType?.Substring(0, Math.Min(2, metalType.Length)).ToUpper() ?? "GD";
+            var purityCode = purity?.Replace("k", "").Replace("K", "") ?? "22";
+            var timestamp = DateTime.Now.ToString("yyMMddHHmmss");
+            var random = new Random().Next(100, 999);
+            
+            return $"{metalCode}{purityCode}-{timestamp}-{random}";
+        }
+
+        private string GenerateUniqueBarcode(int productId)
+        {
+            var timestamp = DateTime.Now.ToString("yyMMddHHmmss");
+            var random = new Random().Next(1000, 9999);
+            return $"BP{productId:D6}{timestamp}{random}";
         }
 
         // Update purchase order
@@ -173,8 +466,19 @@ namespace Page_Navigation_App.Services
         {
             try
             {
+                if (purchaseOrder == null || purchaseOrder.PurchaseOrderID <= 0)
+                    return false;
+
                 var existingPO = await _context.PurchaseOrders.FindAsync(purchaseOrder.PurchaseOrderID);
                 if (existingPO == null) return false;
+
+                // Ensure supplier exists if being changed
+                if (existingPO.SupplierID != purchaseOrder.SupplierID)
+                {
+                    var supplier = await _context.Suppliers.FindAsync(purchaseOrder.SupplierID);
+                    if (supplier == null)
+                        throw new InvalidOperationException($"Supplier with ID {purchaseOrder.SupplierID} not found.");
+                }
 
                 existingPO.SupplierID = purchaseOrder.SupplierID;
                 existingPO.ExpectedDeliveryDate = purchaseOrder.ExpectedDeliveryDate;
@@ -182,15 +486,36 @@ namespace Page_Navigation_App.Services
                 existingPO.PaymentMethod = purchaseOrder.PaymentMethod;
                 existingPO.PaymentStatus = purchaseOrder.PaymentStatus;
                 existingPO.Notes = purchaseOrder.Notes;
+                existingPO.DiscountAmount = purchaseOrder.DiscountAmount;
                 existingPO.LastModified = DateTime.Now;
 
+                // Recalculate grand total
+                existingPO.GrandTotal = Math.Round(existingPO.TotalAmount - existingPO.DiscountAmount, 2);
+
                 await _context.SaveChangesAsync();
-                await _logService.LogInformationAsync($"Updated Purchase Order #{existingPO.PurchaseOrderNumber}");
+                
+                // Log after successful save
+                try
+                {
+                    await _logService.LogInformationAsync($"Updated Purchase Order #{existingPO.PurchaseOrderNumber}");
+                }
+                catch (Exception logEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Failed to log: {logEx.Message}");
+                }
+                
                 return true;
             }
             catch (Exception ex)
             {
-                await _logService.LogErrorAsync($"Error updating purchase order: {ex.Message}", exception: ex);
+                try
+                {
+                    await _logService.LogErrorAsync($"Error updating purchase order: {ex.Message}", exception: ex);
+                }
+                catch (Exception logEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Failed to log error: {logEx.Message}");
+                }
                 return false;
             }
         }
@@ -515,6 +840,88 @@ namespace Page_Navigation_App.Services
             while (await _context.StockItems.AnyAsync(si => si.Barcode == barcode));
 
             return barcode;
+        }
+
+        // Helper method to validate purchase order data before saving
+        private void ValidatePurchaseOrderData(PurchaseOrder purchaseOrder)
+        {
+            if (purchaseOrder == null)
+                throw new ArgumentNullException(nameof(purchaseOrder));
+
+            if (purchaseOrder.SupplierID <= 0)
+                throw new InvalidOperationException($"Invalid SupplierID: {purchaseOrder.SupplierID}");
+
+            if (string.IsNullOrEmpty(purchaseOrder.PurchaseOrderNumber))
+                throw new InvalidOperationException("PurchaseOrderNumber cannot be empty");
+
+            if (string.IsNullOrEmpty(purchaseOrder.Status))
+                throw new InvalidOperationException("Status cannot be empty");
+
+            if (string.IsNullOrEmpty(purchaseOrder.PaymentMethod))
+                throw new InvalidOperationException("PaymentMethod cannot be empty");
+
+            if (string.IsNullOrEmpty(purchaseOrder.PaymentStatus))
+                throw new InvalidOperationException("PaymentStatus cannot be empty");
+
+            if (string.IsNullOrEmpty(purchaseOrder.ItemReceiptStatus))
+                throw new InvalidOperationException("ItemReceiptStatus cannot be empty");
+
+            if (string.IsNullOrEmpty(purchaseOrder.CreatedBy))
+                throw new InvalidOperationException("CreatedBy cannot be empty");
+
+            // Validate purchase order items
+            if (purchaseOrder.PurchaseOrderItems != null)
+            {
+                foreach (var item in purchaseOrder.PurchaseOrderItems)
+                {
+                    if (item.ProductID <= 0)
+                        throw new InvalidOperationException($"Invalid ProductID in item: {item.ProductID}");
+                    
+                    if (item.Quantity <= 0)
+                        throw new InvalidOperationException($"Invalid Quantity in item: {item.Quantity}");
+                    
+                    if (item.UnitCost < 0)
+                        throw new InvalidOperationException($"Invalid UnitCost in item: {item.UnitCost}");
+                    
+                    if (string.IsNullOrEmpty(item.Status))
+                        throw new InvalidOperationException("Item Status cannot be empty");
+                }
+            }
+        }
+
+        // Debug method to check purchase order data
+        public async Task<string> DebugPurchaseOrderAsync(int purchaseOrderId)
+        {
+            try
+            {
+                var purchaseOrder = await _context.PurchaseOrders
+                    .Include(po => po.Supplier)
+                    .Include(po => po.PurchaseOrderItems)
+                        .ThenInclude(poi => poi.Product)
+                    .FirstOrDefaultAsync(po => po.PurchaseOrderID == purchaseOrderId);
+                
+                if (purchaseOrder == null)
+                    return $"Purchase Order {purchaseOrderId} not found";
+
+                var debug = new System.Text.StringBuilder();
+                debug.AppendLine($"Purchase Order Debug Info:");
+                debug.AppendLine($"ID: {purchaseOrder.PurchaseOrderID}");
+                debug.AppendLine($"Number: {purchaseOrder.PurchaseOrderNumber}");
+                debug.AppendLine($"Supplier: {purchaseOrder.Supplier?.SupplierName ?? "NULL"}");
+                debug.AppendLine($"Status: {purchaseOrder.Status}");
+                debug.AppendLine($"Items Count: {purchaseOrder.PurchaseOrderItems.Count}");
+                
+                foreach (var item in purchaseOrder.PurchaseOrderItems)
+                {
+                    debug.AppendLine($"  Item: ProductID={item.ProductID}, Product={item.Product?.ProductName ?? "NULL"}, Qty={item.Quantity}, Cost={item.UnitCost}, Status={item.Status}");
+                }
+                
+                return debug.ToString();
+            }
+            catch (Exception ex)
+            {
+                return $"Debug error: {ex.Message}";
+            }
         }
     }
 }
