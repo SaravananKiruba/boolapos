@@ -52,6 +52,14 @@ namespace Page_Navigation_App.Services
                     purchaseOrder.PurchaseOrderNumber = await GeneratePurchaseOrderNumber();
                 }
 
+                // Check for duplicate purchase order number
+                var existingPO = await _context.PurchaseOrders
+                    .FirstOrDefaultAsync(po => po.PurchaseOrderNumber == purchaseOrder.PurchaseOrderNumber);
+                if (existingPO != null)
+                {
+                    throw new InvalidOperationException($"Purchase order number {purchaseOrder.PurchaseOrderNumber} already exists.");
+                }
+
                 // Validate products exist
                 var productIds = items.Select(i => i.ProductID).Distinct().ToList();
                 var existingProducts = await _context.Products
@@ -546,13 +554,35 @@ namespace Page_Navigation_App.Services
         // Record payment for purchase order
         public async Task<bool> RecordPayment(int purchaseOrderId, decimal amount, string paymentMethod, string notes = null)
         {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            
             try
             {
-                var purchaseOrder = await _context.PurchaseOrders.FindAsync(purchaseOrderId);
-                if (purchaseOrder == null) return false;
+                // Load purchase order with validation
+                var purchaseOrder = await _context.PurchaseOrders
+                    .FirstOrDefaultAsync(po => po.PurchaseOrderID == purchaseOrderId);
+                
+                if (purchaseOrder == null)
+                {
+                    throw new InvalidOperationException($"Purchase order with ID {purchaseOrderId} not found.");
+                }
 
+                // Validate payment amount
+                if (amount <= 0)
+                {
+                    throw new ArgumentException("Payment amount must be greater than zero.");
+                }
+
+                var remainingAmount = purchaseOrder.GrandTotal - purchaseOrder.PaidAmount;
+                if (amount > remainingAmount)
+                {
+                    throw new ArgumentException($"Payment amount (₹{amount:N2}) cannot exceed remaining balance (₹{remainingAmount:N2}).");
+                }
+
+                // Update purchase order payment details
                 purchaseOrder.PaidAmount += amount;
                 
+                // Update payment status
                 if (purchaseOrder.PaidAmount >= purchaseOrder.GrandTotal)
                 {
                     purchaseOrder.PaymentStatus = "Paid";
@@ -561,6 +591,10 @@ namespace Page_Navigation_App.Services
                 {
                     purchaseOrder.PaymentStatus = "Partial";
                 }
+                else
+                {
+                    purchaseOrder.PaymentStatus = "Pending";
+                }
 
                 // Create finance entry for the payment
                 var financeEntry = new Finance
@@ -568,27 +602,32 @@ namespace Page_Navigation_App.Services
                     TransactionDate = DateTime.Now,
                     Amount = amount,
                     TransactionType = "Expense",
-                    PaymentMethod = paymentMethod,
-                    PaymentMode = paymentMethod,
+                    PaymentMethod = paymentMethod ?? "Cash",
+                    PaymentMode = paymentMethod ?? "Cash",
                     Category = "Purchase Payment",
                     Description = $"Payment for Purchase Order #{purchaseOrder.PurchaseOrderNumber}",
-                    Notes = notes,
+                    Notes = notes ?? string.Empty,
                     ReferenceNumber = purchaseOrder.PurchaseOrderNumber,
-                    CreatedBy = "System",
+                    CreatedBy = Environment.UserName ?? "System",
                     Currency = "INR",
                     Status = "Completed"
                 };
 
                 await _context.Finances.AddAsync(financeEntry);
+                
+                // Save all changes
                 await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
 
-                await _logService.LogInformationAsync($"Recorded payment of ₹{amount:N2} for Purchase Order #{purchaseOrder.PurchaseOrderNumber}");
+                await _logService.LogInformationAsync($"Recorded payment of ₹{amount:N2} for Purchase Order #{purchaseOrder.PurchaseOrderNumber}. Remaining: ₹{(purchaseOrder.GrandTotal - purchaseOrder.PaidAmount):N2}");
+                
                 return true;
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync();
                 await _logService.LogErrorAsync($"Error recording payment: {ex.Message}", exception: ex);
-                return false;
+                throw;
             }
         }
 
@@ -597,23 +636,37 @@ namespace Page_Navigation_App.Services
         {
             var year = DateTime.Now.Year.ToString();
             var month = DateTime.Now.Month.ToString("D2");
+            var day = DateTime.Now.Day.ToString("D2");
             
-            var lastPO = await _context.PurchaseOrders
-                .Where(po => po.PurchaseOrderNumber.StartsWith($"PO{year}{month}"))
-                .OrderByDescending(po => po.PurchaseOrderNumber)
-                .FirstOrDefaultAsync();
+            // Get the count of purchase orders created today
+            var today = DateOnly.FromDateTime(DateTime.Now);
+            var todaysOrderCount = await _context.PurchaseOrders
+                .CountAsync(po => po.OrderDate == today);
 
-            int nextNumber = 1;
-            if (lastPO != null)
+            var nextNumber = todaysOrderCount + 1;
+            
+            // Generate unique number with retry logic
+            string newPONumber;
+            int attempt = 0;
+            const int maxAttempts = 10;
+            
+            do
             {
-                var lastNumberPart = lastPO.PurchaseOrderNumber.Substring(6); // Remove "PO" + year + month
-                if (int.TryParse(lastNumberPart, out int lastNumber))
+                newPONumber = $"PO{year}{month}{day}{(nextNumber + attempt):D4}";
+                var exists = await _context.PurchaseOrders
+                    .AnyAsync(po => po.PurchaseOrderNumber == newPONumber);
+                
+                if (!exists)
                 {
-                    nextNumber = lastNumber + 1;
+                    return newPONumber;
                 }
-            }
+                
+                attempt++;
+            } while (attempt < maxAttempts);
 
-            return $"PO{year}{month}{nextNumber:D4}";
+            // If all attempts failed, use timestamp
+            var timestamp = DateTime.Now.ToString("HHmmss");
+            return $"PO{year}{month}{day}{timestamp}";
         }
 
         // Get pending purchase orders
@@ -921,6 +974,65 @@ namespace Page_Navigation_App.Services
             catch (Exception ex)
             {
                 return $"Debug error: {ex.Message}";
+            }
+        }
+
+        // Delete purchase order
+        public async Task<bool> DeletePurchaseOrder(int purchaseOrderId)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            
+            try
+            {
+                // Load purchase order with all related data
+                var purchaseOrder = await _context.PurchaseOrders
+                    .Include(po => po.PurchaseOrderItems)
+                    .FirstOrDefaultAsync(po => po.PurchaseOrderID == purchaseOrderId);
+                
+                if (purchaseOrder == null)
+                {
+                    throw new InvalidOperationException($"Purchase order with ID {purchaseOrderId} not found.");
+                }
+
+                // Check if purchase order can be deleted
+                if (purchaseOrder.Status == "Delivered" || purchaseOrder.Status == "Partially Delivered")
+                {
+                    throw new InvalidOperationException("Cannot delete a purchase order that has been delivered or partially delivered.");
+                }
+
+                if (purchaseOrder.PaymentStatus == "Paid" || purchaseOrder.PaymentStatus == "Partial")
+                {
+                    throw new InvalidOperationException("Cannot delete a purchase order that has payments recorded.");
+                }
+
+                // Check if any stock items were added from this purchase order
+                var stockItemsExist = await _context.StockItems
+                    .AnyAsync(si => si.PurchaseOrderID == purchaseOrderId);
+
+                if (stockItemsExist)
+                {
+                    throw new InvalidOperationException("Cannot delete a purchase order that has stock items added to inventory.");
+                }
+
+                // Remove purchase order items first
+                _context.PurchaseOrderItems.RemoveRange(purchaseOrder.PurchaseOrderItems);
+                
+                // Remove purchase order
+                _context.PurchaseOrders.Remove(purchaseOrder);
+                
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                // Log successful deletion
+                await _logService.LogInformationAsync($"Deleted Purchase Order #{purchaseOrder.PurchaseOrderNumber}");
+                
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                await _logService.LogErrorAsync($"Error deleting purchase order: {ex.Message}", exception: ex);
+                throw;
             }
         }
     }

@@ -20,6 +20,7 @@ namespace Page_Navigation_App.ViewModel
         public ICommand RefreshCommand { get; }
         public ICommand SearchStockItemCommand { get; }
         public ICommand ViewStockItemsCommand { get; }
+        public ICommand LoadStockItemsCommand { get; }
 
         public StockVM(
             StockService stockService,
@@ -40,18 +41,23 @@ namespace Page_Navigation_App.ViewModel
             LoadStockSummary();
             LoadProducts();
             LoadLowStockProducts();
+            LoadStockItemDetails(); // Load individual stock items with barcodes
 
             // Initialize commands
             SearchCommand = new RelayCommand<object>(_ => SearchStock(), _ => true);
             RefreshCommand = new RelayCommand<object>(_ => RefreshAll(), _ => true);
             SearchStockItemCommand = new RelayCommand<object>(_ => SearchStockItem(), _ => !string.IsNullOrEmpty(StockItemSearchTerm));
             ViewStockItemsCommand = new RelayCommand<Product>(ViewStockItemsForProduct, _ => true);
+            LoadStockItemsCommand = new RelayCommand<object>(_ => LoadStockItemDetails(), _ => true);
         }
 
         public ObservableCollection<StockSummaryItem> StockSummary { get; set; }
         public ObservableCollection<StockItem> StockItems { get; set; }
         public ObservableCollection<Product> Products { get; set; }
         public ObservableCollection<Product> LowStockProducts { get; set; }
+
+        // Add property for individual stock items with barcodes
+        public ObservableCollection<StockItemDetail> StockItemDetails { get; set; } = new ObservableCollection<StockItemDetail>();
 
         private string _searchTerm;
         public string SearchTerm
@@ -354,6 +360,46 @@ namespace Page_Navigation_App.ViewModel
             StockItemSearchTerm = string.Empty;
         }
 
+        // Load individual stock items with barcodes
+        public async void LoadStockItemDetails()
+        {
+            try
+            {
+                StockItemDetails.Clear();
+
+                var stockItems = await _stockService.GetAllStockItems();
+                var products = await _productService.GetAllProducts();
+
+                var stockItemDetails = from stockItem in stockItems
+                                     join product in products on stockItem.ProductID equals product.ProductID
+                                     select new StockItemDetail
+                                     {
+                                         StockItemID = stockItem.StockItemID,
+                                         ProductID = stockItem.ProductID,
+                                         ProductName = product.ProductName,
+                                         UniqueTagID = stockItem.UniqueTagID,
+                                         Barcode = stockItem.Barcode,
+                                         HUID = stockItem.HUID,
+                                         MetalType = product.MetalType,
+                                         Purity = product.Purity,
+                                         PurchaseCost = stockItem.PurchaseCost,
+                                         SellingPrice = stockItem.SellingPrice,
+                                         PurchaseDate = stockItem.PurchaseDate ?? DateTime.Now,
+                                         Status = stockItem.Status,
+                                         PurchaseOrderID = stockItem.PurchaseOrderID
+                                     };
+
+                foreach (var item in stockItemDetails.OrderBy(s => s.ProductName).ThenBy(s => s.Barcode))
+                {
+                    StockItemDetails.Add(item);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Error loading stock item details: {ex.Message}", "Error");
+            }
+        }
+
         // Helper method to safely show message boxes from async methods
         private void ShowMessageBox(string message, string title = "Error", System.Windows.MessageBoxButton button = System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage icon = System.Windows.MessageBoxImage.Error)
         {
@@ -387,5 +433,26 @@ namespace Page_Navigation_App.ViewModel
         public string QuantityDisplay => $"{AvailableQuantity:N0} / {TotalQuantity:N0}";
         public string ValueDisplay => $"₹{TotalValue:N2}";
         public string CostDisplay => $"₹{AverageCost:N2}";
+    }
+
+    // New helper class for individual stock item details
+    public class StockItemDetail
+    {
+        public int StockItemID { get; set; }
+        public int ProductID { get; set; }
+        public string ProductName { get; set; }
+        public string UniqueTagID { get; set; }
+        public string Barcode { get; set; }
+        public string HUID { get; set; }
+        public string MetalType { get; set; }
+        public string Purity { get; set; }
+        public decimal PurchaseCost { get; set; }
+        public decimal SellingPrice { get; set; }
+        public DateTime PurchaseDate { get; set; }
+        public string Status { get; set; }
+        public int? PurchaseOrderID { get; set; }
+
+        public string ItemDisplayName => $"{ProductName} - {Barcode}";
+        public string StatusColor => Status == "Available" ? "Green" : Status == "Sold" ? "Red" : "Orange";
     }
 }

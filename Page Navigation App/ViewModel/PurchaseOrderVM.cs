@@ -25,6 +25,7 @@ namespace Page_Navigation_App.ViewModel
         public ICommand ReceivePurchaseOrderCommand { get; }
         public ICommand RecordPaymentCommand { get; }
         public ICommand CancelPurchaseOrderCommand { get; }
+        public ICommand DeletePurchaseOrderCommand { get; }
 
         public PurchaseOrderVM(
             PurchaseOrderService purchaseOrderService,
@@ -75,6 +76,7 @@ namespace Page_Navigation_App.ViewModel
             ReceivePurchaseOrderCommand = new RelayCommand<object>(_ => ReceivePurchaseOrder(), _ => SelectedPurchaseOrder?.PurchaseOrderID > 0);
             RecordPaymentCommand = new RelayCommand<object>(_ => RecordPayment(), _ => SelectedPurchaseOrder?.PurchaseOrderID > 0);
             CancelPurchaseOrderCommand = new RelayCommand<object>(_ => CancelPurchaseOrder(), _ => SelectedPurchaseOrder?.PurchaseOrderID > 0);
+            DeletePurchaseOrderCommand = new RelayCommand<object>(_ => DeletePurchaseOrder(), _ => CanDeletePurchaseOrder());
         }
 
         public ObservableCollection<PurchaseOrder> PurchaseOrders { get; set; }
@@ -576,6 +578,60 @@ namespace Page_Navigation_App.ViewModel
             {
                 System.Windows.MessageBox.Show($"Error cancelling purchase order: {ex.Message}", "Error");
             }
+        }
+
+        // Delete purchase order
+        private async void DeletePurchaseOrder()
+        {
+            if (SelectedPurchaseOrder == null) return;
+
+            try
+            {
+                var result = System.Windows.MessageBox.Show(
+                    $"Are you sure you want to delete Purchase Order #{SelectedPurchaseOrder.PurchaseOrderNumber}?\n\nThis action cannot be undone.",
+                    "Confirm Delete",
+                    System.Windows.MessageBoxButton.YesNo,
+                    System.Windows.MessageBoxImage.Warning);
+
+                if (result == System.Windows.MessageBoxResult.Yes)
+                {
+                    var success = await _purchaseOrderService.DeletePurchaseOrder(SelectedPurchaseOrder.PurchaseOrderID);
+                    
+                    if (success)
+                    {
+                        System.Windows.MessageBox.Show(
+                            $"Purchase Order #{SelectedPurchaseOrder.PurchaseOrderNumber} has been deleted successfully.",
+                            "Delete Successful",
+                            System.Windows.MessageBoxButton.OK,
+                            System.Windows.MessageBoxImage.Information);
+
+                        // Remove from collection and clear form
+                        PurchaseOrders.Remove(SelectedPurchaseOrder);
+                        ClearForm();
+                        
+                        // Refresh the list
+                        LoadPurchaseOrders();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show(
+                    $"Error deleting purchase order: {ex.Message}",
+                    "Delete Error",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Error);
+            }
+        }
+
+        // Check if purchase order can be deleted
+        private bool CanDeletePurchaseOrder()
+        {
+            return SelectedPurchaseOrder?.PurchaseOrderID > 0 &&
+                   SelectedPurchaseOrder.Status != "Delivered" &&
+                   SelectedPurchaseOrder.Status != "Partially Delivered" &&
+                   SelectedPurchaseOrder.PaymentStatus != "Paid" &&
+                   SelectedPurchaseOrder.PaymentStatus != "Partial";
         }
 
         private void ClearForm()

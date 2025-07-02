@@ -57,6 +57,16 @@ namespace Page_Navigation_App.Services
                 .ToListAsync();
         }
 
+        // Get all stock items for detailed view
+        public async Task<IEnumerable<StockItem>> GetAllStockItems()
+        {
+            return await _context.StockItems
+                .Include(si => si.Product)
+                .OrderBy(si => si.ProductID)
+                .ThenBy(si => si.UniqueTagID)
+                .ToListAsync();
+        }
+
         // Get stock summary by product
         public async Task<Dictionary<int, decimal>> GetStockSummary()
         {

@@ -295,6 +295,72 @@
                     </DataGrid>
                 </Grid>
             </TabItem>
+
+            <!-- Individual Stock Items Tab -->
+            <TabItem Header="Stock Items (Barcodes)">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Search and Refresh -->
+                    <Grid Grid.Row="0" Margin="10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Grid.Column="0" Text="{Binding SearchTerm}" 
+                                mah:TextBoxHelper.Watermark="Search by barcode, tag ID, product name..." 
+                                Style="{StaticResource InputStyle}"/>
+                        <Button Grid.Column="1" Content="Search" Command="{Binding SearchCommand}" Style="{StaticResource ButtonStyle}"/>
+                        <Button Grid.Column="2" Content="Load Items" Command="{Binding LoadStockItemsCommand}" Style="{StaticResource ButtonStyle}" Background="#607D8B"/>
+                    </Grid>
+
+                    <!-- Individual Stock Items DataGrid -->
+                    <DataGrid Grid.Row="1" ItemsSource="{Binding StockItemDetails}" 
+                             SelectedItem="{Binding SelectedStockItem}"
+                             AutoGenerateColumns="False" 
+                             CanUserAddRows="False"
+                             GridLinesVisibility="Horizontal"
+                             HeadersVisibility="Column"
+                             Margin="10">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Product" Binding="{Binding ProductName}" Width="150"/>
+                            <DataGridTextColumn Header="Barcode" Binding="{Binding Barcode}" Width="120"/>
+                            <DataGridTextColumn Header="Tag ID" Binding="{Binding UniqueTagID}" Width="100"/>
+                            <DataGridTextColumn Header="HUID" Binding="{Binding HUID}" Width="80"/>
+                            <DataGridTextColumn Header="Metal Type" Binding="{Binding MetalType}" Width="80"/>
+                            <DataGridTextColumn Header="Purity" Binding="{Binding Purity}" Width="60"/>
+                            <DataGridTextColumn Header="Purchase Cost" Binding="{Binding PurchaseCost, StringFormat=C}" Width="100"/>
+                            <DataGridTextColumn Header="Selling Price" Binding="{Binding SellingPrice, StringFormat=C}" Width="100"/>
+                            <DataGridTextColumn Header="Purchase Date" Binding="{Binding PurchaseDate, StringFormat=d}" Width="100"/>
+                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="80">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <Trigger Property="Text" Value="Available">
+                                                <Setter Property="Foreground" Value="Green"/>
+                                                <Setter Property="FontWeight" Value="Bold"/>
+                                            </Trigger>
+                                            <Trigger Property="Text" Value="Sold">
+                                                <Setter Property="Foreground" Value="Red"/>
+                                                <Setter Property="FontWeight" Value="Bold"/>
+                                            </Trigger>
+                                            <Trigger Property="Text" Value="Reserved">
+                                                <Setter Property="Foreground" Value="Orange"/>
+                                                <Setter Property="FontWeight" Value="Bold"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="PO ID" Binding="{Binding PurchaseOrderID}" Width="60"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
         </TabControl>
     </Grid>
 </UserControl>

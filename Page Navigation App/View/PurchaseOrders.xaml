@@ -252,6 +252,7 @@
                                     <Button Content="Receive Order" Command="{Binding ReceivePurchaseOrderCommand}" Style="{StaticResource ButtonStyle}" Background="#2196F3"/>
                                     <Button Content="Record Payment" Command="{Binding RecordPaymentCommand}" Style="{StaticResource ButtonStyle}" Background="#FF9800"/>
                                     <Button Content="Cancel Order" Command="{Binding CancelPurchaseOrderCommand}" Style="{StaticResource ButtonStyle}" Background="#F44336"/>
+                                    <Button Content="Delete Order" Command="{Binding DeletePurchaseOrderCommand}" Style="{StaticResource ButtonStyle}" Background="#9C27B0"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
