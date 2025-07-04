@@ -12,11 +12,16 @@ namespace Page_Navigation_App.Services
     {
         private readonly AppDbContext _context;
         private readonly LogService _logService;
+        private readonly BarcodeService _barcodeService;
 
-        public StockService(AppDbContext context, LogService logService)
+        public StockService(
+            AppDbContext context, 
+            LogService logService,
+            BarcodeService barcodeService)
         {
             _context = context;
             _logService = logService;
+            _barcodeService = barcodeService;
         }
 
         // Create stock entry
@@ -148,7 +153,7 @@ namespace Page_Navigation_App.Services
                 for (int i = 0; i < quantity; i++)
                 {
                     var uniqueTagID = await GenerateUniqueTagID(product.MetalType, product.Purity);
-                    var barcode = await GenerateUniqueBarcode(product.ProductID);
+                    var barcode = await _barcodeService.GenerateStockItemBarcodeAsync(product.ProductID);
                     
                     var stockItem = new StockItem
                     {
@@ -221,21 +226,7 @@ namespace Page_Navigation_App.Services
             return tagId;
         }
 
-        // Generate unique barcode for individual items
-        private async Task<string> GenerateUniqueBarcode(int productId)
-        {
-            string barcode;
-            do {
-                // Use a similar approach for barcode but with a different format
-                string timestamp = DateTime.Now.ToString("yyMMddHHmm");
-                string guid = Guid.NewGuid().ToString("N");
-                string uniquePart = guid.Substring(0, 8);
-                
-                barcode = $"ITM{productId:D4}-{timestamp}-{uniquePart}";
-            } while (await _context.StockItems.AnyAsync(si => si.Barcode == barcode));
-            
-            return barcode;
-        }
+        // [REMOVED - Replaced with BarcodeService.GenerateStockItemBarcodeAsync]
 
         // Sell stock item (mark as sold)
         public async Task<bool> SellStockItem(string uniqueTagId, int orderId, int customerId)

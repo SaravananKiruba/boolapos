@@ -14,17 +14,20 @@ namespace Page_Navigation_App.Services
         private readonly LogService _logService;
         private readonly StockService _stockService;
         private readonly FinanceService _financeService;
+        private readonly BarcodeService _barcodeService;
 
         public PurchaseOrderService(
             AppDbContext context, 
             LogService logService, 
             StockService stockService,
-            FinanceService financeService)
+            FinanceService financeService,
+            BarcodeService barcodeService)
         {
             _context = context;
             _logService = logService;
             _stockService = stockService;
             _financeService = financeService;
+            _barcodeService = barcodeService;
         }
 
         // Create purchase order
@@ -853,7 +856,7 @@ namespace Page_Navigation_App.Services
                 {
                     ProductID = item.ProductID,
                     UniqueTagID = await GenerateUniqueTagID(item.ProductID),
-                    Barcode = await GenerateBarcode(item.ProductID),
+                    Barcode = await _barcodeService.GenerateStockItemBarcodeAsync(item.ProductID),
                     PurchaseCost = item.UnitCost,
                     SellingPrice = item.Product?.ProductPrice ?? 0, // Use product's selling price
                     Status = "Available",
@@ -891,17 +894,7 @@ namespace Page_Navigation_App.Services
         }
 
         // Helper method to generate barcode
-        private async Task<string> GenerateBarcode(int productId)
-        {
-            string barcode;
-            do
-            {
-                barcode = $"BC{productId:D4}{DateTime.Now:yyyyMMdd}{Random.Shared.Next(100, 999)}";
-            }
-            while (await _context.StockItems.AnyAsync(si => si.Barcode == barcode));
-
-            return barcode;
-        }
+        // [REMOVED - Replaced with BarcodeService.GenerateStockItemBarcodeAsync]
 
         // Helper method to validate purchase order data before saving
         private void ValidatePurchaseOrderData(PurchaseOrder purchaseOrder)

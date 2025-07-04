@@ -338,5 +338,65 @@ namespace Page_Navigation_App.Services
                 return (0, 0);
             }
         }
+
+        /// <summary>
+        /// Update all product prices based on current rates
+        /// </summary>
+        /// <remarks>
+        /// This is a key enhancement to ensure products reflect current gold rates immediately
+        /// Improves workflow between RateMaster → Product → Purchase Orders
+        /// </remarks>
+        public async Task<int> UpdateProductPricesBasedOnCurrentRatesAsync()
+        {
+            int updatedCount = 0;
+            
+            try
+            {
+                // Get all products that need price updates (gold/silver items)
+                var products = await _context.Products
+                    .Where(p => p.MetalType == "Gold" || p.MetalType == "Silver" || p.MetalType == "Platinum")
+                    .ToListAsync();
+                
+                foreach (var product in products)
+                {
+                    // Calculate new price based on current rates
+                    var (basePrice, finalPrice) = await CalculateEnhancedProductPriceAsync(
+                        product.NetWeight,
+                        product.MetalType,
+                        product.Purity,
+                        product.WastagePercentage,
+                        product.MakingCharges,
+                        product.HUID);
+                    
+                    if (finalPrice > 0)
+                    {
+                        // Update product price
+                        product.ProductPrice = finalPrice;
+                        
+                        // Also update stock item selling prices for available items
+                        var stockItems = await _context.StockItems
+                            .Where(si => si.ProductID == product.ProductID && si.Status == "Available")
+                            .ToListAsync();
+                            
+                        foreach (var item in stockItems)
+                        {
+                            item.SellingPrice = finalPrice;
+                        }
+                        
+                        updatedCount++;
+                    }
+                }
+                
+                await _context.SaveChangesAsync();
+                await _logService.LogInformationAsync($"Updated prices for {updatedCount} products based on current rates");
+                
+                return updatedCount;
+            }
+            catch (Exception ex)
+            {
+                await _logService.LogErrorAsync($"Error updating product prices: {ex.Message}", exception: ex);
+                return 0;
+            }
+        }
     }
 }

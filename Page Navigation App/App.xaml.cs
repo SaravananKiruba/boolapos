@@ -55,6 +55,8 @@ namespace Page_Navigation_App
             
             // Register newly implemented services
             services.AddScoped<TaggingService>();
+            services.AddScoped<BarcodeService>();
+            services.AddScoped<WorkflowService>();
 
             // Business Services - Scoped lifetime
             services.AddScoped<CustomerService>();
