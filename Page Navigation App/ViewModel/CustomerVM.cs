@@ -19,6 +19,7 @@ namespace Page_Navigation_App.ViewModel
         public ICommand SearchCommand { get; }
         public ICommand EditCommand { get; }
         public ICommand DeleteCommand { get; }
+        public ICommand ValidateFormCommand { get; }
 
         public ObservableCollection<string> CustomerTypes { get; set; } = new ObservableCollection<string>
         {
@@ -78,6 +79,7 @@ namespace Page_Navigation_App.ViewModel
             SearchCommand = new RelayCommand<object>(_ => SearchCustomers(), _ => true);
             EditCommand = new RelayCommand<Customer>(customer => EditCustomer(customer), _ => true);
             DeleteCommand = new RelayCommand<Customer>(customer => DeleteCustomer(customer), _ => true);
+            ValidateFormCommand = new RelayCommand<object>(_ => ValidateForm(), _ => true);
             
             // Use PropertyChanged event to update command state when properties change
             PropertyChanged += (sender, args) =>
@@ -121,9 +123,9 @@ namespace Page_Navigation_App.ViewModel
             {
                 errors.Add("Phone Number is required.");
             }
-            else if (!System.Text.RegularExpressions.Regex.IsMatch(SelectedCustomer.PhoneNumber, @"^\+?[1-9]\d{1,14}$"))
+            else if (!System.Text.RegularExpressions.Regex.IsMatch(SelectedCustomer.PhoneNumber, @"^[0-9]{10}$"))
             {
-                errors.Add("Please enter a valid phone number.");
+                errors.Add("Phone Number must be exactly 10 digits and contain only numbers.");
             }
 
             if (string.IsNullOrWhiteSpace(SelectedCustomer.CustomerType))
@@ -281,7 +283,7 @@ namespace Page_Navigation_App.ViewModel
             bool validPhone = !string.IsNullOrWhiteSpace(SelectedCustomer.PhoneNumber) && 
                              System.Text.RegularExpressions.Regex.IsMatch(
                                  SelectedCustomer.PhoneNumber, 
-                                 @"^\+?[1-9]\d{1,14}$");
+                                 @"^[0-9]{10}$");
                                  
             return hasRequiredFields && validPhone;
         }
@@ -327,6 +329,54 @@ namespace Page_Navigation_App.ViewModel
             catch (Exception ex)
             {
                 System.Windows.MessageBox.Show($"Error searching customers: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
+        }
+
+        /// <summary>
+        /// Validates the current form and shows any validation errors
+        /// </summary>
+        private void ValidateForm()
+        {
+            try
+            {
+                // Create a validation context for the customer
+                var validationContext = new ValidationContext(SelectedCustomer);
+                var validationResults = new List<ValidationResult>();
+                
+                // Perform validation
+                bool isValid = Validator.TryValidateObject(SelectedCustomer, validationContext, validationResults, true);
+                
+                if (isValid)
+                {
+                    System.Windows.MessageBox.Show(
+                        "All fields are valid! The customer data can be saved.",
+                        "Validation Success",
+                        System.Windows.MessageBoxButton.OK,
+                        System.Windows.MessageBoxImage.Information);
+                }
+                else
+                {
+                    // Build a message with all validation errors
+                    string errorMessage = "Please correct the following issues:\n\n";
+                    foreach (var validationResult in validationResults)
+                    {
+                        errorMessage += $"• {validationResult.ErrorMessage}\n";
+                    }
+                    
+                    System.Windows.MessageBox.Show(
+                        errorMessage,
+                        "Validation Error",
+                        System.Windows.MessageBoxButton.OK,
+                        System.Windows.MessageBoxImage.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show(
+                    $"Error validating form: {ex.Message}",
+                    "Error",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Error);
             }
         }
     }
