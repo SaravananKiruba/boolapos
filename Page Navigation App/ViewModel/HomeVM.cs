@@ -18,6 +18,8 @@ namespace Page_Navigation_App.ViewModel
         private readonly CustomerService _customerService;
         private DateTime _startDate;
         private DateTime _endDate;
+        private string _summaryText;
+        private DateTime _currentDate;
 
         public HomeVM(ProductService productService, OrderService orderService, CustomerService customerService)
         {
@@ -28,6 +30,7 @@ namespace Page_Navigation_App.ViewModel
             // Initialize date range to current month
             StartDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
             EndDate = DateTime.Now;
+            CurrentDate = DateTime.Now;
 
             LoadDashboardData();
             ExportReportCommand = new RelayCommand<object>(_ => ExportReport(), _ => true);
@@ -54,6 +57,26 @@ namespace Page_Navigation_App.ViewModel
             {
                 _endDate = value;
                 OnPropertyChanged(nameof(EndDate));
+            }
+        }
+
+        public DateTime CurrentDate
+        {
+            get => _currentDate;
+            set
+            {
+                _currentDate = value;
+                OnPropertyChanged(nameof(CurrentDate));
+            }
+        }
+        
+        public string SummaryText
+        {
+            get => _summaryText;
+            set
+            {
+                _summaryText = value;
+                OnPropertyChanged(nameof(SummaryText));
             }
         }
 
@@ -90,6 +113,9 @@ namespace Page_Navigation_App.ViewModel
                 ProductInCount = 0;
                 ProductOutCount = 0;
 
+                // Update summary text
+                UpdateSummaryText(orders);
+
                 OnPropertyChanged(nameof(TotalProducts));
                 OnPropertyChanged(nameof(TotalOrders));
                 OnPropertyChanged(nameof(TotalCustomers));
@@ -113,17 +139,53 @@ namespace Page_Navigation_App.ViewModel
 
         private void ViewCustomers()
         {
-            // Navigation will be handled by NavigationVM
+            // Get the NavigationVM instance from DI service provider
+            var navigationVM = App.ServiceProvider.GetService(typeof(NavigationVM)) as NavigationVM;
+            navigationVM?.CustomersCommand?.Execute(null);
         }
 
         private void ViewProducts()
         {
-            // Navigation will be handled by NavigationVM
+            // Get the NavigationVM instance from DI service provider
+            var navigationVM = App.ServiceProvider.GetService(typeof(NavigationVM)) as NavigationVM;
+            navigationVM?.ProductsCommand?.Execute(null);
         }
 
         private void ViewOrders()
         {
-            // Navigation will be handled by NavigationVM
+            // Get the NavigationVM instance from DI service provider
+            var navigationVM = App.ServiceProvider.GetService(typeof(NavigationVM)) as NavigationVM;
+            navigationVM?.OrdersCommand?.Execute(null);
+        }
+        
+        private void UpdateSummaryText(IEnumerable<Order> orders)
+        {
+            StringBuilder summary = new StringBuilder();
+            
+            // Current date information
+            summary.AppendLine($"Today is {DateTime.Now:dddd, MMMM d, yyyy}");
+            summary.AppendLine();
+            
+            // Customer insights
+            summary.AppendLine($"You have a total of {TotalCustomers} customers in the system.");
+            
+            // Order insights
+            summary.AppendLine($"Between {StartDate:MMM d, yyyy} and {EndDate:MMM d, yyyy}, there were {TotalOrders} orders.");
+            
+            if (TotalOrders > 0)
+            {
+                decimal averageOrderValue = TotalRevenue / TotalOrders;
+                summary.AppendLine($"Average order value: ₹{averageOrderValue:N2}");
+                
+                // Get most recent order date if there are orders
+                var latestOrder = orders.OrderByDescending(o => o.OrderDate).FirstOrDefault();
+                if (latestOrder != null)
+                {
+                    summary.AppendLine($"Last order was on {latestOrder.OrderDate:MMM d, yyyy}.");
+                }
+            }
+            
+            SummaryText = summary.ToString();
         }
     }
 }
