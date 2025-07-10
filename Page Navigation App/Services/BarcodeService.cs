@@ -52,7 +52,43 @@ namespace Page_Navigation_App.Services
         }
 
         /// <summary>
-        /// Generates a unique barcode for an individual stock item
+        /// Generates a unique barcode for an individual stock item and saves it
+        /// </summary>
+        /// <param name="stockItemId">ID of the stock item to update</param>
+        /// <returns>A unique barcode string for the stock item</returns>
+        public async Task<string> GenerateAndSaveStockItemBarcodeAsync(int stockItemId)
+        {
+            try
+            {
+                var stockItem = await _context.StockItems.FindAsync(stockItemId);
+                if (stockItem == null)
+                    throw new ArgumentException($"StockItem with ID {stockItemId} not found");
+
+                string barcode;
+                do
+                {
+                    // Format: ITM-{ProductID}-{YYYYMMDD}-{RandomNumber}
+                    string timestamp = DateTime.Now.ToString("yyyyMMdd");
+                    string uniquePart = new Random().Next(1000, 9999).ToString();
+                    barcode = $"ITM-{stockItem.ProductID:D4}-{timestamp}-{uniquePart}";
+                } while (await _context.StockItems.AnyAsync(si => si.Barcode == barcode));
+                
+                // CRITICAL FIX: Actually save the barcode to the database
+                stockItem.Barcode = barcode;
+                await _context.SaveChangesAsync();
+                
+                await _logService.LogInformationAsync($"Generated and saved stock item barcode: {barcode} for stock item ID {stockItemId}");
+                return barcode;
+            }
+            catch (Exception ex)
+            {
+                await _logService.LogErrorAsync($"Error generating stock item barcode: {ex.Message}", exception: ex);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Generates a unique barcode for an individual stock item (legacy method)
         /// </summary>
         /// <param name="productId">ID of the product</param>
         /// <returns>A unique barcode string for the stock item</returns>

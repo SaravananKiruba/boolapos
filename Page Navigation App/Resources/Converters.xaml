@@ -7,6 +7,8 @@
     <utilities:ViewModelToTitleConverter x:Key="ViewModelToTitleConverter"/>
     <utilities:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
     <utilities:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    <utilities:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+    <utilities:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
     <utilities:LoginButtonTextConverter x:Key="LoginButtonTextConverter"/>
     <utilities:LoginStatusTextConverter x:Key="LoginStatusTextConverter"/>
     <utilities:BooleanToActiveConverter x:Key="BooleanToActiveConverter"/>

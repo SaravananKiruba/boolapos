@@ -12,6 +12,7 @@ namespace Page_Navigation_App.ViewModel
 {
     public class PurchaseOrderVM : ViewModelBase
     {
+        private readonly EnhancedWorkflowService _enhancedWorkflowService;
         private readonly PurchaseOrderService _purchaseOrderService;
         private readonly SupplierService _supplierService;
         private readonly ProductService _productService;
@@ -28,11 +29,13 @@ namespace Page_Navigation_App.ViewModel
         public ICommand DeletePurchaseOrderCommand { get; }
 
         public PurchaseOrderVM(
+            EnhancedWorkflowService enhancedWorkflowService,
             PurchaseOrderService purchaseOrderService,
             SupplierService supplierService,
             ProductService productService,
             StockService stockService)
         {
+            _enhancedWorkflowService = enhancedWorkflowService;
             _purchaseOrderService = purchaseOrderService;
             _supplierService = supplierService;
             _productService = productService;
@@ -435,16 +438,31 @@ namespace Page_Navigation_App.ViewModel
                 {
                     var purchaseOrderId = SelectedPurchaseOrder.PurchaseOrderID;
                     
-                    // Show progress or loading indicator here if needed
-                    var success = await _purchaseOrderService.ReceivePurchaseOrder(purchaseOrderId);
+                    // Prepare received quantities (all items in the purchase order)
+                    var receivedQuantities = new Dictionary<int, int>();
+                    var purchaseOrderWithItems = await _purchaseOrderService.GetPurchaseOrderById(purchaseOrderId);
+                    if (purchaseOrderWithItems?.PurchaseOrderItems != null)
+                    {
+                        foreach (var item in purchaseOrderWithItems.PurchaseOrderItems)
+                        {
+                            receivedQuantities[item.ProductID] = (int)item.Quantity;
+                        }
+                    }
                     
-                    if (success)
+                    // ENHANCED: Use EnhancedWorkflowService for proper purchase workflow
+                    var workflowResult = await _enhancedWorkflowService.ProcessPurchaseReceiptAsync(
+                        purchaseOrderId, 
+                        receivedQuantities, 
+                        "System");
+                    
+                    if (workflowResult.Success)
                     {
                         System.Windows.MessageBox.Show(
                             "Purchase order received successfully!\n\n" +
                             "• Items have been added to stock\n" +
                             "• Individual barcodes and tags generated\n" +
-                            "• Stock levels updated",
+                            "• Stock levels updated\n" +
+                            "• Finance entries created",
                             "Success", 
                             System.Windows.MessageBoxButton.OK, 
                             System.Windows.MessageBoxImage.Information);
@@ -456,11 +474,7 @@ namespace Page_Navigation_App.ViewModel
                     else
                     {
                         System.Windows.MessageBox.Show(
-                            "Failed to receive purchase order.\n\n" +
-                            "This could be due to:\n" +
-                            "• Database connection issues\n" +
-                            "• Invalid product or supplier data\n" +
-                            "• Required fields missing\n\n" +
+                            $"Failed to receive purchase order: {workflowResult.Message}\n\n" +
                             "Please check the application logs for detailed error information.",
                             "Operation Failed", 
                             System.Windows.MessageBoxButton.OK, 

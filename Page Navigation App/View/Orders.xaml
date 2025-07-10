@@ -25,17 +25,57 @@
             <TabItem Header="Create Order">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/> <!-- Order Mode Selection -->
+                        <RowDefinition Height="Auto"/> <!-- Customer Selection -->
+                        <RowDefinition Height="Auto"/> <!-- Barcode/Manual Product Selection -->
+                        <RowDefinition Height="*"/>    <!-- Order Items List -->
+                        <RowDefinition Height="Auto"/> <!-- Order Actions -->
                     </Grid.RowDefinitions>
                     
-                    <!-- Customer Selection Section -->
+                    <!-- Order Mode Selection -->
                     <Border Grid.Row="0" 
                             Background="#FFFFFF"
                             CornerRadius="10"
                             Margin="0,10,0,10">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="10"
+                                    ShadowDepth="1"
+                                    Opacity="0.2"/>
+                        </Border.Effect>
+                        <mah:MetroHeader Header="Order Mode" Margin="5">
+                            <Grid Margin="10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <RadioButton Grid.Column="0" 
+                                           Content="Manual Entry Mode" 
+                                           IsChecked="{Binding IsBarcodeMode, Converter={StaticResource InverseBooleanConverter}}"
+                                           GroupName="OrderMode"
+                                           Style="{StaticResource MahApps.Styles.RadioButton}"
+                                           FontSize="14"
+                                           FontWeight="Medium"
+                                           Foreground="#2D3748"
+                                           Margin="0,0,20,0"/>
+                                
+                                <RadioButton Grid.Column="1" 
+                                           Content="Barcode Scanning Mode" 
+                                           IsChecked="{Binding IsBarcodeMode}"
+                                           GroupName="OrderMode"
+                                           Style="{StaticResource MahApps.Styles.RadioButton}"
+                                           FontSize="14"
+                                           FontWeight="Medium"
+                                           Foreground="#2D3748"/>
+                            </Grid>
+                        </mah:MetroHeader>
+                    </Border>
+                    
+                    <!-- Customer Selection Section -->
+                    <Border Grid.Row="1" 
+                            Background="#FFFFFF"
+                            CornerRadius="10"
+                            Margin="0,0,0,10">
                         <Border.Effect>
                             <DropShadowEffect BlurRadius="10"
                                     ShadowDepth="1"
@@ -75,17 +115,166 @@
                         </mah:MetroHeader>
                     </Border>
                     
-                    <!-- Product Selection Section -->
-                    <Border Grid.Row="1" 
+                    <!-- Barcode Scanning Section (Visible when Barcode Mode is selected) -->
+                    <Border Grid.Row="2" 
                             Background="#FFFFFF"
                             CornerRadius="10"
-                            Margin="0,0,0,10">
+                            Margin="0,0,0,10"
+                            Visibility="{Binding IsBarcodeMode, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Border.Effect>
                             <DropShadowEffect BlurRadius="10"
                                     ShadowDepth="1"
                                     Opacity="0.2"/>
                         </Border.Effect>
-                        <mah:MetroHeader Header="Add Products" Margin="5">
+                        <mah:MetroHeader Header="Barcode Scanning" Margin="5">
+                            <Grid Margin="10">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                
+                                <!-- Barcode Input -->
+                                <Grid Grid.Row="0" Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <TextBox Grid.Column="0"
+                                           Text="{Binding CurrentBarcode, UpdateSourceTrigger=PropertyChanged}"
+                                           Style="{StaticResource MahApps.Styles.TextBox}"
+                                           mah:TextBoxHelper.Watermark="Scan or Enter Barcode (ITM-XXXX-XXXXXXXX-XXXX)"
+                                           mah:ControlsHelper.CornerRadius="5"
+                                           FontSize="14"
+                                           Padding="10,8"
+                                           Margin="0,0,10,0">
+                                        <TextBox.InputBindings>
+                                            <KeyBinding Key="Enter" Command="{Binding ScanBarcodeCommand}"/>
+                                        </TextBox.InputBindings>
+                                    </TextBox>
+                                    
+                                    <Button Grid.Column="1"
+                                          Command="{Binding ScanBarcodeCommand}"
+                                          Style="{StaticResource MahApps.Styles.Button.Square.Accent}"
+                                          mah:ControlsHelper.CornerRadius="5"
+                                          Padding="15,8"
+                                          Margin="0,0,10,0">
+                                        <Button.Content>
+                                            <StackPanel Orientation="Horizontal">
+                                                <iconPacks:PackIconMaterial Kind="Barcode" Margin="0,0,5,0"/>
+                                                <TextBlock Text="Scan"/>
+                                            </StackPanel>
+                                        </Button.Content>
+                                    </Button>
+                                    
+                                    <Button Grid.Column="2"
+                                          Command="{Binding ClearCommand}"
+                                          Style="{StaticResource MahApps.Styles.Button.Square}"
+                                          mah:ControlsHelper.CornerRadius="5"
+                                          Padding="15,8"
+                                          Background="#FFE0E0"
+                                          BorderBrush="#FF6B6B">
+                                        <Button.Content>
+                                            <StackPanel Orientation="Horizontal">
+                                                <iconPacks:PackIconMaterial Kind="DeleteSweep" Margin="0,0,5,0"/>
+                                                <TextBlock Text="Clear"/>
+                                            </StackPanel>
+                                        </Button.Content>
+                                    </Button>
+                                </Grid>
+                                
+                                <!-- Scanned Items List -->
+                                <Border Grid.Row="1" 
+                                      Background="#F8F9FA"
+                                      CornerRadius="5"
+                                      BorderBrush="#E9ECEF"
+                                      BorderThickness="1"
+                                      MinHeight="150">
+                                    <Grid>
+                                        <ListBox ItemsSource="{Binding ScannedBarcodes}"
+                                               Style="{StaticResource MahApps.Styles.ListBox}"
+                                               BorderThickness="0"
+                                               Background="Transparent"
+                                               Margin="10">
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Background="White"
+                                                          CornerRadius="5"
+                                                          Padding="10"
+                                                          Margin="0,2"
+                                                          BorderBrush="#DEE2E6"
+                                                          BorderThickness="1">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            
+                                                            <iconPacks:PackIconMaterial Grid.Column="0"
+                                                                                      Kind="Barcode"
+                                                                                      Foreground="#28A745"
+                                                                                      VerticalAlignment="Center"
+                                                                                      Margin="0,0,10,0"/>
+                                                            
+                                                            <TextBlock Grid.Column="1"
+                                                                     Text="{Binding}"
+                                                                     FontFamily="Courier New"
+                                                                     FontSize="12"
+                                                                     VerticalAlignment="Center"
+                                                                     Foreground="#2D3748"/>
+                                                            
+                                                            <TextBlock Grid.Column="2"
+                                                                     Text="✓ Scanned"
+                                                                     FontSize="10"
+                                                                     Foreground="#28A745"
+                                                                     FontWeight="Bold"
+                                                                     VerticalAlignment="Center"/>
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                        </ListBox>
+                                        
+                                        <!-- Empty State -->
+                                        <StackPanel HorizontalAlignment="Center" 
+                                                  VerticalAlignment="Center"
+                                                  Visibility="{Binding ScannedBarcodes.Count, Converter={StaticResource CountToVisibilityConverter}}">
+                                            <iconPacks:PackIconMaterial Kind="BarcodeOff" 
+                                                                      Width="48" 
+                                                                      Height="48"
+                                                                      Foreground="#CED4DA"
+                                                                      HorizontalAlignment="Center"/>
+                                            <TextBlock Text="No items scanned yet"
+                                                     FontSize="14"
+                                                     Foreground="#6C757D"
+                                                     HorizontalAlignment="Center"
+                                                     Margin="0,10,0,0"/>
+                                            <TextBlock Text="Scan barcodes to add items to the order"
+                                                     FontSize="12"
+                                                     Foreground="#ADB5BD"
+                                                     HorizontalAlignment="Center"
+                                                     Margin="0,5,0,0"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                        </mah:MetroHeader>
+                    </Border>
+                    
+                    <!-- Product Selection Section (Visible when Manual Mode is selected) -->
+                    <Border Grid.Row="2" 
+                            Background="#FFFFFF"
+                            CornerRadius="10"
+                            Margin="0,0,0,10"
+                            Visibility="{Binding IsManualMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="10"
+                                    ShadowDepth="1"
+                                    Opacity="0.2"/>
+                        </Border.Effect>
+                        <mah:MetroHeader Header="Add Products (Manual Entry)" Margin="5">
                             <Grid Margin="10">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="3*"/>
@@ -128,7 +317,7 @@
                     </Border>
                     
                     <!-- Order Items Section -->
-                    <Border Grid.Row="2" 
+                    <Border Grid.Row="3" 
                             Background="#FFFFFF"
                             CornerRadius="10"
                             Margin="0,0,0,10">
@@ -361,7 +550,7 @@
                     </Border>
                     
                     <!-- Action Buttons -->
-                    <StackPanel Grid.Row="3" 
+                    <StackPanel Grid.Row="4" 
                               Orientation="Horizontal" 
                               HorizontalAlignment="Right"
                               Margin="0,10,0,0">
@@ -377,11 +566,33 @@
                                         Opacity="0.3"/>
                             </Button.Effect>
                         </Button>
+                        
+                        <!-- Manual Mode Order Button -->
                         <Button Content="Save Order"
                                 Command="{Binding AddOrUpdateCommand}"
                                 Style="{StaticResource MahApps.Styles.Button.Square.Accent}"
                                 mah:ControlsHelper.CornerRadius="5"
-                                Padding="15,8">
+                                Padding="15,8"
+                                Visibility="{Binding IsManualMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Button.Effect>
+                                <DropShadowEffect BlurRadius="5"
+                                        ShadowDepth="1"
+                                        Opacity="0.3"/>
+                            </Button.Effect>
+                        </Button>
+                        
+                        <!-- Barcode Mode Order Button -->
+                        <Button Command="{Binding ProcessBarcodeOrderCommand}"
+                                Style="{StaticResource MahApps.Styles.Button.Square.Accent}"
+                                mah:ControlsHelper.CornerRadius="5"
+                                Padding="15,8"
+                                Visibility="{Binding IsBarcodeMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Button.Content>
+                                <StackPanel Orientation="Horizontal">
+                                    <iconPacks:PackIconMaterial Kind="Barcode" Margin="0,0,5,0"/>
+                                    <TextBlock Text="Process Barcode Order"/>
+                                </StackPanel>
+                            </Button.Content>
                             <Button.Effect>
                                 <DropShadowEffect BlurRadius="5"
                                         ShadowDepth="1"

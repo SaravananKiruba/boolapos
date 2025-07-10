@@ -55,6 +55,10 @@ namespace Page_Navigation_App.Model
         [ForeignKey("Order")]
         public int? OrderID { get; set; }
 
+        // CRITICAL FIX: Add link to specific order detail for precise tracking
+        [ForeignKey("OrderDetail")]
+        public int? OrderDetailID { get; set; }
+
         public DateTime? SaleDate { get; set; }
 
         [ForeignKey("Customer")]
@@ -75,6 +79,7 @@ namespace Page_Navigation_App.Model
         public virtual PurchaseOrder PurchaseOrder { get; set; }
         public virtual PurchaseOrderItem PurchaseOrderItem { get; set; }
         public virtual Order Order { get; set; }
+        public virtual OrderDetail OrderDetail { get; set; } // CRITICAL FIX: Add navigation to order detail
         public virtual Customer Customer { get; set; }
 
         // Calculate profit

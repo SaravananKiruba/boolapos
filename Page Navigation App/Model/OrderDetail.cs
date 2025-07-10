@@ -18,6 +18,10 @@ namespace Page_Navigation_App.Model
         [ForeignKey("Product")]
         public int ProductID { get; set; }
 
+        // CRITICAL FIX: Add link to specific stock item for individual tracking
+        [ForeignKey("StockItem")]
+        public int? StockItemID { get; set; }
+
         [Required]
         [Column(TypeName = "decimal(10,3)")]
         [Range(0.001, 9999.999)]
@@ -91,5 +95,6 @@ namespace Page_Navigation_App.Model
         // Navigation Properties
         public virtual Order Order { get; set; }
         public virtual Product Product { get; set; }
+        public virtual StockItem StockItem { get; set; } // CRITICAL FIX: Add navigation to stock item
     }
 }

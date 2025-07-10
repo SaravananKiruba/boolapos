@@ -19,10 +19,12 @@ namespace Page_Navigation_App.ViewModel
 {
     public class OrderVM : ViewModelBase
     {
+        private readonly EnhancedWorkflowService _enhancedWorkflowService;
         private readonly OrderService _orderService;
         private readonly CustomerService _customerService;
         private readonly ProductService _productService;
         private readonly FinanceService _financeService;
+        private readonly BarcodeService _barcodeService;
 
         public ICommand AddOrUpdateCommand { get; }
         public ICommand ClearCommand { get; }
@@ -33,6 +35,8 @@ namespace Page_Navigation_App.ViewModel
         public ICommand GenerateInvoiceCommand { get; }
         public ICommand CreateFinanceEntryCommand { get; }
         public ICommand CreateExpenseEntryCommand { get; }
+        public ICommand ScanBarcodeCommand { get; }
+        public ICommand ProcessBarcodeOrderCommand { get; }
 
         // Add a parameterless constructor to allow XAML instantiation
         public OrderVM() 
@@ -51,13 +55,16 @@ namespace Page_Navigation_App.ViewModel
                 PaymentMethod = "Cash",
                 DiscountAmount = 0
             };
-        }        public OrderVM(OrderService orderService, CustomerService customerService, 
-                      ProductService productService, FinanceService financeService)
+        }        public OrderVM(EnhancedWorkflowService enhancedWorkflowService, OrderService orderService, 
+                      CustomerService customerService, ProductService productService, 
+                      FinanceService financeService, BarcodeService barcodeService)
         {
+            _enhancedWorkflowService = enhancedWorkflowService;
             _orderService = orderService;
             _customerService = customerService;
             _productService = productService;
             _financeService = financeService;
+            _barcodeService = barcodeService;
             
             // Initialize SelectedOrder to avoid null reference exceptions
             SelectedOrder = new Order
@@ -92,12 +99,15 @@ namespace Page_Navigation_App.ViewModel
             GenerateInvoiceCommand = new RelayCommand<object>(_ => GenerateInvoice(), _ => SelectedOrder?.OrderID > 0);
             CreateFinanceEntryCommand = new RelayCommand<object>(_ => CreateFinanceEntry(), _ => SelectedOrder?.OrderID > 0);
             CreateExpenseEntryCommand = new RelayCommand<object>(_ => CreateExpenseEntry(), _ => SelectedOrder?.OrderID > 0);
+            ScanBarcodeCommand = new RelayCommand<object>(_ => ScanBarcode(), _ => true);
+            ProcessBarcodeOrderCommand = new RelayCommand<object>(_ => ProcessBarcodeOrder(), _ => CanProcessBarcodeOrder());
         }
 
         public ObservableCollection<Order> Orders { get; set; } = new ObservableCollection<Order>();
         public ObservableCollection<Customer> Customers { get; set; } = new ObservableCollection<Customer>();
         public ObservableCollection<Product> Products { get; set; } = new ObservableCollection<Product>();
         public ObservableCollection<OrderDetail> OrderItems { get; set; } = new ObservableCollection<OrderDetail>();
+        public ObservableCollection<string> ScannedBarcodes { get; set; } = new ObservableCollection<string>();
         public ObservableCollection<string> PaymentTypes { get; set; } = new ObservableCollection<string>
         {
             "Cash",
@@ -108,6 +118,32 @@ namespace Page_Navigation_App.ViewModel
             "EMI",
             "Mixed"
         };
+
+        // Barcode scanning properties
+        private string _currentBarcode;
+        public string CurrentBarcode
+        {
+            get => _currentBarcode;
+            set
+            {
+                _currentBarcode = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private bool _isBarcodeMode = false;
+        public bool IsBarcodeMode
+        {
+            get => _isBarcodeMode;
+            set
+            {
+                _isBarcodeMode = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsManualMode));
+            }
+        }
+
+        public bool IsManualMode => !IsBarcodeMode;
 
         private Order _selectedOrder = new Order();
         public Order SelectedOrder
@@ -413,11 +449,21 @@ namespace Page_Navigation_App.ViewModel
                 return;
             }
 
+            // If in barcode mode, use barcode workflow
+            if (IsBarcodeMode)
+            {
+                ProcessBarcodeOrder();
+                return;
+            }
+
+            // Manual mode - existing logic
             if (!OrderItems.Any())
             {
                 System.Windows.MessageBox.Show("Please add at least one item to the order");
                 return;
-            }            // Set order details
+            }
+
+            // Set order details
             SelectedOrder.OrderDate = DateOnly.FromDateTime(DateTime.Now);
             SelectedOrder.CustomerID = SelectedCustomer.CustomerID;
 
@@ -428,6 +474,7 @@ namespace Page_Navigation_App.ViewModel
             {
                 if (SelectedOrder.OrderID > 0)
                 {
+                    // Update existing order (keep existing logic for now)
                     bool updateResult = await _orderService.UpdateOrder(SelectedOrder);
                     bool detailsResult = await _orderService.UpdateOrderDetails(SelectedOrder.OrderID, orderDetails);
                     
@@ -436,38 +483,23 @@ namespace Page_Navigation_App.ViewModel
                         System.Windows.MessageBox.Show("Failed to update order");
                         return;
                     }
-                }                else
+                }
+                else
                 {
-                    // Create new order with details and update stock
-                    Finance payment = null;
-                      // Always create a finance entry for tracking purposes
-                    payment = new Finance
+                    // ENHANCED: Use the fixed OrderService.CreateOrder for new orders
+                    var newOrder = await _orderService.CreateOrder(SelectedOrder, orderDetails);
+                    if (newOrder != null)
                     {
-                        TransactionDate = DateTime.Now,
-                        TransactionType = "Income",
-                        Amount = SelectedOrder.GrandTotal,
-                        PaymentMode = SelectedOrder.PaymentMethod,
-                        Category = "Sales",
-                        Description = $"Payment for order from {SelectedCustomer?.CustomerName} - ₹{SelectedOrder.GrandTotal}",
-                        IsPaymentReceived = SelectedOrder.Status == "Completed" || CreateFinanceEntryOnSave,
-                        CustomerID = SelectedOrder.CustomerID,
-                        Status = SelectedOrder.Status == "Completed" ? "Completed" : "Pending",
-                        CreatedBy = "System",
-                        Currency = "INR"
-                    };
-                    
-                    // Create new order with stock integration 
-                    var newOrder = await _orderService.AddOrderWithStockUpdate(SelectedOrder, orderDetails, payment);
-                    if (newOrder == null)
+                        SelectedOrder = newOrder;
+                        System.Windows.MessageBox.Show("Order created successfully with proper stock tracking!", "Success");
+                    }
+                    else
                     {
-                        System.Windows.MessageBox.Show("Failed to create order or insufficient stock");
+                        System.Windows.MessageBox.Show("Failed to create order or insufficient stock", "Error");
                         return;
                     }
-                    
-                    SelectedOrder = newOrder;
                 }
 
-                System.Windows.MessageBox.Show($"Order {(SelectedOrder.OrderID > 0 ? "updated" : "created")} successfully!");
                 LoadOrders();
                 ClearForm();
             }
@@ -680,6 +712,9 @@ namespace Page_Navigation_App.ViewModel
             SelectedOrderItem = null;
             OrderItems.Clear();
             
+            // Clear barcode data as well
+            ClearBarcodeData();
+            
             StartDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(-1));
             EndDate = DateOnly.FromDateTime(DateTime.Now);
             CustomerId = 0;
@@ -774,5 +809,123 @@ namespace Page_Navigation_App.ViewModel
                 OnPropertyChanged();
             }
         }
+
+        #region Barcode Scanning Methods
+
+        /// <summary>
+        /// Simulates or handles actual barcode scanning
+        /// </summary>
+        private async void ScanBarcode()
+        {
+            try
+            {
+                // For now, simulate barcode scanning - in production, this would interface with hardware
+                if (!string.IsNullOrWhiteSpace(CurrentBarcode))
+                {
+                    var isValid = await _barcodeService.ValidateBarcodeAsync(CurrentBarcode);
+                    if (isValid)
+                    {
+                        // Check if barcode is for a stock item
+                        if (CurrentBarcode.StartsWith("ITM-"))
+                        {
+                            var stockItem = await _barcodeService.FindStockItemByBarcodeAsync(CurrentBarcode);
+                            if (stockItem != null && stockItem.Status == "Available")
+                            {
+                                ScannedBarcodes.Add(CurrentBarcode);
+                                System.Windows.MessageBox.Show($"Scanned: {stockItem.Product?.ProductName}\nBarcode: {CurrentBarcode}", "Barcode Scanned");
+                                CurrentBarcode = ""; // Clear for next scan
+                            }
+                            else
+                            {
+                                System.Windows.MessageBox.Show("Item not available or already sold", "Invalid Item");
+                            }
+                        }
+                        else
+                        {
+                            System.Windows.MessageBox.Show("Invalid barcode format", "Invalid Barcode");
+                        }
+                    }
+                    else
+                    {
+                        System.Windows.MessageBox.Show("Barcode not found in system", "Invalid Barcode");
+                    }
+                }
+                else
+                {
+                    System.Windows.MessageBox.Show("Please enter a barcode to scan", "No Barcode");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Error scanning barcode: {ex.Message}", "Scan Error");
+            }
+        }
+
+        /// <summary>
+        /// Process an order using scanned barcodes via Enhanced Workflow Service
+        /// </summary>
+        private async void ProcessBarcodeOrder()
+        {
+            if (SelectedCustomer == null)
+            {
+                System.Windows.MessageBox.Show("Please select a customer first", "Customer Required");
+                return;
+            }
+
+            if (!ScannedBarcodes.Any())
+            {
+                System.Windows.MessageBox.Show("Please scan at least one item", "No Items Scanned");
+                return;
+            }
+
+            try
+            {
+                // Use Enhanced Workflow Service for proper sales processing
+                var result = await _enhancedWorkflowService.ProcessSaleWithBarcodeAsync(
+                    SelectedCustomer.CustomerID,
+                    ScannedBarcodes.ToList(),
+                    SelectedOrder.PaymentMethod ?? "Cash",
+                    SelectedOrder.DiscountAmount,
+                    SelectedOrder.Notes ?? ""
+                );
+
+                if (result.Success)
+                {
+                    System.Windows.MessageBox.Show($"Order created successfully!\nOrder ID: {result.Order.OrderID}", "Success");
+                    
+                    // Update the UI
+                    SelectedOrder = result.Order;
+                    LoadOrders();
+                    ClearBarcodeData();
+                }
+                else
+                {
+                    System.Windows.MessageBox.Show($"Failed to create order: {result.Message}", "Error");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Error processing barcode order: {ex.Message}", "Processing Error");
+            }
+        }
+
+        /// <summary>
+        /// Check if barcode order can be processed
+        /// </summary>
+        private bool CanProcessBarcodeOrder()
+        {
+            return SelectedCustomer != null && ScannedBarcodes.Any();
+        }
+
+        /// <summary>
+        /// Clear barcode scanning data
+        /// </summary>
+        private void ClearBarcodeData()
+        {
+            ScannedBarcodes.Clear();
+            CurrentBarcode = "";
+        }
+
+        #endregion
     }
 }

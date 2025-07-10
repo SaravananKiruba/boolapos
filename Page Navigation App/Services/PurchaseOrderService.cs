@@ -849,16 +849,17 @@ namespace Page_Navigation_App.Services
                 await _context.SaveChangesAsync(); // Save to get Stock ID
             }
 
-            // Add individual stock items with unique Tag IDs and Barcodes
+            // CRITICAL FIX: Add individual stock items with proper barcode generation
             for (int i = 0; i < (int)item.Quantity; i++)
             {
                 var stockItem = new StockItem
                 {
                     ProductID = item.ProductID,
                     UniqueTagID = await GenerateUniqueTagID(item.ProductID),
-                    Barcode = await _barcodeService.GenerateStockItemBarcodeAsync(item.ProductID),
+                    // Temporarily set barcode - will be generated after saving
+                    Barcode = "PENDING", 
                     PurchaseCost = item.UnitCost,
-                    SellingPrice = item.Product?.ProductPrice ?? 0, // Use product's selling price
+                    SellingPrice = item.Product?.ProductPrice ?? 0,
                     Status = "Available",
                     Location = "Main Store",
                     PurchaseOrderID = item.PurchaseOrderID,
@@ -867,6 +868,19 @@ namespace Page_Navigation_App.Services
                 };
 
                 await _context.StockItems.AddAsync(stockItem);
+            }
+
+            // Save to get StockItemIDs first
+            await _context.SaveChangesAsync();
+            
+            // CRITICAL FIX: Generate and save barcodes after getting IDs
+            var newStockItems = await _context.StockItems
+                .Where(si => si.PurchaseOrderItemID == item.PurchaseOrderItemID && si.Barcode == "PENDING")
+                .ToListAsync();
+                
+            foreach (var stockItem in newStockItems)
+            {
+                stockItem.Barcode = await _barcodeService.GenerateAndSaveStockItemBarcodeAsync(stockItem.StockItemID);
             }
 
             // Update stock totals

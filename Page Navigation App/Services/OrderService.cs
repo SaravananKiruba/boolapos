@@ -131,19 +131,59 @@ namespace Page_Navigation_App.Services
                 decimal totalAmount = 0;
                 int totalItems = 0;
                 
+                // CRITICAL FIX: Process each order detail with proper stock item linking
                 foreach (var detail in details)
                 {
                     detail.OrderID = order.OrderID;
                     
-                    // Set unit price from product price
-                    detail.UnitPrice = detail.Product.ProductPrice;
+                    // CRITICAL FIX: For jewelry, force quantity = 1 and link to specific stock item
+                    if (detail.Quantity != 1)
+                    {
+                        throw new InvalidOperationException($"Individual item tracking requires quantity = 1. Product ID: {detail.ProductID}");
+                    }
                     
-                    // Calculate total for this item
+                    // Find available stock item using FIFO
+                    var availableStockItem = await _context.StockItems
+                        .Where(si => si.ProductID == detail.ProductID && si.Status == "Available")
+                        .OrderBy(si => si.CreatedDate) // FIFO
+                        .FirstOrDefaultAsync();
+                    
+                    if (availableStockItem == null)
+                    {
+                        throw new InvalidOperationException($"No available stock for Product ID: {detail.ProductID}");
+                    }
+                    
+                    // CRITICAL FIX: Link the specific stock item to this order detail
+                    detail.StockItemID = availableStockItem.StockItemID;
+                    detail.UnitPrice = availableStockItem.SellingPrice; // Use stock item's selling price
                     detail.TotalAmount = detail.UnitPrice * detail.Quantity;
-
-                    totalAmount += detail.TotalAmount;                    totalItems += (int)detail.Quantity;
+                    
+                    totalAmount += detail.TotalAmount;
+                    totalItems += (int)detail.Quantity;
                     
                     await _context.OrderDetails.AddAsync(detail);
+                    
+                    // CRITICAL FIX: Mark stock item as sold
+                    availableStockItem.Status = "Sold";
+                    availableStockItem.OrderID = order.OrderID;
+                    availableStockItem.SaleDate = DateTime.Now;
+                    availableStockItem.CustomerID = order.CustomerID;
+                }
+                
+                // Save order details first to get OrderDetailIDs
+                await _context.SaveChangesAsync();
+                
+                // CRITICAL FIX: Update stock item OrderDetailID now that we have the IDs
+                foreach (var detail in details)
+                {
+                    if (detail.StockItemID.HasValue)
+                    {
+                        var stockItem = await _context.StockItems.FindAsync(detail.StockItemID.Value);
+                        if (stockItem != null)
+                        {
+                            stockItem.OrderDetailID = detail.OrderDetailID;
+                        }
+                    }
                 }
 
                 // Update order totals
@@ -155,25 +195,23 @@ namespace Page_Navigation_App.Services
                 
                 await _context.SaveChangesAsync();
 
-                // Use enhanced stock deduction system
-                var stockDeductionSuccess = await _stockService.DeductStockForOrder(order.OrderID, details);
-                if (!stockDeductionSuccess)
-                {
-                    throw new InvalidOperationException("Failed to deduct stock for order. Transaction rolled back.");
-                }
+                // FIXED: Remove old broken stock deduction and update aggregate counts instead
+                await UpdateAggregateStockCounts(details);
                 
-                // Create finance entry for the sale
+                // FIXED: Create finance entry with correct property names
                 var financeEntry = new Finance
                 {
                     TransactionDate = DateTime.Now,
                     Amount = order.GrandTotal,
-                    Type = "Income",
+                    TransactionType = "Income", // FIXED: Correct property name
                     Category = "Sales",
                     Description = $"Sale Invoice #{order.InvoiceNumber}",
                     PaymentMethod = order.PaymentMethod,
-                    ReferenceID = order.OrderID.ToString(),
-                    ReferenceType = "Order",
-                    RecordedBy = "System"
+                    ReferenceNumber = order.InvoiceNumber, // FIXED: Use invoice number
+                    CustomerID = order.CustomerID,
+                    OrderID = order.OrderID,
+                    Status = "Completed",
+                    CreatedBy = "System"
                 };
                 
                 await _context.Finances.AddAsync(financeEntry);
@@ -546,6 +584,38 @@ namespace Page_Navigation_App.Services
             {
                 await _logService.LogErrorAsync($"Error creating order with stock validation: {ex.Message}", exception: ex);
                 return (null, false, ex.Message);
+            }
+        }
+
+        // CRITICAL FIX: Helper method to update aggregate stock counts
+        private async Task UpdateAggregateStockCounts(List<OrderDetail> details)
+        {
+            var productIds = details.Select(d => d.ProductID).Distinct();
+            
+            foreach (var productId in productIds)
+            {
+                // Update Stock table aggregate counts
+                var stocks = await _context.Stocks
+                    .Where(s => s.ProductID == productId)
+                    .ToListAsync();
+                
+                foreach (var stock in stocks)
+                {
+                    var soldFromThisStock = await _context.StockItems
+                        .Where(si => si.ProductID == productId && 
+                                    si.PurchaseOrderID == stock.PurchaseOrderID &&
+                                    si.Status == "Sold")
+                        .CountAsync();
+                        
+                    stock.SoldCount = soldFromThisStock;
+                    stock.AvailableCount = (int)stock.Quantity - stock.SoldCount;
+                    stock.LastUpdated = DateTime.Now;
+                    
+                    if (stock.AvailableCount <= 0)
+                    {
+                        stock.Status = "Out of Stock";
+                    }
+                }
             }
         }
     }

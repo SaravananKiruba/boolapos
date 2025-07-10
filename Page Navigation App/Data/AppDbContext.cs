@@ -88,6 +88,13 @@ namespace Page_Navigation_App.Data
                 .HasForeignKey(si => si.PurchaseOrderItemID)
                 .OnDelete(DeleteBehavior.SetNull);
 
+            // Configure OrderDetail-StockItem relationship
+            modelBuilder.Entity<StockItem>()
+                .HasOne(si => si.OrderDetail)
+                .WithOne(od => od.StockItem)
+                .HasForeignKey<StockItem>(si => si.OrderDetailID)
+                .OnDelete(DeleteBehavior.SetNull);
+
             // Configure PurchaseOrder relationships
             modelBuilder.Entity<PurchaseOrder>()
                 .HasOne(po => po.Supplier)
